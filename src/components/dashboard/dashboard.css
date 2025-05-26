@@ -1,0 +1,408 @@
+/* Dashboard Container */
+.dashboard-container {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    padding: 2rem;
+  }
+  
+  /* Header Section */
+  .dashboard-header {
+    margin-bottom: 2rem;
+  }
+  
+  .welcome-banner {
+    background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+    border-radius: 1rem;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .welcome-content {
+    flex: 1;
+    padding-right: 2rem;
+  }
+  
+  .welcome-text {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.5rem;
+  }
+  
+  .name-text {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+  
+  .role-text {
+    font-size: 1rem;
+    color: #6366f1;
+    font-weight: 500;
+  }
+  
+  .welcome-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Analytics Section */
+  .analytics-section {
+    margin-bottom: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+  }
+  
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .analytics-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid;
+  }
+  
+  .analytics-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .analytics-card.my-expense {
+    border-left-color: #818cf8;
+  }
+  
+  .analytics-card.requested {
+    border-left-color: #10b981;
+  }
+  
+  .analytics-card.cash-in-hand {
+    border-left-color: #6366f1;
+  }
+  
+  .analytics-card.requisition {
+    border-left-color: #f59e0b;
+  }
+  
+  .analytics-content {
+    flex: 1;
+  }
+  
+  .analytics-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+  
+  .analytics-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  
+  .analytics-value.negative {
+    color: #ef4444;
+  }
+  
+  .analytics-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+  }
+  
+  .analytics-card.my-expense .analytics-icon {
+    background-color: rgba(129, 140, 248, 0.1);
+    color: #818cf8;
+  }
+  
+  .analytics-card.requested .analytics-icon {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+  
+  .analytics-card.cash-in-hand .analytics-icon {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+  }
+  
+  .analytics-card.requisition .analytics-icon {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+  }
+  
+  /* Warning Container */
+  .warning-container {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .warning-text {
+    color: #ef4444;
+    font-size: 1rem;
+    margin-right: 0.5rem;
+  }
+  
+  .info-button {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    background-color: #ef4444;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+  }
+  
+  /* Login Section */
+  .login-section {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .login-status-text {
+    font-size: 1.25rem;
+    color: #374151;
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+  
+  .login-button, .logout-button {
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    min-width: 150px;
+  }
+  
+  .login-button {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .logout-button {
+    background-color: #ef4444;
+    color: white;
+    margin-top: 1rem;
+  }
+  
+  .login-button:hover, .logout-button:hover {
+    opacity: 0.9;
+  }
+  
+  .login-button:disabled, .logout-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  /* Attendance Details */
+  .attendance-details {
+    margin-top: 1.5rem;
+  }
+  
+  .attendance-card {
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .attendance-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+  }
+  
+  .attendance-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  
+  .attendance-label {
+    font-weight: 500;
+    color: #4b5563;
+  }
+  
+  .attendance-value {
+    color: #6b7280;
+  }
+  
+  /* Location Section */
+  .location-section {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .location-details {
+    margin-left: 1.75rem;
+    color: #4b5563;
+  }
+  
+  /* Quote Section */
+  .quote-section {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .quote-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .quote-text {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #1f2937;
+    font-style: italic;
+    line-height: 1.75;
+    margin-bottom: 1rem;
+  }
+  
+  .quote-author {
+    font-size: 1rem;
+    color: #6366f1;
+    font-weight: 500;
+  }
+  
+  /* Loading States */
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Error States */
+  .error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  
+  .error-text {
+    color: #ef4444;
+    font-size: 1.125rem;
+    text-align: center;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .dashboard-container {
+      padding: 1rem;
+    }
+  
+    .welcome-banner {
+      flex-direction: column;
+      text-align: center;
+      padding: 1.5rem;
+    }
+  
+    .welcome-content {
+      padding-right: 0;
+      margin-bottom: 1.5rem;
+    }
+  
+    .welcome-image {
+      width: 100px;
+      height: 100px;
+    }
+  
+    .analytics-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .login-button, .logout-button {
+      width: 100%;
+    }
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .dashboard-container {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  /* Hover Effects */
+  .analytics-card, .attendance-card, .location-section, .quote-section {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .analytics-card:hover, .attendance-card:hover, .location-section:hover, .quote-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './loginpage.css';
 import logo from '../../assets/GM-Logo.png';
 import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+// import { useState } from 'react';
 
 export default function LoginWeb() {
   const [email, setEmail] = useState('');
@@ -11,6 +13,8 @@ export default function LoginWeb() {
   const [passwordError, setPasswordError] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const validateEmailOrPhone = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,7 +79,7 @@ export default function LoginWeb() {
           localStorage.setItem('userid', data.data.userid.toString());
           localStorage.setItem('roleId', data.data.role_id.toString());
           localStorage.setItem('currentLoginTime', Date.now().toString());
-          window.location.replace('/dashboard');
+          navigate('/dashboard');
         } else {
           setLoginError(data.message || 'Invalid email or password');
         }
