@@ -347,13 +347,21 @@
   border: none;
   padding: 12px;
   cursor: pointer;
-  font-size: 20px;
   color: #666;
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-eye-icon:hover {
   transform: scale(1.1);
+  color: #2962ff;
+}
+
+.login-eye-icon:focus {
+  outline: none;
+  color: #2962ff;
 }
 
 .login-button {

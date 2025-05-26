@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './loginpage.css';
 import logo from '../../assets/GM-Logo.png';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginWeb() {
   const [email, setEmail] = useState('');
@@ -137,8 +138,9 @@ export default function LoginWeb() {
                 className="login-eye-icon"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             {passwordError && <div className="login-error-text">{passwordError}</div>}
