@@ -71,10 +71,20 @@ export default function LoginWeb() {
 
   return (
     <div className="login-gradient-bg">
+      <div className="login-bg-shapes">
+        <div className="login-shape"></div>
+        <div className="login-shape"></div>
+        <div className="login-shape"></div>
+        <div className="login-shape"></div>
+        <div className="login-shape"></div>
+        <div className="login-shape"></div>
+        <div className="login-shape"></div>
+        <div className="login-shape"></div>
+      </div>
       <div className="login-overlay" />
       <div className="login-scroll">
         <div className="login-center">
-          <img src="/assets/images/GM-Logo.png" alt="Logo" className="login-logo" />
+          <img src="../src/assets/GM-Logo.png" alt="Logo" className="login-logo" />
           <h1 className="login-title">Welcome Back</h1>
           <form className="login-form" onSubmit={handleLogin} autoComplete="off">
             {loginError && <div className="login-error-text">{loginError}</div>}
@@ -90,7 +100,7 @@ export default function LoginWeb() {
               autoComplete="username"
             />
             {emailError && <div className="login-error-text">{emailError}</div>}
-            <div className={`login-password-container${passwordError ? ' login-input-error' : ''}`}> 
+            <div className={`login-password-container${passwordError ? ' login-input-error' : ''}`}>
               <input
                 className="login-password-input"
                 placeholder="Password"
