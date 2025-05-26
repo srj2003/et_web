@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './loginpage.css';
+import logo from '../../assets/GM-Logo.png';
 
 export default function LoginWeb() {
   const [email, setEmail] = useState('');
@@ -40,17 +41,33 @@ export default function LoginWeb() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginError(''); // Clear any previous errors
+
     const isEmailValid = validateEmailOrPhone(email);
     const isPasswordValid = validatePassword(password);
+
     if (isEmailValid && isPasswordValid) {
       setLoading(true);
       try {
         const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/login.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ u_identify: email, u_pass: password }),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            u_identify: email.trim(),
+            u_pass: password.trim()
+          }),
         });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
         const data = await response.json();
+        console.log('Login response:', data); // Debug log
+
         if (data.status === 'success') {
           setLoginError('');
           // Store user data in localStorage for web
@@ -62,6 +79,7 @@ export default function LoginWeb() {
           setLoginError(data.message || 'Invalid email or password');
         }
       } catch (error) {
+        console.error('Login error:', error); // Debug log
         setLoginError('Network error. Please try again.');
       } finally {
         setLoading(false);
@@ -84,7 +102,7 @@ export default function LoginWeb() {
       <div className="login-overlay" />
       <div className="login-scroll">
         <div className="login-center">
-          <img src="../src/assets/GM-Logo.png" alt="Logo" className="login-logo" />
+          <img src={logo} alt="Logo" className="login-logo" />
           <h1 className="login-title">Welcome Back</h1>
           <form className="login-form" onSubmit={handleLogin} autoComplete="off">
             {loginError && <div className="login-error-text">{loginError}</div>}
@@ -95,8 +113,9 @@ export default function LoginWeb() {
               value={email}
               onChange={e => {
                 setEmail(e.target.value);
-                if (emailError) validateEmailOrPhone(e.target.value);
+                validateEmailOrPhone(e.target.value);
               }}
+              onBlur={() => validateEmailOrPhone(email)}
               autoComplete="username"
             />
             {emailError && <div className="login-error-text">{emailError}</div>}
@@ -108,8 +127,9 @@ export default function LoginWeb() {
                 value={password}
                 onChange={e => {
                   setPassword(e.target.value);
-                  if (passwordError) validatePassword(e.target.value);
+                  validatePassword(e.target.value);
                 }}
+                onBlur={() => validatePassword(password)}
                 autoComplete="current-password"
               />
               <button
