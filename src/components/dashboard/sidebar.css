@@ -1,0 +1,211 @@
+.sidebar {
+  width: 280px;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a237e 0%, #0f172a 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  box-shadow: 2px 0 8px rgba(30, 41, 59, 0.07);
+  position: fixed;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Webkit scrollbar styling */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar-logo {
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  background: inherit;
+  z-index: 10;
+}
+
+.sidebar-logo img {
+  max-width: 180px;
+  height: auto;
+}
+
+.sidebar-logo span {
+  font-size: 2rem; /* Increased from 1.75rem */
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Increased from 0.5rem */
+}
+
+.menu-item {
+  margin-bottom: 0.5rem; /* Increased from 0.25rem */
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem; /* Increased padding */
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  border-radius: 0.75rem;
+  font-size: 1.25rem; /* Increased from 1.1rem */
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  gap: 1.25rem; /* Increased from 1rem */
+}
+
+.menu-icon {
+  min-width: 24px; /* Ensure icon has minimum width */
+}
+
+.menu-title {
+  flex: 1;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem; /* Explicitly set font size */
+}
+
+.menu-arrow {
+  color: rgba(255, 255, 255, 0.5);
+  transition: transform 0.2s ease;
+}
+
+.menu-item.open > .menu-link {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.menu-item.open > .menu-link .menu-arrow {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  list-style: none;
+  padding: 0.75rem 0 0.75rem 4rem; /* Increased padding */
+  margin: 0;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 0.75rem 0.75rem;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+}
+
+.submenu-item {
+  margin-bottom: 0.25rem;
+}
+
+.submenu-link {
+  display: block;
+  padding: 1rem 1.5rem; /* Increased padding */
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 1.15rem; /* Increased from 1rem */
+  font-weight: 400;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.submenu-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.menu-arrow.muted {
+  opacity: 0.5;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Active States */
+.menu-link.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.submenu-link.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 60px;
+    overflow-y: hidden;
+    overflow-x: auto;
+  }
+
+  .sidebar-logo {
+    display: none;
+  }
+
+  .sidebar-menu {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .menu-link {
+    padding: 0.875rem 1.25rem;
+    font-size: 1.1rem; /* Slightly smaller for mobile */
+  }
+
+  .menu-title {
+    display: none;
+  }
+
+  .menu-arrow {
+    display: none;
+  }
+
+  .submenu {
+    padding: 1rem;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #1a237e;
+    padding: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .submenu-link {
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+  }
+}
