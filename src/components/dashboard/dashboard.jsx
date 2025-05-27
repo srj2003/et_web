@@ -17,6 +17,7 @@ import {
   Wallet, 
   Receipt 
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className={`stat-card ${color}`}>
@@ -122,6 +123,7 @@ export default function DashboardWeb() {
   const [loadingQuote, setLoadingQuote] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [roleId, setRoleId] = useState(null);
+  const [attendanceStats, setAttendanceStats] = useState(null);
 
   const initialLoadDone = useRef(false);
 
@@ -300,11 +302,31 @@ export default function DashboardWeb() {
       );
 
       const result = await response.json();
+      console.log("Analytics API result:", result); // <-- Add this line
+
       if (result.status === 200) {
         setAnalytics(result.data);
       }
     } catch (error) {
       console.error("Error fetching analytics:", error);
+    }
+  }, []);
+
+  const fetchAttendanceStats = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userid");
+      if (!userId) return;
+
+      // Example endpoint, adjust as per your backend
+      const response = await fetch(
+        `https://demo-expense.geomaticxevs.in/ET-api/attendance_analytics.php?user_id=${userId}`
+      );
+      const result = await response.json();
+      if (result.status === 200) {
+        setAttendanceStats(result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching attendance stats:", error);
     }
   }, []);
 
@@ -331,12 +353,13 @@ export default function DashboardWeb() {
         fetchUserCount(),
         fetchQuote(),
         fetchAnalytics(),
+        fetchAttendanceStats(),
       ]);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
       setError("Failed to load dashboard data");
     }
-  }, [fetchUserData, fetchUserCount, fetchQuote, fetchAnalytics]);
+  }, [fetchUserData, fetchUserCount, fetchQuote, fetchAnalytics, fetchAttendanceStats]);
 
   useEffect(() => {
     if (!initialLoadDone.current) {
@@ -485,6 +508,84 @@ export default function DashboardWeb() {
     );
   };
 
+  // Choose an icon for each field (optional, can expand as needed)
+  const analyticsIcons = {
+    expense: <Wallet size={28} />,
+    expense_requests: <Receipt size={28} />,
+    cash_in_hand: <ClipboardList size={28} />,
+    requisition_requests: <FileCheck size={28} />,
+    // Add more mappings as needed
+  };
+
+  // Prepare cards for all numeric analytics fields
+  const analyticsCards = analytics
+    ? Object.entries(analytics)
+        .filter(([key, value]) => typeof value === "number")
+        .map(([key, value]) => (
+          <div className="analytics-generic-card" key={key}>
+            <div className="analytics-generic-icon">
+              {analyticsIcons[key] || <BarChart size={28} />}
+            </div>
+            <div className="analytics-generic-title">
+              {key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+            </div>
+            <div className="analytics-generic-value">
+              {typeof value === "number" ? value.toLocaleString() : value}
+            </div>
+          </div>
+        ))
+    : null;
+
+  // Prepare chart data for all numeric fields
+  const analyticsChartData = analytics
+    ? Object.entries(analytics)
+        .filter(([key, value]) => typeof value === "number")
+        .map(([key, value]) => ({
+          name: key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+          value,
+        }))
+    : [];
+
+  // Add this function to prepare data for charts
+  const prepareChartData = (analytics) => {
+    if (!analytics) return { pieData: [], barData: [] };
+
+    const pieData = [
+      {
+        name: 'Credit Amount',
+        value: analytics.cash_in_hand.details.credit_amount || 0,
+      },
+      {
+        name: 'Debit Amount',
+        value: analytics.cash_in_hand.details.debit_amount || 0,
+      },
+      {
+        name: 'Requisition Debit',
+        value: analytics.cash_in_hand.details.req_debit_amount || 0,
+      },
+    ];
+
+    const barData = [
+      {
+        name: 'Expenses',
+        value: analytics.monthly_analytics.expense || 0,
+      },
+      {
+        name: 'Expense Requests',
+        value: analytics.monthly_analytics.expense_requests || 0,
+      },
+      {
+        name: 'Requisition Requests',
+        value: analytics.monthly_analytics.requisition_requests || 0,
+      },
+    ];
+
+    return { pieData, barData };
+  };
+
+  // Add these colors for the pie chart
+  const COLORS = ['#6366f1', '#10b981', '#f59e0b'];
+
   if (loading || checkingAttendance) {
     return (
       <div className="loading-container">
@@ -614,7 +715,7 @@ export default function DashboardWeb() {
           {renderLoginSection()}
         </div>
 
-        <div className="location-section">
+        {/* <div className="location-section">
           <div className="section-header">
             <MapPin size={20} />
             <h2 className="section-title">Your Location</h2>
@@ -622,9 +723,107 @@ export default function DashboardWeb() {
           <div className="location-details">
             <p>{locationText}</p>
           </div>
-        </div>
+        </div> */}
 
         <QuoteSection quote={quote} loading={loadingQuote} />
+
+        {attendanceStats && (
+          <div className="dashboard-analytics-graph">
+            <h2 className="section-title">Attendance Overview</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={attendanceChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="attendance-stats-summary">
+              <div>Present: <b>{attendanceStats.present_days}</b></div>
+              <div>Absent: <b>{attendanceStats.absent_days}</b></div>
+              <div>Late: <b>{attendanceStats.late_days}</b></div>
+              <div>Half Days: <b>{attendanceStats.half_days}</b></div>
+              <div>Total Working Days: <b>{attendanceStats.total_working_days}</b></div>
+            </div>
+          </div>
+        )}
+
+        {analyticsCards && analyticsCards.length > 0 && (
+          <div className="analytics-cards-flex">
+            {analyticsCards}
+          </div>
+        )}
+
+        {analyticsChartData.length > 0 && (
+          <div className="dashboard-analytics-graph">
+            <h2 className="section-title">Analytics Overview</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={analyticsChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* New Charts Section */}
+        {analytics && (
+          <div className="analytics-charts-container">
+            {/* Bar Chart */}
+            <div className="dashboard-analytics-graph">
+              <h2 className="section-title">Monthly Analytics</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={prepareChartData(analytics).barData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} />
+                  <Legend />
+                  <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]}>
+                    {prepareChartData(analytics).barData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Pie Chart */}
+            <div className="dashboard-analytics-graph">
+              <h2 className="section-title">Cash Flow Distribution</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={prepareChartData(analytics).pieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value, percent }) => 
+                      `${name}: ₹${value.toLocaleString()} (${(percent * 100).toFixed(0)}%)`
+                    }
+                  >
+                    {prepareChartData(analytics).pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        
       </div>
     </div>
   );
