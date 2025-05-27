@@ -55,8 +55,8 @@ const menuItemsData = [
     title: "Expenses",
     icon: CreditCard,
     subItems: [
-      { id: "add_expenses", title: "Add Expenses", path: "/expenses/add" },
-      { id: "my_expenses", title: "My Expenses", path: "/expenses/my" },
+      { id: "add_expenses", title: "Add Expenses", path: "/expenses/addexpense" },
+      { id: "my_expenses", title: "My Expenses", path: "/expenses/myexpense" },
       { id: "all_expenses", title: "All Expenses", path: "/expenses/all" },
       { id: "manage_expenses", title: "Manage Expenses", path: "/expenses/manage" },
     ],

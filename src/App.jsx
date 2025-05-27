@@ -3,6 +3,9 @@ import './App.css';
 import LoginWeb from './components/loginpage/loginpage';
 import Layout from './components/layout/MainLayout';
 import Dashboard from './components/dashboard/dashboard';
+import AddExpense from './components/expenses/add_expense/add_expense';
+import MyExpense from './components/expenses/my_expense/my_expense'
+
 
 function App() {
   return (
@@ -17,8 +20,8 @@ function App() {
           <Route path="/leaves/my" element={<div>My Leaves Page</div>} />
           <Route path="/leaves/all" element={<div>All Leaves Page</div>} />
           <Route path="/leaves/manage" element={<div>Manage Leaves Page</div>} />
-          <Route path="/expenses/add" element={<div>Add Expense Page</div>} />
-          <Route path="/expenses/my" element={<div>My Expenses Page</div>} />
+          <Route path="/expenses/addexpense" element={<AddExpense/>} />
+          <Route path="/expenses/myexpense" element={<MyExpense/>} />
           <Route path="/expenses/all" element={<div>All Expenses Page</div>} />
           <Route path="/expenses/manage" element={<div>Manage Expenses Page</div>} />
           <Route path="/project/manage" element={<div>Manage Project Page</div>} />
