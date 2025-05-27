@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './all_expenses.css';
-import { Search, Filter, Calendar, ArrowRight, AlertCircle, Clock, Check, X } from 'lucide-react';
+import { Search, Filter, Calendar, ArrowRight, AlertCircle, Clock, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
 // import moment from 'moment';
 
 const AllExpensesWeb = () => {
@@ -15,6 +15,8 @@ const AllExpensesWeb = () => {
     const [endDate, setEndDate] = useState(null);
     const [selectedExpense, setSelectedExpense] = useState(null);
     const [showExpenseDetails, setShowExpenseDetails] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 16;
     const [stats, setStats] = useState({
         total: 0,
         pending: 0,
@@ -173,6 +175,18 @@ const AllExpensesWeb = () => {
         setShowFilterDropdown(false);
     };
 
+    // Calculate pagination
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredExpenses().slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredExpenses().length / itemsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        // Scroll to top when changing pages
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     if (loading && expenses.length === 0) {
         return (
             <div className="loading-container">
@@ -206,6 +220,7 @@ const AllExpensesWeb = () => {
 
     return (
         <div className="expenses-container">
+            <h1 className="page-title">All Expenses</h1>
             <div className="stats-grid">
                 <div className="stat-card">
                     <div className="stat-icon">
@@ -309,7 +324,7 @@ const AllExpensesWeb = () => {
             </div>
 
             <div className="expenses-grid">
-                {filteredExpenses().map((expense) => (
+                {currentItems.map((expense) => (
                     <div
                         key={expense.id}
                         className="expense-card"
@@ -348,6 +363,33 @@ const AllExpensesWeb = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="pagination-container">
+                    <button
+                        className="pagination-button"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeft size={20} />
+                        Previous
+                    </button>
+
+                    <div className="pagination-number">
+                        Page {currentPage} of {totalPages}
+                    </div>
+
+                    <button
+                        className="pagination-button"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
+            )}
 
             {showExpenseDetails && selectedExpense && (
                 <div className="modal-overlay">

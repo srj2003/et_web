@@ -57,7 +57,7 @@ const menuItemsData = [
     subItems: [
       { id: "add_expenses", title: "Add Expenses", path: "/expenses/addexpense" },
       { id: "my_expenses", title: "My Expenses", path: "/expenses/myexpense" },
-      { id: "all_expenses", title: "All Expenses", path: "/expenses/all" },
+      { id: "all_expenses", title: "All Expenses", path: "/expenses/allexpenses" },
       { id: "manage_expenses", title: "Manage Expenses", path: "/expenses/manage" },
     ],
   },

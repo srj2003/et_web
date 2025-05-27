@@ -1,14 +1,48 @@
 /* Main Container */
+
+:root {
+    --sidebar-width: 320px;
+}
+
 .expenses-container {
-    width: 100vw;
-    margin: 0;
+    width: calc(100% - var(--sidebar-width));
+    margin-left: var(--sidebar-width);
     padding: 2rem;
-    min-height: 100vh;
+    height: 100vh;
     font-family: 'Inter', 'Inter-SemiBold', sans-serif;
     background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     box-sizing: border-box;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Custom scrollbar for the main container */
+.expenses-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.expenses-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.expenses-container::-webkit-scrollbar-thumb {
+    background: #6366f1;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.expenses-container::-webkit-scrollbar-thumb:hover {
+    background: #4f46e5;
+}
+
+/* For Firefox */
+.expenses-container {
+    scrollbar-width: thin;
+    scrollbar-color: #6366f1 #f1f5f9;
 }
 
 .expenses-container>* {
@@ -808,10 +842,6 @@
     animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-
-
-
-
 .action-buttons {
     display: flex;
     gap: 0.5rem;
@@ -849,3 +879,75 @@
     filter: invert(33%) sepia(98%) saturate(1234%) hue-rotate(87deg) brightness(98%) contrast(101%);
 }
 
+/* Pagination */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.pagination-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 12px;
+    color: #475569;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-button:hover:not(:disabled) {
+    background: rgba(99, 102, 241, 0.05);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+}
+
+.pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-number {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 12px;
+    color: #475569;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* Responsive Pagination */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .pagination-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pagination-number {
+        width: 100%;
+        order: -1;
+    }
+}
