@@ -2,31 +2,62 @@
 .dashboard-main {
     flex: 1;
     min-height: 100vh;
-    margin-left: 330px; /* Adjusted for increased sidebar width */
-    transition: margin-left 0.3s ease;
+    margin-left: 300px; /* Match sidebar width */
+    padding: 0;
     font-family: 'Inter', 'Inter-SemiBold', sans-serif;
-  }
-  
-  @media (max-width: 900px) {
-    .dashboard-main {
-      margin-left: 0;
-      margin-top: 60px; /* Height of mobile sidebar */
-    }
-  }
-  
-  /* Dashboard Container */
-  .dashboard-container {
-    min-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #6366f1 #f1f5f9;
+    position: relative;
+    transition: margin-left 0.3s ease;
+}
+
+/* Custom scrollbar for Webkit browsers */
+.dashboard-main::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dashboard-main::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.dashboard-main::-webkit-scrollbar-thumb {
+    background: #6366f1;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.dashboard-main::-webkit-scrollbar-thumb:hover {
+    background: #4f46e5;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    min-height: 100%;
     background-color: #f8fafc;
     padding: 2rem;
-  }
-  
-  /* Header Section */
-  .dashboard-header {
+    overflow-x: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .dashboard-main {
+        margin-left: 0;
+        margin-top: 60px; /* Height of mobile sidebar */
+    }
+    
+    .dashboard-container {
+        padding: 1rem;
+    }
+}
+
+/* Header Section */
+.dashboard-header {
     margin-bottom: 2rem;
-  }
-  
-  .welcome-banner {
+}
+
+.welcome-banner {
     background: linear-gradient(135deg, #1a237e 0%,#0f172a 100%);
     border-radius: 1rem;
     padding: 2rem;
@@ -35,61 +66,61 @@
     align-items: center;
     color: white;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  
-  .welcome-content {
+}
+
+.welcome-content {
     flex: 1;
     padding-right: 2rem;
-  }
-  
-  .welcome-text {
+}
+
+.welcome-text {
     font-size: 1.25rem;
     color: rgba(255, 255, 255, 0.9);
     margin-bottom: 0.5rem;
-  }
-  
-  .name-text {
+}
+
+.name-text {
     font-size: 2rem;
     font-family: 'Inter', 'Inter-SemiBold', sans-serif;
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: white;
-  }
-  
-  .role-text {
+}
+
+.role-text {
     font-size: 1rem;
     font-family: 'Inter', 'Inter-SemiBold', sans-serif;
     color: #6366f1;
     font-weight: 500;
-  }
-  
-  .welcome-image {
+}
+
+.welcome-image {
     width: 120px;
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid rgba(255, 255, 255, 0.2);
-  }
-  
-  /* Analytics Section */
-  .analytics-section {
+}
+
+/* Analytics Section */
+.analytics-section {
     margin-bottom: 2rem;
-  }
-  
-  .section-title {
+}
+
+.section-title {
     font-size: 1.5rem;
     font-weight: 600;
     color: #1f2937;
     margin-bottom: 1.5rem;
-  }
-  
-  .analytics-grid {
+}
+
+.analytics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
-  }
-  
-  .analytics-card {
+}
+
+.analytics-card {
     background: white;
     border-radius: 1rem;
     padding: 1.5rem;
@@ -99,50 +130,50 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s, box-shadow 0.2s;
     border-left: 4px solid;
-  }
-  
-  .analytics-card:hover {
+}
+
+.analytics-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  
-  .analytics-card.my-expense {
+}
+
+.analytics-card.my-expense {
     border-left-color: #818cf8;
-  }
-  
-  .analytics-card.requested {
+}
+
+.analytics-card.requested {
     border-left-color: #10b981;
-  }
-  
-  .analytics-card.cash-in-hand {
+}
+
+.analytics-card.cash-in-hand {
     border-left-color: #6366f1;
-  }
-  
-  .analytics-card.requisition {
+}
+
+.analytics-card.requisition {
     border-left-color: #f59e0b;
-  }
-  
-  .analytics-content {
+}
+
+.analytics-content {
     flex: 1;
-  }
-  
-  .analytics-label {
+}
+
+.analytics-label {
     font-size: 0.875rem;
     color: #6b7280;
     margin-bottom: 0.5rem;
-  }
-  
-  .analytics-value {
+}
+
+.analytics-value {
     font-size: 1.5rem;
     font-weight: 600;
     color: #1f2937;
-  }
-  
-  .analytics-value.negative {
+}
+
+.analytics-value.negative {
     color: #ef4444;
-  }
-  
-  .analytics-icon {
+}
+
+.analytics-icon {
     width: 48px;
     height: 48px;
     border-radius: 12px;
@@ -150,30 +181,30 @@
     align-items: center;
     justify-content: center;
     margin-left: 1rem;
-  }
-  
-  .analytics-card.my-expense .analytics-icon {
+}
+
+.analytics-card.my-expense .analytics-icon {
     background-color: rgba(129, 140, 248, 0.1);
     color: #818cf8;
-  }
-  
-  .analytics-card.requested .analytics-icon {
+}
+
+.analytics-card.requested .analytics-icon {
     background-color: rgba(16, 185, 129, 0.1);
     color: #10b981;
-  }
-  
-  .analytics-card.cash-in-hand .analytics-icon {
+}
+
+.analytics-card.cash-in-hand .analytics-icon {
     background-color: rgba(99, 102, 241, 0.1);
     color: #6366f1;
-  }
-  
-  .analytics-card.requisition .analytics-icon {
+}
+
+.analytics-card.requisition .analytics-icon {
     background-color: rgba(245, 158, 11, 0.1);
     color: #f59e0b;
-  }
-  
-  /* Warning Container */
-  .warning-container {
+}
+
+/* Warning Container */
+.warning-container {
     background-color: #fef2f2;
     border: 1px solid #fecaca;
     border-radius: 0.5rem;
@@ -182,15 +213,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  
-  .warning-text {
+}
+
+.warning-text {
     color: #ef4444;
     font-size: 1rem;
     margin-right: 0.5rem;
-  }
-  
-  .info-button {
+}
+
+.info-button {
     width: 24px;
     height: 24px;
     border-radius: 12px;
@@ -203,8 +234,8 @@
     font-weight: bold;
     cursor: pointer;
     border: none;
-  }
-  
+}
+
 /* Login Section */
 .login-section {
   background: white; /* */

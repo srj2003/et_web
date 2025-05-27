@@ -108,8 +108,6 @@ const Sidebar = () => {
       <div className="sidebar-logo">
         {/* Replace with your actual logo. You might need to adjust styling. */}
         <img src={logoUrl} alt="Geomaticx Logo" onError={(e) => e.target.style.display='none'} />
-        {/* Fallback text if image fails or for initial setup */}
-        {!logoUrl.startsWith("/path/to/your") && <span>GEOMATICX</span>}
       </div>
       <ul className="sidebar-menu">
         {menuItemsData.map((item) => {

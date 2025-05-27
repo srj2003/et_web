@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './dashboard.css';
-import Sidebar from './Sidebar';
-import './sidebar.css';
 import { 
   Bell, 
   Search, 
@@ -489,26 +487,16 @@ export default function DashboardWeb() {
 
   if (loading || checkingAttendance) {
     return (
-      <div style={{ display: "flex" }}>
-        <Sidebar />
-        <div style={{ flex: 1 }}>
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-          </div>
-        </div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={{ display: "flex" }}>
-        <Sidebar />
-        <div style={{ flex: 1 }}>
-          <div className="error-container">
-            <p className="error-text">{error}</p>
-          </div>
-        </div>
+      <div className="error-container">
+        <p className="error-text">{error}</p>
       </div>
     );
   }
@@ -521,125 +509,122 @@ export default function DashboardWeb() {
   }
 
   return (
-    <div style={{ display: "flex" }}>
-      <Sidebar />
-      <div className="dashboard-main">
-        <div className="dashboard-container">
-          <div className="dashboard-header">
-            <div className="welcome-banner">
-              <div className="welcome-content">
-                <h2 className="welcome-text">Welcome back,</h2>
-                {userData ? (
-                  <>
-                    <h1 className="name-text">
-                      {`${userData.u_fname}${
-                        userData.u_mname ? ` ${userData.u_mname} ` : " "
-                      }${userData.u_lname}`}
-                    </h1>
-                    <p className="role-text">{userData.role_name}</p>
-                  </>
-                ) : (
-                  <h1 className="name-text">User</h1>
-                )}
-              </div>
-              <img
-                src={userData?.u_pro_img || "/assets/images/default_profile.png"}
-                alt="Profile"
-                className="welcome-image"
-              />
+    <div className="dashboard-main">
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+          <div className="welcome-banner">
+            <div className="welcome-content">
+              <h2 className="welcome-text">Welcome back,</h2>
+              {userData ? (
+                <>
+                  <h1 className="name-text">
+                    {`${userData.u_fname}${
+                      userData.u_mname ? ` ${userData.u_mname} ` : " "
+                    }${userData.u_lname}`}
+                  </h1>
+                  <p className="role-text">{userData.role_name}</p>
+                </>
+              ) : (
+                <h1 className="name-text">User</h1>
+              )}
             </div>
+            <img
+              src={userData?.u_pro_img || "/assets/images/default_profile.png"}
+              alt="Profile"
+              className="welcome-image"
+            />
           </div>
+        </div>
 
-          <div className="analytics-section">
-            <h2 className="section-title">Your Expense Overview</h2>
-            <div className="analytics-grid">
-              <div className="analytics-card my-expense">
+        <div className="analytics-section">
+          <h2 className="section-title">Your Expense Overview</h2>
+          <div className="analytics-grid">
+            <div className="analytics-card my-expense">
+              <div className="analytics-content">
+                <h3 className="analytics-label">My Expenses</h3>
+                <p className={`analytics-value ${(analytics?.monthly_analytics?.expense ?? 0) < 0 ? 'negative' : ''}`}>
+                  ₹{(analytics?.monthly_analytics?.expense ?? 0).toLocaleString()}
+                </p>
+              </div>
+              <div className="analytics-icon">
+                <Wallet size={24} />
+              </div>
+            </div>
+
+            {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
+              <div className="analytics-card requested">
                 <div className="analytics-content">
-                  <h3 className="analytics-label">My Expenses</h3>
-                  <p className={`analytics-value ${(analytics?.monthly_analytics?.expense ?? 0) < 0 ? 'negative' : ''}`}>
-                    ₹{(analytics?.monthly_analytics?.expense ?? 0).toLocaleString()}
+                  <h3 className="analytics-label">Requested Expenses</h3>
+                  <p className={`analytics-value ${(analytics?.monthly_analytics?.expense_requests ?? 0) < 0 ? 'negative' : ''}`}>
+                    ₹{(analytics?.monthly_analytics?.expense_requests ?? 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="analytics-icon">
-                  <Wallet size={24} />
+                  <Receipt size={24} />
                 </div>
               </div>
+            )}
 
-              {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
-                <div className="analytics-card requested">
-                  <div className="analytics-content">
-                    <h3 className="analytics-label">Requested Expenses</h3>
-                    <p className={`analytics-value ${(analytics?.monthly_analytics?.expense_requests ?? 0) < 0 ? 'negative' : ''}`}>
-                      ₹{(analytics?.monthly_analytics?.expense_requests ?? 0).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="analytics-icon">
-                    <Receipt size={24} />
-                  </div>
+            {roleId !== "8" && (
+              <div className="analytics-card cash-in-hand">
+                <div className="analytics-content">
+                  <h3 className="analytics-label">Cash in Hand</h3>
+                  <p className={`analytics-value ${(analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0 ? 'negative' : ''}`}>
+                    ₹{(analytics?.cash_in_hand?.cash_in_hand ?? 0).toLocaleString()}
+                  </p>
                 </div>
-              )}
-
-              {roleId !== "8" && (
-                <div className="analytics-card cash-in-hand">
-                  <div className="analytics-content">
-                    <h3 className="analytics-label">Cash in Hand</h3>
-                    <p className={`analytics-value ${(analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0 ? 'negative' : ''}`}>
-                      ₹{(analytics?.cash_in_hand?.cash_in_hand ?? 0).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="analytics-icon">
-                    <ClipboardList size={24} />
-                  </div>
+                <div className="analytics-icon">
+                  <ClipboardList size={24} />
                 </div>
-              )}
+              </div>
+            )}
 
-              {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
-                <div className="analytics-card requisition">
-                  <div className="analytics-content">
-                    <h3 className="analytics-label">Requested Requisition</h3>
-                    <p className={`analytics-value ${(analytics?.monthly_analytics?.requisition_requests ?? 0) < 0 ? 'negative' : ''}`}>
-                      ₹{(analytics?.monthly_analytics?.requisition_requests ?? 0).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="analytics-icon">
-                    <FileCheck size={24} />
-                  </div>
+            {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
+              <div className="analytics-card requisition">
+                <div className="analytics-content">
+                  <h3 className="analytics-label">Requested Requisition</h3>
+                  <p className={`analytics-value ${(analytics?.monthly_analytics?.requisition_requests ?? 0) < 0 ? 'negative' : ''}`}>
+                    ₹{(analytics?.monthly_analytics?.requisition_requests ?? 0).toLocaleString()}
+                  </p>
                 </div>
-              )}
-            </div>
+                <div className="analytics-icon">
+                  <FileCheck size={24} />
+                </div>
+              </div>
+            )}
           </div>
-
-          {userData && userData.not_logged_out_count > 0 && (
-            <div className="warning-container">
-              <p className="warning-text">
-                Warning: you have not logged out for {userData.not_logged_out_count} day
-                {userData.not_logged_out_count > 1 ? "s" : ""}
-              </p>
-              <button
-                className="info-button"
-                onClick={() => alert("If not logged out for 3 consecutive days, the user will be marked absent on the 3rd day")}
-              >
-                i
-              </button>
-            </div>
-          )}
-
-          <div className="login-section">
-            {renderLoginSection()}
-          </div>
-
-          <div className="location-section">
-            <div className="section-header">
-              <MapPin size={20} />
-              <h2 className="section-title">Your Location</h2>
-            </div>
-            <div className="location-details">
-              <p>{locationText}</p>
-            </div>
-          </div>
-
-          <QuoteSection quote={quote} loading={loadingQuote} />
         </div>
+
+        {userData && userData.not_logged_out_count > 0 && (
+          <div className="warning-container">
+            <p className="warning-text">
+              Warning: you have not logged out for {userData.not_logged_out_count} day
+              {userData.not_logged_out_count > 1 ? "s" : ""}
+            </p>
+            <button
+              className="info-button"
+              onClick={() => alert("If not logged out for 3 consecutive days, the user will be marked absent on the 3rd day")}
+            >
+              i
+            </button>
+          </div>
+        )}
+
+        <div className="login-section">
+          {renderLoginSection()}
+        </div>
+
+        <div className="location-section">
+          <div className="section-header">
+            <MapPin size={20} />
+            <h2 className="section-title">Your Location</h2>
+          </div>
+          <div className="location-details">
+            <p>{locationText}</p>
+          </div>
+        </div>
+
+        <QuoteSection quote={quote} loading={loadingQuote} />
       </div>
     </div>
   );
