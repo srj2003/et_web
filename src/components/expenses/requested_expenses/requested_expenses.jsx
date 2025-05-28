@@ -266,6 +266,7 @@ const ManageExpenseWeb = () => {
 
     return (
         <div className="expenses-container">
+            <h1 className="page-title">Requested Expenses</h1>
             <div className="stats-grid">
                 <div className="stat-card">
                     <div className="stat-icon">
