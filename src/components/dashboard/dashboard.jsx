@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './dashboard.css';
-import Sidebar from './Sidebar';
-import './sidebar.css';
 import { 
   Bell, 
   Search, 
@@ -19,6 +17,7 @@ import {
   Wallet, 
   Receipt 
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className={`stat-card ${color}`}>
@@ -105,6 +104,153 @@ const QuoteSection = ({ quote, loading }) => (
   </div>
 );
 
+const FinancialCharts = ({ analytics }) => {
+  // Prepare data from analytics
+  const monthlyData = [
+    {
+      name: 'Expenses',
+      value: analytics?.monthly_analytics?.expense || 0,
+      color: '#818cf8'
+    },
+    {
+      name: 'Expense Requests',
+      value: analytics?.monthly_analytics?.expense_requests || 0,
+      color: '#10b981'
+    },
+    {
+      name: 'Requisition Requests',
+      value: analytics?.monthly_analytics?.requisition_requests || 0,
+      color: '#f59e0b'
+    }
+  ];
+
+  const cashFlowData = [
+    {
+      name: 'Credit Amount',
+      value: analytics?.cash_in_hand?.details?.credit_amount || 0,
+      color: '#4338ca'
+    },
+    {
+      name: 'Debit Amount',
+      value: analytics?.cash_in_hand?.details?.debit_amount || 0,
+      color: '#ef4444'
+    },
+    {
+      name: 'Requisition Debit',
+      value: analytics?.cash_in_hand?.details?.req_debit_amount || 0,
+      color: '#f59e0b'
+    }
+  ];
+
+  return (
+    <div className="charts-section">
+      <h2 className="section-title">Financial Overview</h2>
+      <div className="charts-grid">
+        {/* Monthly Analytics Chart */}
+        <div className="chart-card">
+          <h3 className="chart-title">Monthly Analytics</h3>
+          <div className="chart-header">
+            <div className="chart-legend">
+              {monthlyData.map((item) => (
+                <div key={item.name} className="legend-item">
+                  <span 
+                    className="legend-color" 
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span>{item.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false}
+                tickLine={false}
+                fontSize={12}
+              />
+              <YAxis 
+                axisLine={false}
+                tickLine={false}
+                fontSize={12}
+                tickFormatter={(value) => `₹${value.toLocaleString()}`}
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="chart-tooltip">
+                        <p className="tooltip-title">{payload[0].payload.name}</p>
+                        <p className="tooltip-value">₹{payload[0].value.toLocaleString()}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {monthlyData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Cash Flow Distribution Chart */}
+        <div className="chart-card">
+          <h3 className="chart-title">Cash Flow Distribution</h3>
+          <div className="chart-header">
+            <div className="chart-legend">
+              {cashFlowData.map((item) => (
+                <div key={item.name} className="legend-item">
+                  <span 
+                    className="legend-color" 
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span>{item.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={cashFlowData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={100}
+                dataKey="value"
+                label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+              >
+                {cashFlowData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="chart-tooltip">
+                        <p className="tooltip-title">{payload[0].payload.name}</p>
+                        <p className="tooltip-value">₹{payload[0].value.toLocaleString()}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DashboardWeb() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -124,6 +270,7 @@ export default function DashboardWeb() {
   const [loadingQuote, setLoadingQuote] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [roleId, setRoleId] = useState(null);
+  const [attendanceStats, setAttendanceStats] = useState(null);
 
   const initialLoadDone = useRef(false);
 
@@ -302,11 +449,31 @@ export default function DashboardWeb() {
       );
 
       const result = await response.json();
+      console.log("Analytics API result:", result); // <-- Add this line
+
       if (result.status === 200) {
         setAnalytics(result.data);
       }
     } catch (error) {
       console.error("Error fetching analytics:", error);
+    }
+  }, []);
+
+  const fetchAttendanceStats = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userid");
+      if (!userId) return;
+
+      // Example endpoint, adjust as per your backend
+      const response = await fetch(
+        `https://demo-expense.geomaticxevs.in/ET-api/attendance_analytics.php?user_id=${userId}`
+      );
+      const result = await response.json();
+      if (result.status === 200) {
+        setAttendanceStats(result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching attendance stats:", error);
     }
   }, []);
 
@@ -333,12 +500,13 @@ export default function DashboardWeb() {
         fetchUserCount(),
         fetchQuote(),
         fetchAnalytics(),
+        fetchAttendanceStats(),
       ]);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
       setError("Failed to load dashboard data");
     }
-  }, [fetchUserData, fetchUserCount, fetchQuote, fetchAnalytics]);
+  }, [fetchUserData, fetchUserCount, fetchQuote, fetchAnalytics, fetchAttendanceStats]);
 
   useEffect(() => {
     if (!initialLoadDone.current) {
@@ -487,28 +655,96 @@ export default function DashboardWeb() {
     );
   };
 
+  // Choose an icon for each field (optional, can expand as needed)
+  const analyticsIcons = {
+    expense: <Wallet size={28} />,
+    expense_requests: <Receipt size={28} />,
+    cash_in_hand: <ClipboardList size={28} />,
+    requisition_requests: <FileCheck size={28} />,
+    // Add more mappings as needed
+  };
+
+  // Prepare cards for all numeric analytics fields
+  const analyticsCards = analytics
+    ? Object.entries(analytics)
+        .filter(([key, value]) => typeof value === "number")
+        .map(([key, value]) => (
+          <div className="analytics-generic-card" key={key}>
+            <div className="analytics-generic-icon">
+              {analyticsIcons[key] || <BarChart size={28} />}
+            </div>
+            <div className="analytics-generic-title">
+              {key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+            </div>
+            <div className="analytics-generic-value">
+              {typeof value === "number" ? value.toLocaleString() : value}
+            </div>
+          </div>
+        ))
+    : null;
+
+  // Prepare chart data for all numeric fields
+  const analyticsChartData = analytics
+    ? Object.entries(analytics)
+        .filter(([key, value]) => typeof value === "number")
+        .map(([key, value]) => ({
+          name: key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+          value,
+        }))
+    : [];
+
+  // Add this function to prepare data for charts
+  const prepareChartData = (analytics) => {
+    if (!analytics) return { pieData: [], barData: [] };
+
+    const pieData = [
+      {
+        name: 'Credit Amount',
+        value: analytics.cash_in_hand.details.credit_amount || 0,
+      },
+      {
+        name: 'Debit Amount',
+        value: analytics.cash_in_hand.details.debit_amount || 0,
+      },
+      {
+        name: 'Requisition Debit',
+        value: analytics.cash_in_hand.details.req_debit_amount || 0,
+      },
+    ];
+
+    const barData = [
+      {
+        name: 'Expenses',
+        value: analytics.monthly_analytics.expense || 0,
+      },
+      {
+        name: 'Expense Requests',
+        value: analytics.monthly_analytics.expense_requests || 0,
+      },
+      {
+        name: 'Requisition Requests',
+        value: analytics.monthly_analytics.requisition_requests || 0,
+      },
+    ];
+
+    return { pieData, barData };
+  };
+
+  // Add these colors for the pie chart
+  const COLORS = ['#6366f1', '#10b981', '#f59e0b'];
+
   if (loading || checkingAttendance) {
     return (
-      <div style={{ display: "flex" }}>
-        <Sidebar />
-        <div style={{ flex: 1 }}>
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-          </div>
-        </div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={{ display: "flex" }}>
-        <Sidebar />
-        <div style={{ flex: 1 }}>
-          <div className="error-container">
-            <p className="error-text">{error}</p>
-          </div>
-        </div>
+      <div className="error-container">
+        <p className="error-text">{error}</p>
       </div>
     );
   }
@@ -521,125 +757,173 @@ export default function DashboardWeb() {
   }
 
   return (
-    <div style={{ display: "flex" }}>
-      <Sidebar />
-      <div className="dashboard-main">
-        <div className="dashboard-container">
-          <div className="dashboard-header">
-            <div className="welcome-banner">
-              <div className="welcome-content">
-                <h2 className="welcome-text">Welcome back,</h2>
-                {userData ? (
-                  <>
-                    <h1 className="name-text">
-                      {`${userData.u_fname}${
-                        userData.u_mname ? ` ${userData.u_mname} ` : " "
-                      }${userData.u_lname}`}
-                    </h1>
-                    <p className="role-text">{userData.role_name}</p>
-                  </>
-                ) : (
-                  <h1 className="name-text">User</h1>
-                )}
-              </div>
-              <img
-                src={userData?.u_pro_img || "/assets/images/default_profile.png"}
-                alt="Profile"
-                className="welcome-image"
-              />
+    <div className="dashboard-main">
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+          <div className="welcome-banner">
+            <div className="welcome-content">
+              <h2 className="welcome-text">Welcome back,</h2>
+              {userData ? (
+                <>
+                  <h1 className="name-text">
+                    {`${userData.u_fname}${
+                      userData.u_mname ? ` ${userData.u_mname} ` : " "
+                    }${userData.u_lname}`}
+                  </h1>
+                  <p className="role-text">{userData.role_name}</p>
+                </>
+              ) : (
+                <h1 className="name-text">User</h1>
+              )}
             </div>
+            <img
+              src={userData?.u_pro_img || "/assets/images/default_profile.png"}
+              alt="Profile"
+              className="welcome-image"
+            />
           </div>
+        </div>
 
-          <div className="analytics-section">
-            <h2 className="section-title">Your Expense Overview</h2>
-            <div className="analytics-grid">
-              <div className="analytics-card my-expense">
+        <div className="analytics-section">
+          <h2 className="section-title">Your Expense Overview</h2>
+          <div className="analytics-grid">
+            <div className="analytics-card my-expense">
+              <div className="analytics-content">
+                <h3 className="analytics-label">My Expenses</h3>
+                <p className={`analytics-value ${(analytics?.monthly_analytics?.expense ?? 0) < 0 ? 'negative' : ''}`}>
+                  ₹{(analytics?.monthly_analytics?.expense ?? 0).toLocaleString()}
+                </p>
+              </div>
+              <div className="analytics-icon">
+                <Wallet size={24} />
+              </div>
+            </div>
+
+            {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
+              <div className="analytics-card requested">
                 <div className="analytics-content">
-                  <h3 className="analytics-label">My Expenses</h3>
-                  <p className={`analytics-value ${(analytics?.monthly_analytics?.expense ?? 0) < 0 ? 'negative' : ''}`}>
-                    ₹{(analytics?.monthly_analytics?.expense ?? 0).toLocaleString()}
+                  <h3 className="analytics-label">Requested Expenses</h3>
+                  <p className={`analytics-value ${(analytics?.monthly_analytics?.expense_requests ?? 0) < 0 ? 'negative' : ''}`}>
+                    ₹{(analytics?.monthly_analytics?.expense_requests ?? 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="analytics-icon">
-                  <Wallet size={24} />
+                  <Receipt size={24} />
                 </div>
               </div>
+            )}
 
-              {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
-                <div className="analytics-card requested">
-                  <div className="analytics-content">
-                    <h3 className="analytics-label">Requested Expenses</h3>
-                    <p className={`analytics-value ${(analytics?.monthly_analytics?.expense_requests ?? 0) < 0 ? 'negative' : ''}`}>
-                      ₹{(analytics?.monthly_analytics?.expense_requests ?? 0).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="analytics-icon">
-                    <Receipt size={24} />
-                  </div>
+            {roleId !== "8" && (
+              <div className="analytics-card cash-in-hand">
+                <div className="analytics-content">
+                  <h3 className="analytics-label">Cash in Hand</h3>
+                  <p className={`analytics-value ${(analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0 ? 'negative' : ''}`}>
+                    ₹{(analytics?.cash_in_hand?.cash_in_hand ?? 0).toLocaleString()}
+                  </p>
                 </div>
-              )}
-
-              {roleId !== "8" && (
-                <div className="analytics-card cash-in-hand">
-                  <div className="analytics-content">
-                    <h3 className="analytics-label">Cash in Hand</h3>
-                    <p className={`analytics-value ${(analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0 ? 'negative' : ''}`}>
-                      ₹{(analytics?.cash_in_hand?.cash_in_hand ?? 0).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="analytics-icon">
-                    <ClipboardList size={24} />
-                  </div>
+                <div className="analytics-icon">
+                  <ClipboardList size={24} />
                 </div>
-              )}
+              </div>
+            )}
 
-              {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
-                <div className="analytics-card requisition">
-                  <div className="analytics-content">
-                    <h3 className="analytics-label">Requested Requisition</h3>
-                    <p className={`analytics-value ${(analytics?.monthly_analytics?.requisition_requests ?? 0) < 0 ? 'negative' : ''}`}>
-                      ₹{(analytics?.monthly_analytics?.requisition_requests ?? 0).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="analytics-icon">
-                    <FileCheck size={24} />
-                  </div>
+            {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
+              <div className="analytics-card requisition">
+                <div className="analytics-content">
+                  <h3 className="analytics-label">Requested Requisition</h3>
+                  <p className={`analytics-value ${(analytics?.monthly_analytics?.requisition_requests ?? 0) < 0 ? 'negative' : ''}`}>
+                    ₹{(analytics?.monthly_analytics?.requisition_requests ?? 0).toLocaleString()}
+                  </p>
                 </div>
-              )}
-            </div>
+                <div className="analytics-icon">
+                  <FileCheck size={24} />
+                </div>
+              </div>
+            )}
           </div>
-
-          {userData && userData.not_logged_out_count > 0 && (
-            <div className="warning-container">
-              <p className="warning-text">
-                Warning: you have not logged out for {userData.not_logged_out_count} day
-                {userData.not_logged_out_count > 1 ? "s" : ""}
-              </p>
-              <button
-                className="info-button"
-                onClick={() => alert("If not logged out for 3 consecutive days, the user will be marked absent on the 3rd day")}
-              >
-                i
-              </button>
-            </div>
-          )}
-
-          <div className="login-section">
-            {renderLoginSection()}
-          </div>
-
-          <div className="location-section">
-            <div className="section-header">
-              <MapPin size={20} />
-              <h2 className="section-title">Your Location</h2>
-            </div>
-            <div className="location-details">
-              <p>{locationText}</p>
-            </div>
-          </div>
-
-          <QuoteSection quote={quote} loading={loadingQuote} />
         </div>
+
+        {userData && userData.not_logged_out_count > 0 && (
+          <div className="warning-container">
+            <p className="warning-text">
+              Warning: you have not logged out for {userData.not_logged_out_count} day
+              {userData.not_logged_out_count > 1 ? "s" : ""}
+            </p>
+            <button
+              className="info-button"
+              onClick={() => alert("If not logged out for 3 consecutive days, the user will be marked absent on the 3rd day")}
+            >
+              i
+            </button>
+          </div>
+        )}
+
+        <div className="login-section">
+          {renderLoginSection()}
+        </div>
+
+        {/* <div className="location-section">
+          <div className="section-header">
+            <MapPin size={20} />
+            <h2 className="section-title">Your Location</h2>
+          </div>
+          <div className="location-details">
+            <p>{locationText}</p>
+          </div>
+        </div> */}
+        
+
+        <QuoteSection quote={quote} loading={loadingQuote} />
+
+        {/* {attendanceStats && (
+          <div className="dashboard-analytics-graph">
+            <h2 className="section-title">Attendance Overview</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={attendanceChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="attendance-stats-summary">
+              <div>Present: <b>{attendanceStats.present_days}</b></div>
+              <div>Absent: <b>{attendanceStats.absent_days}</b></div>
+              <div>Late: <b>{attendanceStats.late_days}</b></div>
+              <div>Half Days: <b>{attendanceStats.half_days}</b></div>
+              <div>Total Working Days: <b>{attendanceStats.total_working_days}</b></div>
+            </div>
+          </div>
+        )}
+
+        {analyticsCards && analyticsCards.length > 0 && (
+          <div className="analytics-cards-flex">
+            {analyticsCards}
+          </div>
+        )}
+
+        {analyticsChartData.length > 0 && (
+          <div className="dashboard-analytics-graph">
+            <h2 className="section-title">Analytics Overview</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={analyticsChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )} */}
+
+        
+
+        {/* Add this after your existing analytics section */}
+        <FinancialCharts analytics={analytics} />
       </div>
     </div>
   );
