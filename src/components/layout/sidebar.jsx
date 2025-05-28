@@ -21,15 +21,15 @@ import "./sidebar.css"; // We will create/update this CSS file
 const logoUrl = "src/assets/GM-Logo.png"; // Example path, or import if using build system
 
 const menuItemsData = [
-  {
-    id: "dashboard",
-    title: "Dashboard",
-    icon: Home,
-    path: "/dashboard",
-  },
+  // {
+  //   id: "dashboard",
+  //   title: "Dashboard",
+  //   icon: Home,
+  //   path: "/dashboard",
+  // },
   {
     id: "attendance",
-    title: "Attendance",
+    title: "Attendances",
     icon: CalendarCheck,
     subItems: [
       { id: "my_attendance", title: "My Attendance", path: "/attendance/my" },
@@ -52,15 +52,15 @@ const menuItemsData = [
     title: "Expenses",
     icon: CreditCard,
     subItems: [
-      { id: "add_expenses", title: "Add Expenses", path: "/expenses/add" },
-      { id: "my_expenses", title: "My Expenses", path: "/expenses/my" },
+      { id: "add_expenses", title: "Add Expenses", path: "/expenses/addexpense" },
+      { id: "my_expenses", title: "My Expenses", path: "/expenses/myexpense" },
       { id: "all_expenses", title: "All Expenses", path: "/expenses/all" },
-      { id: "manage_expenses", title: "Manage Expenses", path: "/expenses/manage" },
+      { id: "manage_expenses", title: "Manage Expenses", path: "/expenses/requestedexpenses" },
     ],
   },
   {
     id: "project",
-    title: "Project",
+    title: "Projects",
     icon: KanbanSquare, // Using KanbanSquare as per image style for project management
     subItems: [
       { id: "manage_project_expense", title: "Manage Project & Expense", path: "/project/manage" },
@@ -68,7 +68,7 @@ const menuItemsData = [
   },
   {
     id: "requisition",
-    title: "Requisition",
+    title: "Requisitions",
     icon: ClipboardPaste,
     subItems: [
       { id: "add_requisition", title: "Add Requisition", path: "/requisition/add" },

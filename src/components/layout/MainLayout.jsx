@@ -1,27 +1,21 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './sidebar';
+import Navbar from './navbar';
+// import './MainLayout.css';
 
-const Layout = () => {
+const MainLayout = () => {
   return (
-    <div style={{
-      display: 'flex',
-      height: '100vh',
-      overflow: 'hidden',
-      position: 'relative'
-    }}>
+    <div className="main-layout">
       <Sidebar />
-      <div style={{
-        flex: 1,
-        overflow: 'auto',
-        height: '100vh',
-        position: 'relative',
-        // marginLeft: '320px' // Match sidebar width
-      }}>
-        <Outlet />
+      <div className="main-content">
+        <Navbar />
+        <div className="content-wrapper">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
 };
 
-export default Layout;
+export default MainLayout;

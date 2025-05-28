@@ -6,6 +6,7 @@ import Dashboard from './components/dashboard/dashboard';
 import AddExpense from './components/expenses/add_expense/add_expense';
 import MyExpense from './components/expenses/my_expense/my_expense';
 import AllExpenses from './components/expenses/all_expenses/all_expenses';
+import RequestedExpenses from './components/expenses/requested_expenses/requested_expenses';
 
 
 
@@ -22,10 +23,10 @@ function App() {
           <Route path="/leaves/my" element={<div>My Leaves Page</div>} />
           <Route path="/leaves/all" element={<div>All Leaves Page</div>} />
           <Route path="/leaves/manage" element={<div>Manage Leaves Page</div>} />
-          <Route path="/expenses/addexpense" element={<AddExpense/>} />
-          <Route path="/expenses/myexpense" element={<MyExpense/>} />
-          <Route path="/expenses/allexpenses" element={<AllExpenses/>} />
-          <Route path="/expenses/manage" element={<div>Manage Expenses Page</div>} />
+          <Route path="/expenses/addexpense" element={<AddExpense />} />
+          <Route path="/expenses/myexpense" element={<MyExpense />} />
+          <Route path="/expenses/allexpenses" element={<AllExpenses />} />
+          <Route path="/expenses/requestedexpenses" element={<RequestedExpenses />} />
           <Route path="/project/manage" element={<div>Manage Project Page</div>} />
           <Route path="/requisition/add" element={<div>Add Requisition Page</div>} />
           <Route path="/requisition/my" element={<div>My Requisitions Page</div>} />
