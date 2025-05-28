@@ -104,6 +104,153 @@ const QuoteSection = ({ quote, loading }) => (
   </div>
 );
 
+const FinancialCharts = ({ analytics }) => {
+  // Prepare data from analytics
+  const monthlyData = [
+    {
+      name: 'Expenses',
+      value: analytics?.monthly_analytics?.expense || 0,
+      color: '#818cf8'
+    },
+    {
+      name: 'Expense Requests',
+      value: analytics?.monthly_analytics?.expense_requests || 0,
+      color: '#10b981'
+    },
+    {
+      name: 'Requisition Requests',
+      value: analytics?.monthly_analytics?.requisition_requests || 0,
+      color: '#f59e0b'
+    }
+  ];
+
+  const cashFlowData = [
+    {
+      name: 'Credit Amount',
+      value: analytics?.cash_in_hand?.details?.credit_amount || 0,
+      color: '#4338ca'
+    },
+    {
+      name: 'Debit Amount',
+      value: analytics?.cash_in_hand?.details?.debit_amount || 0,
+      color: '#ef4444'
+    },
+    {
+      name: 'Requisition Debit',
+      value: analytics?.cash_in_hand?.details?.req_debit_amount || 0,
+      color: '#f59e0b'
+    }
+  ];
+
+  return (
+    <div className="charts-section">
+      <h2 className="section-title">Financial Overview</h2>
+      <div className="charts-grid">
+        {/* Monthly Analytics Chart */}
+        <div className="chart-card">
+          <h3 className="chart-title">Monthly Analytics</h3>
+          <div className="chart-header">
+            <div className="chart-legend">
+              {monthlyData.map((item) => (
+                <div key={item.name} className="legend-item">
+                  <span 
+                    className="legend-color" 
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span>{item.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false}
+                tickLine={false}
+                fontSize={12}
+              />
+              <YAxis 
+                axisLine={false}
+                tickLine={false}
+                fontSize={12}
+                tickFormatter={(value) => `₹${value.toLocaleString()}`}
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="chart-tooltip">
+                        <p className="tooltip-title">{payload[0].payload.name}</p>
+                        <p className="tooltip-value">₹{payload[0].value.toLocaleString()}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {monthlyData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Cash Flow Distribution Chart */}
+        <div className="chart-card">
+          <h3 className="chart-title">Cash Flow Distribution</h3>
+          <div className="chart-header">
+            <div className="chart-legend">
+              {cashFlowData.map((item) => (
+                <div key={item.name} className="legend-item">
+                  <span 
+                    className="legend-color" 
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span>{item.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={cashFlowData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={100}
+                dataKey="value"
+                label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+              >
+                {cashFlowData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="chart-tooltip">
+                        <p className="tooltip-title">{payload[0].payload.name}</p>
+                        <p className="tooltip-value">₹{payload[0].value.toLocaleString()}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DashboardWeb() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -724,10 +871,11 @@ export default function DashboardWeb() {
             <p>{locationText}</p>
           </div>
         </div> */}
+        
 
         <QuoteSection quote={quote} loading={loadingQuote} />
 
-        {attendanceStats && (
+        {/* {attendanceStats && (
           <div className="dashboard-analytics-graph">
             <h2 className="section-title">Attendance Overview</h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -770,60 +918,12 @@ export default function DashboardWeb() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        )}
-
-        {/* New Charts Section */}
-        {analytics && (
-          <div className="analytics-charts-container">
-            {/* Bar Chart */}
-            <div className="dashboard-analytics-graph">
-              <h2 className="section-title">Monthly Analytics</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={prepareChartData(analytics).barData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} />
-                  <Legend />
-                  <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]}>
-                    {prepareChartData(analytics).barData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Pie Chart */}
-            <div className="dashboard-analytics-graph">
-              <h2 className="section-title">Cash Flow Distribution</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={prepareChartData(analytics).pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, value, percent }) => 
-                      `${name}: ₹${value.toLocaleString()} (${(percent * 100).toFixed(0)}%)`
-                    }
-                  >
-                    {prepareChartData(analytics).pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
+        )} */}
 
         
+
+        {/* Add this after your existing analytics section */}
+        <FinancialCharts analytics={analytics} />
       </div>
     </div>
   );

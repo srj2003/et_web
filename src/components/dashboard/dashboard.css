@@ -52,7 +52,7 @@
 
 
     /* Sizing & Spacing */
-    --sidebar-width: 280px; /* Slightly reduced for a sleeker look */
+    --sidebar-width: 320px; /* Slightly reduced for a sleeker look */
     --mobile-header-height: 60px;
     --content-padding: 2rem; /* 32px */
     --content-padding-mobile: 1rem; /* 16px */
@@ -142,7 +142,7 @@ body {
 }
 
 .welcome-banner {
-    background: linear-gradient(135deg, #283593 0%, #1e3a8a 100%); /* Refined gradient, slightly lighter, more sophisticated blues */
+    background: linear-gradient(135deg, #0a0c1b 0%, #3859b4 100%); /* Refined gradient, slightly lighter, more sophisticated blues */
     border-radius: var(--radius-xl);
     padding: 2.5rem; /* Increased padding for more presence */
     display: flex;
@@ -314,8 +314,9 @@ body {
   padding: 2rem;
   margin-bottom: 2.5rem;
   box-shadow: var(--shadow-md); /* Slightly more prominent shadow for the card */
-  text-align: left; /* Centers the status text */
-  max-width: 400px; /* Keeps the card from becoming too wide */ /* Centers the card on the page */
+  text-align: center; /* Centers the status text */
+  max-width: auto; /* Keeps the card from becoming too wide */ 
+  margin-left: auto;/* Centers the card on the page */
   margin-right: auto; /* Centers the card on the page */
   border: 1px solid var(--border-color); /* Boundary for the section card */
 }
@@ -646,123 +647,130 @@ body {
   margin-bottom: 2rem;
 }
   
-/* Responsive Design */
-@media (max-width: 992px) { /* Tablet and below, adjust sidebar behavior */
-    .dashboard-main {
-        margin-left: 0;
-    }
-}
-
-@media (max-width: 768px) { /* Smaller tablets and mobile */
-    .dashboard-main {
-        margin-top: var(--mobile-header-height); /* Assuming a fixed mobile top nav */
-    }
-    .dashboard-container {
-      padding: var(--content-padding-mobile);
-    }
-
-    .section-title {
-        font-size: 1.5rem; /* 24px */
-    }
-
-    .welcome-banner {
-      flex-direction: column;
-      text-align: center;
-      padding: 1.5rem;
-    }
-  
-    .welcome-content {
-      padding-right: 0;
-      margin-bottom: 1.5rem;
-    }
-  
-    .welcome-image {
-      width: 80px; /* Smaller on mobile */
-      height: 80px;
-    }
-  
-    .analytics-grid {
-      grid-template-columns: 1fr; /* Stack cards */
-      gap: 1rem;
-    }
-    .analytics-card { padding: 1.25rem; }
-    .analytics-value { font-size: 1.5rem; }
-
-    .login-section {
-      padding: 1.5rem;
-      max-width: 100%; /* Allow full width on mobile */
-    }
-    .login-button, .logout-button {
-      width: 100%; /* Make buttons full width for easier tapping on mobile */
-      padding-top: 0.875rem;
-      padding-bottom: 0.875rem;
-      min-width: unset; /* Remove min-width on mobile if full width */
-    }
-    
-    .attendance-details {
-        flex-direction: column; /* Stack attendance cards */
-        gap: 1rem;
-    }
-    .attendance-card { min-width: auto; } /* Remove min-width when stacked */
-
-    .quote-text { font-size: 1.125rem; }
-    .dashboard-analytics-graph {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-}
-.attendance-stats-summary {
+/* Analytics Charts Layout */
+.analytics-charts {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  font-size: 1.1rem;
-  justify-content: center;
-}
-/* Chart Container Styles */
-.chart-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 2rem;
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
 }
 
-.financial-chart {
+.chart-card {
+  flex: 1;
   background: var(--bg-card);
   border-radius: var(--radius-xl);
   padding: 1.75rem;
   box-shadow: var(--shadow-md);
-  transition: transform var(--transition-base);
-  position: relative;
-  overflow: hidden;
-}
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 400px;
 }
 
-@media (max-width: 480px) { /* Small mobile screens */
-    .welcome-text { font-size: 1rem; }
-    .name-text { font-size: 1.75rem; }
-    .role-text { font-size: 0.875rem; }
-
-    .login-status-text { font-size: 1rem; }
-    .login-button, .logout-button { font-size: 0.9375rem; }
-
-
-    .quote-section { padding: 1.5rem; }
-    .quote-text { padding-left: 0.5rem; padding-right: 0.5rem; }
-    .quote-text::before, .quote-text::after { font-size: 2rem; }
-    .quote-text::before { top: -0.25rem; left: -0.25rem; }
-    .quote-text::after { bottom: -1rem; right: -0.25rem; }
+.chart-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
 }
 
-/* After your existing CSS variables in :root {...} */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.chart-tooltip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.tooltip-title {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.tooltip-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Charts Section */
+.charts-section {
+  margin-bottom: 2.5rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.chart-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chart-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .chart-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-card {
+    padding: 1.25rem;
+  }
+  
+  .chart-title {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+  }
+}
 
 
 

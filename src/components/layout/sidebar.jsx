@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Assuming you are using react-router-dom for navigation
+import { Link, useNavigate } from "react-router-dom"; // Assuming you are using react-router-dom for navigation
 import {
   Home,
   CalendarCheck,
@@ -11,12 +11,9 @@ import {
   ChevronDown,
   ChevronUp,
   Briefcase, // Added for General Dep if still needed, or for Project
-  // Add other icons from your original list if they are used elsewhere or planned
-  // UserCog,
-  // Settings,
-  // Users,
-  // MapPin,
-  // Building2,
+  Settings,
+  HelpCircle,
+  LogOut,
 } from "lucide-react";
 import "./sidebar.css"; // We will create/update this CSS file
 
@@ -55,9 +52,9 @@ const menuItemsData = [
     title: "Expenses",
     icon: CreditCard,
     subItems: [
-      { id: "add_expenses", title: "Add Expenses", path: "/expenses/addexpense" },
-      { id: "my_expenses", title: "My Expenses", path: "/expenses/myexpense" },
-      { id: "all_expenses", title: "All Expenses", path: "/expenses/allexpenses" },
+      { id: "add_expenses", title: "Add Expenses", path: "/expenses/add" },
+      { id: "my_expenses", title: "My Expenses", path: "/expenses/my" },
+      { id: "all_expenses", title: "All Expenses", path: "/expenses/all" },
       { id: "manage_expenses", title: "Manage Expenses", path: "/expenses/manage" },
     ],
   },
@@ -91,9 +88,11 @@ const menuItemsData = [
       // { id: "user_settings", title: "Settings", path: "/accounts/settings" },
     ],
   },
+  
 ];
 
 const Sidebar = () => {
+  const navigate = useNavigate();
   const [openMenus, setOpenMenus] = useState({});
 
   const toggleMenu = (id) => {
@@ -101,6 +100,14 @@ const Sidebar = () => {
       ...prevOpenMenus,
       [id]: !prevOpenMenus[id],
     }));
+  };
+
+  const handleLogout = () => {
+    // Clear user data from localStorage or your auth state
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userToken');
+    // Navigate to login page
+    navigate('/');
   };
 
   return (
@@ -162,6 +169,25 @@ const Sidebar = () => {
           }
         })}
       </ul>
+
+      {/* Add this new section for bottom menu items */}
+      <div className="sidebar-bottom">
+        <div className="bottom-divider"></div>
+        <ul className="bottom-menu">
+          <li className="menu-item">
+            <Link to="/help" className="menu-link">
+              <HelpCircle size={20} className="menu-icon" />
+              <span className="menu-title">Help</span>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <button onClick={handleLogout} className="menu-link logout-link">
+              <LogOut size={20} className="menu-icon" />
+              <span className="menu-title">Logout</span>
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };
