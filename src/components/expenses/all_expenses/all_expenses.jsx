@@ -199,6 +199,7 @@ const AllExpensesWeb = () => {
     if (error) {
         return (
             <div className="error-container">
+                <AlertCircle size={48} color="#ef4444" />
                 <p className="error-text">{error}</p>
                 <button className="retry-button" onClick={fetchExpenses}>
                     Retry
