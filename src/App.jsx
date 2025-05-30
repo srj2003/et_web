@@ -11,6 +11,7 @@ import RequisitionFormWeb from "./components/requisitionpage/addrequisition";
 import AllRequisitions from "./components/requisitionpage/allrequisition";
 import MyRequisitions from "./components/requisitionpage/myrequisition";
 import RequisitionsWeb from "./components/requisitionpage/requested_requisition";
+import Users from "./components/users/users";
 
 function App() {
   return (
@@ -19,36 +20,21 @@ function App() {
         <Route path="/" element={<LoginWeb />} />
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route
-            path="/attendance/my"
-            element={<div>My Attendance Page</div>}
-          />
-          <Route
-            path="/attendance/user"
-            element={<div>User Attendance Page</div>}
-          />
+          <Route path="/attendance/my" element={<div>My Attendance Page</div>} />
+          <Route path="/attendance/user" element={<div>User Attendance Page</div>} />
           <Route path="/leaves/add" element={<div>Add Leave Page</div>} />
           <Route path="/leaves/my" element={<div>My Leaves Page</div>} />
           <Route path="/leaves/all" element={<div>All Leaves Page</div>} />
-          <Route
-            path="/leaves/manage"
-            element={<div>Manage Leaves Page</div>}
-          />
+          <Route path="/leaves/manage" element={<div>Manage Leaves Page</div>} />
           <Route path="/expenses/addexpense" element={<AddExpense />} />
           <Route path="/expenses/myexpense" element={<MyExpense />} />
           <Route path="/expenses/allexpenses" element={<AllExpenses />} />
-          <Route
-            path="/expenses/requestedexpenses"
-            element={<RequestedExpenses />}
-          />
-          <Route
-            path="/project/manage"
-            element={<div>Manage Project Page</div>}
-          />
+          <Route path="/expenses/requestedexpenses" element={<RequestedExpenses />} />
           <Route path="/requisition/add" element={<RequisitionFormWeb />} />
           <Route path="/requisition/my" element={<MyRequisitions />} />
           <Route path="/requisition/all" element={<AllRequisitions />} />
           <Route path="/requisition/manage" element={<RequisitionsWeb />} />
+          <Route path="/users" element={<Users />} />
         </Route>
       </Routes>
     </BrowserRouter>

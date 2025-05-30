@@ -235,34 +235,68 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-/* Analytics Section */
+/* Dashboard Overview Layout */
+.dashboard-overview {
+  display: flex;
+  gap: 2rem;
+  margin: 2rem auto;
+  max-width: 1400px;
+  padding: 0 1rem;
+}
+
+.overview-section {
+  min-width: 0;
+  /* Prevents flex items from overflowing */
+}
+
+/* Your Expense Overview Section */
+.overview-section:first-child {
+  flex: 0.4;
+  /* Takes up 40% of the space */
+}
+
+/* Financial Overview Section */
+.overview-section:last-child {
+  flex: 0.6;
+  /* Takes up 60% of the space */
+}
+
+/* Analytics Section (Your Expense Overview) */
 .analytics-section {
-  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .analytics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  /* Slightly smaller min for more flexibility */
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
 
 .analytics-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
   padding: 1.5rem;
   display: flex;
   align-items: center;
-  /* Vertically center icon and text better */
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-short), box-shadow var(--transition-short);
-  border-left: 5px solid;
-  /* Thicker, more prominent border */
+  gap: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
 }
 
 .analytics-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.15);
 }
 
 .analytics-card.my-expense {
@@ -874,50 +908,38 @@ body {
   color: var(--text-primary);
 }
 
-/* Charts Section */
+/* Charts Section (Financial Overview) */
 .charts-section {
-  margin-bottom: 2.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-top: 1rem;
-}
-
-.chart-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: 1.75rem;
-  box-shadow: var(--shadow-md);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.chart-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Responsive adjustments */
+/* Responsive Design */
 @media (max-width: 1200px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .dashboard-overview {
+    flex-direction: column;
   }
 
-  .chart-card {
+  .overview-section {
     width: 100%;
   }
 }
 
 @media (max-width: 768px) {
-  .chart-card {
+  .dashboard-overview {
+    padding: 0 0.5rem;
+    gap: 1rem;
+  }
+
+  .analytics-card {
     padding: 1.25rem;
   }
 
-  .chart-title {
-    font-size: 1.125rem;
-    margin-bottom: 1rem;
+  .charts-section {
+    padding: 1.25rem;
   }
 }
