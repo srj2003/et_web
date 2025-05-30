@@ -435,19 +435,17 @@ const Users = () => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedRoles = filteredRoles.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-    const users = selectedRole
-        ? Object.values(MOCK_USERS).filter(
-            (user) =>
-                user.role_name === selectedRole &&
-                (user.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    user.u_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    user.u_email.toLowerCase().includes(searchQuery.toLowerCase()))
-        )
-        : [];
+    const filteredUsers = Object.values(MOCK_USERS).filter(user => {
+        const searchLower = searchQuery.toLowerCase();
+        return (
+            (user.user && user.user.toLowerCase().includes(searchLower)) ||
+            (user.u_mob && user.u_mob.toLowerCase().includes(searchLower)) ||
+            (user.u_email && user.u_email.toLowerCase().includes(searchLower))
+        );
+    });
 
-    const totalPages1 = Math.max(1, Math.ceil(users.length / ITEMS_PER_PAGE));
-    const startIndex1 = (currentPage - 1) * ITEMS_PER_PAGE;
-    const paginatedUsers = users.slice(startIndex1, startIndex1 + ITEMS_PER_PAGE);
+    const totalFilteredPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+    const paginatedFilteredUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     const handleViewProfile = (user) => {
         console.log("Opening profile for user:", user); // Debug log
@@ -509,68 +507,61 @@ const Users = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {Object.values(MOCK_USERS)
-                                    .filter(user =>
-                                        user.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                        user.u_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                        user.u_email.toLowerCase().includes(searchQuery.toLowerCase())
-                                    )
-                                    .slice(startIndex1, startIndex1 + ITEMS_PER_PAGE)
-                                    .map((user) => (
-                                        <tr
-                                            key={user.u_id}
-                                            className="user-row"
-                                            onClick={() => handleViewProfile(user)}
-                                        >
-                                            <td>
-                                                <div className="user-info">
-                                                    <span className="user-name">{user.user}</span>
-                                                    <span className="user-id">{user.u_id}</span>
-                                                </div>
-                                            </td>
-                                            <td>{user.u_email}</td>
-                                            <td>{user.u_mob}</td>
-                                            <td>
-                                                <div
-                                                    className={`status-badge ${user.is_logged_out === 0 ? "active" : "inactive"}`}
-                                                />
-                                            </td>
-                                            <td>
-                                                <div className="actions">
-                                                    <button
-                                                        className="action-button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleViewProfile(user);
-                                                        }}
-                                                    >
-                                                        <Edit2 size={16} />
-                                                    </button>
-                                                    <button
-                                                        className="action-button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleUserStatus(user);
-                                                        }}
-                                                    >
-                                                        <Lock
-                                                            size={16}
-                                                            color={user.is_logged_out === 0 ? "#22c55e" : "#ef4444"}
-                                                        />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                {paginatedFilteredUsers.map((user) => (
+                                    <tr
+                                        key={user.u_id}
+                                        className="user-row"
+                                        onClick={() => handleViewProfile(user)}
+                                    >
+                                        <td>
+                                            <div className="user-info">
+                                                <span className="user-name">{user.user}</span>
+                                                <span className="user-id">{user.u_id}</span>
+                                            </div>
+                                        </td>
+                                        <td>{user.u_email}</td>
+                                        <td>{user.u_mob}</td>
+                                        <td>
+                                            <div
+                                                className={`status-badge ${user.is_logged_out === 0 ? "active" : "inactive"}`}
+                                            />
+                                        </td>
+                                        <td>
+                                            <div className="actions">
+                                                <button
+                                                    className="action-button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewProfile(user);
+                                                    }}
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button
+                                                    className="action-button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleUserStatus(user);
+                                                    }}
+                                                >
+                                                    <Lock
+                                                        size={16}
+                                                        color={user.is_logged_out === 0 ? "#22c55e" : "#ef4444"}
+                                                    />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
 
                     <div className="pagination">
                         <span className="pagination-text">
-                            Showing {startIndex1 + 1} to{" "}
-                            {Math.min(startIndex1 + ITEMS_PER_PAGE, Object.values(MOCK_USERS).length)} of{" "}
-                            {Object.values(MOCK_USERS).length} entries
+                            Showing {startIndex + 1} to{" "}
+                            {Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)} of{" "}
+                            {filteredUsers.length} entries
                         </span>
                         <div className="pagination-controls">
                             <button
@@ -582,12 +573,12 @@ const Users = () => {
                             </button>
                             <div className="page-numbers">
                                 <span className="current-page">{currentPage}</span>
-                                <span>of {Math.ceil(Object.values(MOCK_USERS).length / ITEMS_PER_PAGE)}</span>
+                                <span>of {totalFilteredPages}</span>
                             </div>
                             <button
-                                className={`page-button ${currentPage === Math.ceil(Object.values(MOCK_USERS).length / ITEMS_PER_PAGE) ? "disabled" : ""}`}
-                                onClick={() => setCurrentPage((p) => Math.min(Math.ceil(Object.values(MOCK_USERS).length / ITEMS_PER_PAGE), p + 1))}
-                                disabled={currentPage === Math.ceil(Object.values(MOCK_USERS).length / ITEMS_PER_PAGE)}
+                                className={`page-button ${currentPage === totalFilteredPages ? "disabled" : ""}`}
+                                onClick={() => setCurrentPage((p) => Math.min(totalFilteredPages, p + 1))}
+                                disabled={currentPage === totalFilteredPages}
                             >
                                 <ChevronRight size={20} />
                             </button>
@@ -610,7 +601,7 @@ const Users = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {paginatedUsers.map((user) => (
+                                        {paginatedFilteredUsers.map((user) => (
                                             <tr
                                                 key={user.u_id}
                                                 className="user-row"
@@ -662,9 +653,9 @@ const Users = () => {
 
                             <div className="pagination">
                                 <span className="pagination-text">
-                                    Showing {startIndex1 + 1} to{" "}
-                                    {Math.min(startIndex1 + ITEMS_PER_PAGE, users.length)} of{" "}
-                                    {users.length} entries
+                                    Showing {startIndex + 1} to{" "}
+                                    {Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)} of{" "}
+                                    {filteredUsers.length} entries
                                 </span>
                                 <div className="pagination-controls">
                                     <button
@@ -676,12 +667,12 @@ const Users = () => {
                                     </button>
                                     <div className="page-numbers">
                                         <span className="current-page">{currentPage}</span>
-                                        <span>of {totalPages1}</span>
+                                        <span>of {totalFilteredPages}</span>
                                     </div>
                                     <button
-                                        className={`page-button ${currentPage === totalPages1 ? "disabled" : ""}`}
-                                        onClick={() => setCurrentPage((p) => Math.min(totalPages1, p + 1))}
-                                        disabled={currentPage === totalPages1}
+                                        className={`page-button ${currentPage === totalFilteredPages ? "disabled" : ""}`}
+                                        onClick={() => setCurrentPage((p) => Math.min(totalFilteredPages, p + 1))}
+                                        disabled={currentPage === totalFilteredPages}
                                     >
                                         <ChevronRight size={20} />
                                     </button>
