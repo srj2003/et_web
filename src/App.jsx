@@ -12,6 +12,7 @@ import AllRequisitions from "./components/requisitionpage/allrequisition";
 import MyRequisitions from "./components/requisitionpage/myrequisition";
 import RequisitionsWeb from "./components/requisitionpage/requested_requisition";
 import Users from "./components/users/users";
+import UserAnalytics from "./components/analytics/user_analytics/user_analytics"
 
 function App() {
   return (
@@ -35,9 +36,12 @@ function App() {
           <Route path="/requisition/all" element={<AllRequisitions />} />
           <Route path="/requisition/manage" element={<RequisitionsWeb />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/analytics/useranalytics" element={<UserAnalytics/>} />
         </Route>
       </Routes>
     </BrowserRouter>
+
+    // <UserAnalytics/>
   );
 }
 
