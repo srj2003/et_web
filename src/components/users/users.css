@@ -134,7 +134,7 @@ body {
     background: rgba(255, 255, 255, 0.9);
     padding: 1rem 1.5rem;
     border-radius: 16px;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     border: 2px solid rgba(99, 102, 241, 0.2);
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
@@ -163,6 +163,44 @@ body {
 
 .search-input::placeholder {
     color: #94a3b8;
+}
+
+/* Tabs Container */
+.tabs-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.tab {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    flex: 1;
+    text-align: center;
+}
+
+.tab:hover {
+    background: rgba(99, 102, 241, 0.05);
+    color: #6366f1;
+}
+
+.tab.active {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2),
+        0 2px 4px -1px rgba(99, 102, 241, 0.1);
 }
 
 /* Table Container */
@@ -482,4 +520,9 @@ body {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.role-row:hover {
+    background-color: rgba(248, 248, 255, 0.8);
+    cursor: pointer;
 }
