@@ -12,6 +12,7 @@
 /* For Firefox */
 .analytics-container {
     scrollbar-width: none;
+    overflow: hidden;
 }
 
 .analytics-container>* {
