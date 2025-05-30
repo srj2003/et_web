@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
     BarChart,
     Bar,
@@ -381,16 +382,27 @@ const AnalyticsScreen = () => {
     return (
         <div className="analytics-container">
             <div className="header-container">
-                <h1 className="title">User Overview</h1>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={resetSelections}
-                    className="reset-button"
-                    startIcon={<ArrowBackIcon />}
-                >
-                    Reset
-                </Button>
+                <h1 className="title">Analytics Overview</h1>
+                <div className="header-buttons">
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        component={Link}
+                        to="/analytics/adminanalytics"
+                        className="admin-button"
+                    >
+                        Go to Admin Analytics
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={resetSelections}
+                        className="reset-button"
+                        startIcon={<ArrowBackIcon />}
+                    >
+                        Reset
+                    </Button>
+                </div>
             </div>
 
             <div className="filter-container">

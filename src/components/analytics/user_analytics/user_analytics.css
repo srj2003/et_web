@@ -67,26 +67,45 @@
     z-index: 1;
 }
 
+.header-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.admin-button {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #3b82f6 !important;
+    transition: all 0.2s ease;
+}
+
+.admin-button:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-color: #2563eb !important;
+    transform: translateY(-1px);
+}
+
+.reset-button {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #3b82f6 !important;
+    transition: all 0.2s ease;
+}
+
+.reset-button:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-color: #2563eb !important;
+    transform: translateY(-1px);
+}
+
 .title {
     font-size: 2rem;
     font-weight: 600;
     color: #1e293b;
     margin: 0;
-}
-
-.reset-button {
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.reset-button:hover {
-    background-color: #2563eb;
 }
 
 .filter-container {
@@ -422,4 +441,41 @@
     .title {
         font-size: 1.5rem;
     }
+}
+
+.tabs-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tab {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+}
+
+.tab:hover {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.tab.active {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    font-weight: 600;
 }
