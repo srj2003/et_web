@@ -15,7 +15,7 @@ import Users from "./components/users/users";
 import UserAnalytics from "./components/analytics/user_analytics/user_analytics"
 import AdminAnalytics from "./components/analytics/admin_analytics/admin_analytics";
 import ManageProjectExpenses from "./components/project/manage_project_expenses";
-
+import AddLeaves from "./components/leavespage/addleaves/addleaves";
 function App() {
   return (
     <BrowserRouter>
@@ -25,7 +25,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/attendance/my" element={<div>My Attendance Page</div>} />
           <Route path="/attendance/user" element={<div>User Attendance Page</div>} />
-          <Route path="/leaves/add" element={<div>Add Leave Page</div>} />
+          <Route path="/leaves/add" element={<AddLeaves />} />
           <Route path="/leaves/my" element={<div>My Leaves Page</div>} />
           <Route path="/leaves/all" element={<div>All Leaves Page</div>} />
           <Route path="/leaves/manage" element={<div>Manage Leaves Page</div>} />
