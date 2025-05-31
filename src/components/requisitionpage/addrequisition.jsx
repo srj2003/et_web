@@ -354,7 +354,7 @@ const RequisitionFormWeb = () => {
         <h2 className="section-title">Requsitions Details</h2>
         <div className="form-grid">
           <div className="form-group">
-            <label>Requisition Title * </label>
+            <label>Requisition Title</label>
             <input
               type="text"
               value={requisitionTitle}
@@ -363,7 +363,7 @@ const RequisitionFormWeb = () => {
             />
           </div>
           <div className="form-group">
-            <label>Requested Amount *</label>
+            <label>Requested Amount</label>
             <input
               type="number"
               value={currentRequisition.amount}
@@ -391,7 +391,7 @@ const RequisitionFormWeb = () => {
             />
           </div>
           <div className="form-group">
-            <label>Bill Date *</label>
+            <label>Bill Date</label>
             <div className="date-input-container">
               <input
                 type="date"
@@ -413,7 +413,7 @@ const RequisitionFormWeb = () => {
         <h2 className="section-title">Submit To</h2>
         <div className="form-grid">
           <div className="form-group">
-            <label>Role *</label>
+            <label>Role</label>
             <div
               className="select-input"
               onClick={() => setShowRoleModal(true)}
@@ -426,7 +426,7 @@ const RequisitionFormWeb = () => {
 
           {selectedRole && (
             <div className="form-group">
-              <label>Name *</label>
+              <label>Name</label>
               <div
                 className="select-input"
                 onClick={() => setShowNameModal(true)}
