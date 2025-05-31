@@ -16,6 +16,7 @@ import UserAnalytics from "./components/analytics/user_analytics/user_analytics"
 import AdminAnalytics from "./components/analytics/admin_analytics/admin_analytics";
 import ManageProjectExpenses from "./components/project/manage_project_expenses";
 import AddLeaves from "./components/leavespage/addleaves/addleaves";
+import ExpenseReport from "./components/accounts/expense_report/expense_report";
 function App() {
   return (
     <BrowserRouter>
@@ -40,11 +41,13 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/analytics/useranalytics" element={<UserAnalytics/>} />
           <Route path="/analytics/adminanalytics" element={<AdminAnalytics/>} />
+           <Route path="/accounts/expensereport" element={<ExpenseReport />} />
           <Route
             path="/project/manage"
             element={<ManageProjectExpenses/>}
           />
         </Route>
+        
       </Routes>
     </BrowserRouter>
 
