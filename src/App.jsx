@@ -14,6 +14,7 @@ import RequisitionsWeb from "./components/requisitionpage/requested_requisition"
 import Users from "./components/users/users";
 import UserAnalytics from "./components/analytics/user_analytics/user_analytics"
 import AdminAnalytics from "./components/analytics/admin_analytics/admin_analytics";
+import ManageProjectExpenses from "./components/project/manage_project_expenses";
 
 function App() {
   return (
@@ -39,6 +40,10 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/analytics/useranalytics" element={<UserAnalytics/>} />
           <Route path="/analytics/adminanalytics" element={<AdminAnalytics/>} />
+          <Route
+            path="/project/manage"
+            element={<ManageProjectExpenses/>}
+          />
         </Route>
       </Routes>
     </BrowserRouter>
