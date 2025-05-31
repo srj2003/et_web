@@ -18,7 +18,7 @@ import {
 import "./sidebar.css"; // We will create/update this CSS file
 
 // Placeholder for the logo image - replace with your actual logo path
-const logoUrl = "src/assets/GM-Logo.png"; // Example path, or import if using build system
+const logoUrl = "src/assets/GM.png"; // Example path, or import if using build system
 
 const menuItemsData = [
   // {
@@ -61,9 +61,9 @@ const menuItemsData = [
   {
     id: "project",
     title: "Projects",
-    icon: KanbanSquare, // Using KanbanSquare as per image style for project management
+    icon: KanbanSquare, 
     subItems: [
-      { id: "manage_project_expense", title: "Manage Project & Expense", path: "/project/manage" },
+      { id: "manage_project_expense", title: "Manage Projects", path: "/project/manage" },
     ],
   },
   {
@@ -125,13 +125,14 @@ const Sidebar = () => {
             return (
               <li key={item.id} className={`menu-item ${isOpen ? "open" : ""}`}>
                 <div className="menu-link" onClick={() => toggleMenu(item.id)}>
-                  <IconComponent size={20} className="menu-icon" />
-                  <span className="menu-title">{item.title}</span>
-                  {isOpen ? (
-                    <ChevronUp size={18} className="menu-arrow" />
-                  ) : (
-                    <ChevronDown size={18} className="menu-arrow" />
-                  )}
+                  <div className="menu-content">
+                    <IconComponent size={20} className="menu-icon" />
+                    <span className="menu-title">{item.title}</span>
+                  </div>
+                  <ChevronDown 
+                    size={18} 
+                    className={`menu-arrow ${isOpen ? 'open' : ''}`}
+                  />
                 </div>
                 {isOpen && (
                   <ul className="submenu">
@@ -152,11 +153,12 @@ const Sidebar = () => {
             return (
               <li key={item.id} className="menu-item">
                 {isAccountsEmpty ? (
-                   <div className="menu-link non-expandable"> {/* Style as non-expandable or allow click if it's a future parent */}
-                    <IconComponent size={20} className="menu-icon" />
-                    <span className="menu-title">{item.title}</span>
-                    {/* Optionally, show a different arrow or no arrow if it's known to be non-expandable currently */}
-                     <ChevronDown size={18} className="menu-arrow muted" /> {/* Muted arrow for future expansion */}
+                  <div className="menu-link non-expandable">
+                    <div className="menu-content">
+                      <IconComponent size={20} className="menu-icon" />
+                      <span className="menu-title">{item.title}</span>
+                    </div>
+                    <ChevronDown size={18} className="menu-arrow muted" />
                   </div>
                 ) : (
                   <Link to={item.path || "#"} className="menu-link">

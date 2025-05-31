@@ -171,7 +171,7 @@ body {
 }
 
 .welcome-banner {
-  background: linear-gradient(135deg, #0a0c1b 0%, #3859b4 100%);
+  background: linear-gradient(135deg, #000104 0%, #b7c1df 150%);
   /* Refined gradient, slightly lighter, more sophisticated blues */
   border-radius: var(--radius-xl);
   padding: 2.5rem;
@@ -235,68 +235,34 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-/* Dashboard Overview Layout */
-.dashboard-overview {
-  display: flex;
-  gap: 2rem;
-  margin: 2rem auto;
-  max-width: 1400px;
-  padding: 0 1rem;
-}
-
-.overview-section {
-  min-width: 0;
-  /* Prevents flex items from overflowing */
-}
-
-/* Your Expense Overview Section */
-.overview-section:first-child {
-  flex: 0.4;
-  /* Takes up 40% of the space */
-}
-
-/* Financial Overview Section */
-.overview-section:last-child {
-  flex: 0.6;
-  /* Takes up 60% of the space */
-}
-
-/* Analytics Section (Your Expense Overview) */
+/* Analytics Section */
 .analytics-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.analytics-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 2.5rem;
 }
 
 .analytics-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  /* Slightly smaller min for more flexibility */
   gap: 1.5rem;
 }
 
 .analytics-card {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  transition: all 0.3s ease;
+  /* Vertically center icon and text better */
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-short), box-shadow var(--transition-short);
+  border-left: 5px solid;
+  /* Thicker, more prominent border */
 }
 
 .analytics-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 
 .analytics-card.my-expense {
@@ -908,38 +874,50 @@ body {
   color: var(--text-primary);
 }
 
-/* Charts Section (Financial Overview) */
+/* Charts Section */
 .charts-section {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  margin-bottom: 2.5rem;
 }
 
-/* Responsive Design */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.chart-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chart-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Responsive adjustments */
 @media (max-width: 1200px) {
-  .dashboard-overview {
-    flex-direction: column;
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 
-  .overview-section {
+  .chart-card {
     width: 100%;
   }
 }
 
 @media (max-width: 768px) {
-  .dashboard-overview {
-    padding: 0 0.5rem;
-    gap: 1rem;
-  }
-
-  .analytics-card {
+  .chart-card {
     padding: 1.25rem;
   }
 
-  .charts-section {
-    padding: 1.25rem;
+  .chart-title {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
   }
 }

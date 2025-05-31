@@ -2,9 +2,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
+    padding: 2.5rem 2rem;
+    background: rgba(255, 255, 255, 0.208);
+    backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     position: fixed;
@@ -65,6 +65,45 @@
 .notification-button svg {
     width: 24px;
     height: 24px;
+}
+
+.profile-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 30%;
+    object-fit: cover;
+    border: 10px solid #151010;
+}
+
+.dropdown-profile-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.profile-details {
+    flex: 1;
+}
+
+.profile-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.profile-role {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 4px 0 0 0;
 }
 
 .notification-badge {

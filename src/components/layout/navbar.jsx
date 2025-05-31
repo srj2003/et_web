@@ -3,16 +3,62 @@ import { Link } from 'react-router-dom';
 import './navbar.css';
 
 const Navbar = () => {
+    const [userData, setUserData] = useState(null);
     const [profileImage, setProfileImage] = useState('');
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [companyLogo, setCompanyLogo] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Get profile image from localStorage
-        const storedImage = localStorage.getItem('profileImage');
-        if (storedImage) {
-            setProfileImage(storedImage);
-        }
+        const fetchUserData = async () => {
+            try {
+                const userId = localStorage.getItem('userid');
+                if (!userId) {
+                    setLoading(false);
+                    return;
+                }
+
+                const response = await fetch(
+                    'https://demo-expense.geomaticxevs.in/ET-api/dashboard.php',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ userId }),
+                    }
+                );
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    const roleResponse = await fetch(
+                        'https://demo-expense.geomaticxevs.in/ET-api/user_role_fetcher.php',
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ user_id: parseInt(userId, 10) }),
+                        }
+                    );
+
+                    const roleResult = await roleResponse.json();
+
+                    setUserData({
+                        ...result.data,
+                        userid: userId,
+                        role_name: roleResult.role_name || "No role assigned",
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
     }, []);
 
     const notifications = [
@@ -74,7 +120,7 @@ const Navbar = () => {
                         onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     >
                         <img
-                            src={profileImage || '/default-avatar.png'}
+                            src={userData?.u_pro_img || "/assets/images/default_profile.png"}
                             alt="Profile"
                             className="profile-image"
                         />
@@ -82,13 +128,19 @@ const Navbar = () => {
 
                     {showProfileDropdown && (
                         <div className="profile-dropdown">
-                            <Link to="/settings" className="profile-dropdown-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                                </svg>
-                                Settings
-                            </Link>
+                            <div className="profile-info">
+                                <img
+                                    src={userData?.u_pro_img || "/assets/images/default_profile.png"}
+                                    alt="Profile"
+                                    className="dropdown-profile-image"
+                                />
+                                <div className="profile-details">
+                                    <p className="profile-name">
+                                        {userData ? `${userData.u_fname} ${userData.u_lname}` : 'User'}
+                                    </p>
+                                    <p className="profile-role">{userData?.role_name || 'Loading...'}</p>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
