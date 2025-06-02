@@ -1,0 +1,1160 @@
+/* General Resets and Base Styles */
+:root {
+    --primary-color: #6366f1;
+    /* Updated to match my_expense */
+    --primary-light: #e0e7ff;
+    --secondary-color: #475569;
+    --text-dark: #1e293b;
+    --text-medium: #475569;
+    --bg-light: #f0f4ff;
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --border-light: rgba(99, 102, 241, 0.2);
+    --success-bg: #d4edda;
+    --success-text: #155724;
+    --error-bg: #f8d7da;
+    --error-text: #721c24;
+    --info-bg: #d1ecf1;
+    --info-text: #0c5460;
+    --warning-bg: #fff3cd;
+    --warning-text: #856404;
+
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    --sidebar-width-desktop: 320px;
+    --sidebar-width-mobile: 85%;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', 'Inter-SemiBold', sans-serif;
+    color: var(--text-dark);
+    line-height: 1.6;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Main Page Layout */
+.page-layout-container {
+    display: flex;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative Background Elements */
+.page-layout-container::before,
+.page-layout-container::after {
+    content: '';
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.1));
+    z-index: 0;
+}
+
+.page-layout-container::before {
+    top: -300px;
+    right: -300px;
+    animation: float 8s ease-in-out infinite;
+}
+
+.page-layout-container::after {
+    bottom: -300px;
+    left: -300px;
+    animation: float 8s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(5deg);
+    }
+}
+
+/* Side Panel for Filters */
+.filter-side-panel {
+    width: var(--sidebar-width-desktop);
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem 2rem;
+    overflow-y: auto;
+    flex-shrink: 0;
+    transition: transform 0.3s ease-in-out;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 50;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Hidden state for the side panel on desktop */
+.filter-side-panel:not(.visible) {
+    transform: translateX(-100%);
+    /* Slide out to the left */
+    position: absolute;
+    /* Change to absolute when hidden to not consume space */
+    left: 0;
+}
+
+/* Content Area next to Side Panel */
+.main-content-area {
+    flex-grow: 1;
+    /* Takes remaining space */
+    padding: 3rem 2.5rem;
+    /* Ample padding */
+    max-width: calc(100% - var(--sidebar-width-desktop));
+    /* Ensure it doesn't overflow */
+    margin-left: 0;
+    /* No margin when panel is visible */
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* Adjust margin-left when side panel is hidden on desktop */
+.main-content-area.sidebar-hidden {
+    margin-left: -1 * var(--sidebar-width-desktop);
+    /* Pull content to the left to hide the space */
+    max-width: 100%;
+    /* Take full width when sidebar is hidden */
+}
+
+/* Specific styling for the close button within the side panel */
+.side-panel-close-button {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    /* Position it absolutely within the panel */
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 100;
+    /* Ensure it's clickable */
+}
+
+.side-panel-close-button:hover {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    transform: rotate(90deg);
+}
+
+/* Filter Toggle Button (now likely a floating button or in header) */
+.filter-toggle-button {
+    /* New class for the main toggle */
+    position: fixed;
+    /* Fixed position */
+    top: 1.5rem;
+    left: 1.5rem;
+    /* Position on the left */
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.9rem 1.2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 60;
+    /* Above content, below modals */
+}
+
+.filter-toggle-button:hover {
+    background-color: #3b50cb;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+/* Header Section - adjust margins */
+.report-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    /* Space below header */
+}
+
+.report-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Total Amount Summary Card */
+.total-amount-card {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    padding: 1.75rem 2rem;
+    border-radius: 16px;
+    text-align: center;
+    color: white;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 250px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.total-amount-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.total-amount-value {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1;
+}
+
+/* Action Buttons (Download, Reset) */
+.action-buttons-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.download-button,
+.reset-button {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.8rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    border: none;
+    text-decoration: none;
+}
+
+.download-button {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.download-button:hover:not(.disabled) {
+    background-color: #3b50cb;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.download-button.disabled {
+    background-color: var(--primary-light);
+    color: #9daaf2;
+    cursor: not-allowed;
+    opacity: 0.8;
+    box-shadow: none;
+}
+
+.reset-button {
+    background-color: #e0e0e0;
+    color: var(--text-medium);
+}
+
+.reset-button:hover {
+    background-color: #d0d0d0;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Filter Elements within Panel - slight adjustments for panel */
+.form-group {
+    margin-bottom: 1.75rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-medium);
+    margin-bottom: 0.7rem;
+}
+
+.custom-select-button {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    color: var(--text-dark);
+    font-size: 1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.custom-select-button:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+.date-pickers-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Stack dates vertically in side panel */
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.date-picker-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.date-picker-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.date-picker-input-wrapper .date-picker {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    padding-right: 3rem;
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    background-color: var(--bg-card);
+    color: var(--text-dark);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.date-picker-input-wrapper .date-picker:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+.date-picker-input-wrapper .calendar-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary-color);
+    pointer-events: none;
+}
+
+/* Fetch Button */
+.fetch-button-container {
+    text-align: center;
+    margin-top: 5rem;
+}
+
+.fetch-button {
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+    font-size: 1.1rem;
+    width: 100%;
+    /* Make fetch button full width in side panel */
+}
+
+.fetch-button:hover {
+    background-color: #3b50cb;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.fetch-button:disabled {
+    background-color: var(--primary-light);
+    color: #9daaf2;
+    cursor: not-allowed;
+    opacity: 0.8;
+    box-shadow: none;
+    transform: none;
+}
+
+
+/* Requisition List */
+.requisition-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.75rem;
+}
+
+.requisition-item-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.requisition-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.card-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.3;
+    flex-grow: 1;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.25px;
+}
+
+.status-approved {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.1));
+    color: #6366f1;
+}
+
+.status-rejected {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+    color: #ef4444;
+}
+
+.status-partially-approved {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(234, 88, 12, 0.1));
+    color: #f59e0b;
+}
+
+.status-unattained {
+    background: linear-gradient(135deg, rgba(156, 163, 175, 0.1), rgba(107, 114, 128, 0.1));
+    color: #6b7280;
+}
+
+.amount-group {
+    margin-bottom: 1rem;
+}
+
+.amount-label {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    margin-bottom: 0.4rem;
+    display: block;
+}
+
+.amount-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 0.2px;
+}
+
+/* Loading State */
+.loading-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    gap: 1.5rem;
+    color: var(--primary-color);
+    font-weight: 500;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid var(--primary-light);
+    border-top: 6px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Empty State */
+.empty-state-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state-card {
+    background-color: var(--bg-card);
+    border-radius: 1.25rem;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    max-width: 500px;
+    border: 1px dashed var(--border-light);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    color: var(--secondary-color);
+}
+
+.empty-state-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.75rem;
+}
+
+.empty-state-text {
+    color: var(--text-medium);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* Modals (Common styles) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-panel {
+    background-color: var(--bg-card);
+    border-radius: 1.25rem;
+    padding: 2.2rem;
+    width: 95%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.modal-overlay.visible .modal-panel {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modal-header h2 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.modal-close-button {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.7rem;
+    border-radius: 0.5rem;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-button:hover {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    transform: rotate(90deg);
+}
+
+.modal-search-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--bg-light);
+    padding: 0.85rem 1.2rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-light);
+}
+
+.modal-search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 1rem;
+    color: var(--text-dark);
+    outline: none;
+}
+
+.modal-search-clear-button {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.modal-search-clear-button:hover {
+    color: var(--text-dark);
+    background-color: var(--border-light);
+}
+
+.modal-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for modal lists */
+.modal-item-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-item-list::-webkit-scrollbar-track {
+    background: var(--bg-light);
+    border-radius: 10px;
+}
+
+.modal-item-list::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 10px;
+}
+
+.modal-item-list::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+.modal-list-item {
+    padding: 0.9rem 1.2rem;
+    background: none;
+    border: none;
+    text-align: left;
+    color: var(--text-dark);
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 0.6rem;
+    transition: all 0.2s ease;
+}
+
+.modal-list-item:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+/* Requisition Details Modal */
+.details-modal-content {
+    background-color: var(--bg-card);
+    border-radius: 1rem;
+    padding: 1.8rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    margin-top: 1.5rem;
+}
+
+.details-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.details-modal-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.details-amount-overview {
+    display: flex;
+    gap: 2.5rem;
+    margin-bottom: 2rem;
+    border-top: 1px dashed var(--border-light);
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.details-amount-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.details-amount-label {
+    font-size: 0.95rem;
+    color: var(--text-medium);
+    margin-bottom: 0.5rem;
+    display: block;
+    font-weight: 500;
+}
+
+.details-amount-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+
+.details-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.75rem 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-light);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.detail-label {
+    font-size: 0.95rem;
+    color: var(--text-medium);
+    font-weight: 500;
+}
+
+.detail-value {
+    font-size: 1.05rem;
+    color: var(--text-dark);
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.modal-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background-color: var(--bg-light);
+    border: none;
+    padding: 0.7rem 1.4rem;
+    border-radius: 0.75rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-back-button:hover {
+    background-color: #e9ecef;
+    color: #3b50cb;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* React DatePicker Customization (ensure these are robust) */
+.react-datepicker-wrapper {
+    width: 100%;
+}
+
+.react-datepicker {
+    font-family: 'Inter', sans-serif;
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.react-datepicker__header {
+    background-color: var(--primary-light);
+    border-bottom: 1px solid var(--border-light);
+    padding: 0.75rem 0;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-range {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-radius: 0.5rem;
+}
+
+.react-datepicker__day--in-selecting-range {
+    background-color: var(--primary-light) !important;
+    color: var(--primary-color) !important;
+}
+
+.react-datepicker__day:hover {
+    background-color: #e9ecef !important;
+    border-radius: 0.5rem;
+}
+
+.react-datepicker__navigation--previous,
+.react-datepicker__navigation--next {
+    top: 0.9rem;
+}
+
+/* Toast Notifications */
+.Toastify__toast {
+    border-radius: 0.75rem;
+    padding: 1.3rem;
+    font-size: 1rem;
+    box-shadow: var(--shadow-md);
+    border-left: 6px solid;
+}
+
+.Toastify__toast--success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border-color: var(--success-text);
+}
+
+.Toastify__toast--error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border-color: var(--error-text);
+}
+
+.Toastify__toast--info {
+    background-color: var(--info-bg);
+    color: var(--info-text);
+    border-color: var(--info-text);
+}
+
+.Toastify__toast--warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: var(--warning-text);
+}
+
+.Toastify__progress-bar {
+    background-color: currentColor;
+    opacity: 0.35;
+}
+
+/* Responsive Design */
+
+/* Desktop layout (>= 992px) */
+@media (min-width: 992px) {
+    .page-layout-container {
+        flex-direction: row;
+        /* Side panel and main content side-by-side */
+    }
+
+    .filter-toggle-button {
+        /* This button will be always visible unless you hide it by default with `isFiltersVisible` state */
+        /* For desktop, its position will be static relative to main-content-area, not fixed */
+        position: static;
+        margin-bottom: 2rem;
+        /* Add margin below it if it's placed in the content flow */
+        align-self: flex-start;
+        /* Align it to the start if main-content-area is flex column */
+        background-color: #f1f5f9;
+        /* Lighter background for a less prominent 'show filters' button */
+        color: var(--primary-color);
+        box-shadow: none;
+    }
+
+    .filter-toggle-button:hover {
+        background-color: #e2e8f0;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .side-panel-close-button {
+        display: none;
+        /* Hide close button on desktop, as it's not an overlay */
+    }
+
+    .filter-side-panel.visible {
+        transform: translateX(0);
+        /* Ensure panel is visible on desktop */
+        position: sticky;
+        /* Keep it sticky */
+    }
+
+    /* When sidebar is hidden, main content takes full width */
+    .main-content-area.sidebar-hidden {
+        margin-left: 0;
+        /* No negative margin when side panel is technically not 'there' */
+        max-width: 100%;
+    }
+
+    /* When sidebar is visible, main content adjusts */
+    .main-content-area:not(.sidebar-hidden) {
+        margin-left: 0;
+        /* Ensure no extra margin from a hidden desktop panel */
+        max-width: calc(100% - var(--sidebar-width-desktop));
+    }
+
+    /* Ensure the main content area has some margin from the left if the sidebar is visible */
+    .main-content-area {
+        padding-left: 2.5rem;
+        /* Standard left padding when sidebar is visible */
+    }
+
+    /* Adjust for when the sidebar is hidden */
+    .main-content-area.sidebar-hidden {
+        padding-left: 2.5rem;
+        /* Keep consistent padding */
+    }
+}
+
+/* Tablet and Mobile Layout (<= 991px) */
+@media (max-width: 991px) {
+    .page-layout-container {
+        flex-direction: column;
+        /* Stack vertically */
+    }
+
+    .filter-side-panel {
+        position: fixed;
+        /* Overlay behavior on mobile */
+        top: 0;
+        left: 0;
+        width: var(--sidebar-width-mobile);
+        /* Wider on mobile */
+        height: 100vh;
+        transform: translateX(-100%);
+        /* Hidden by default */
+        z-index: 900;
+        /* Above main content */
+        box-shadow: var(--shadow-lg);
+    }
+
+    .filter-side-panel.visible {
+        transform: translateX(0);
+        /* Slide in */
+    }
+
+    .side-panel-close-button {
+        display: block;
+        /* Show close button on mobile */
+    }
+
+    .filter-toggle-button {
+        display: flex;
+        /* Show toggle button on mobile */
+        top: 1rem;
+        left: 1rem;
+        z-index: 950;
+        /* Above overlay when hidden */
+        /* Specific mobile styling for the button */
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    /* Adjust main content when sidebar is visible (behind overlay) */
+    .main-content-area {
+        padding: 2.5rem 1.5rem;
+        max-width: 100%;
+        /* Take full width */
+        margin-left: 0;
+        /* No margin shift needed */
+    }
+
+    /* No changes to .main-content-area.sidebar-hidden, it takes full width */
+
+    .report-header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .report-title {
+        font-size: 2.2rem;
+    }
+
+    .total-amount-card {
+        width: 100%;
+        min-width: unset;
+        padding: 1.5rem;
+    }
+
+    .total-amount-value {
+        font-size: 2.5rem;
+    }
+
+    .action-buttons-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+
+    .download-button,
+    .reset-button {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem 1.5rem;
+    }
+
+    .date-pickers-grid {
+        grid-template-columns: 1fr;
+        /* Stack dates vertically in side panel */
+    }
+
+    .requisition-list-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .requisition-item-card {
+        padding: 1.5rem;
+    }
+
+    .modal-panel {
+        max-width: 500px;
+        padding: 1.8rem;
+    }
+
+    /* Overlay for the main content when side panel is open */
+    .main-content-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 800;
+        /* Below side panel, above main content */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .main-content-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+@media (max-width: 767px) {
+
+    /* Smaller tablet/mobile */
+    .main-content-area {
+        padding: 2rem 1rem;
+    }
+
+    .report-title {
+        font-size: 1.8rem;
+    }
+
+    .total-amount-value {
+        font-size: 2.2rem;
+    }
+
+    .requisition-list-grid {
+        grid-template-columns: 1fr;
+        /* Single column layout for cards */
+    }
+
+    .modal-panel {
+        padding: 1.5rem;
+    }
+
+    .modal-header h2 {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content-area {
+        padding: 1.5rem 0.8rem;
+    }
+
+    .report-title {
+        font-size: 1.6rem;
+    }
+
+    .total-amount-value {
+        font-size: 2rem;
+    }
+
+    .filter-side-panel {
+        width: 95%;
+        /* Make it slightly wider */
+    }
+
+    .modal-panel {
+        padding: 1.2rem;
+    }
+
+    .modal-header h2 {
+        font-size: 1.4rem;
+    }
+
+    .empty-state-card {
+        padding: 1.5rem 1rem;
+    }
+}
