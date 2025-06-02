@@ -84,7 +84,7 @@ const menuItemsData = [
     subItems: [
       // Add sub-items here if/when they are defined.
       // Example:
-      // { id: "profile", title: "Profile", path: "/accounts/profile" },
+       { id: "requisition_report", title: "Requisition Report", path: "/accounts/requisitionreport" },
        { id: "expense_report", title: "Expense Report", path: "/accounts/expensereport" },
        
     ],
