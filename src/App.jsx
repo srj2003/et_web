@@ -17,7 +17,6 @@ import AdminAnalytics from "./components/analytics/admin_analytics/admin_analyti
 import ManageProjectExpenses from "./components/project/manage_project_expenses";
 import AddLeaves from "./components/leavespage/addleaves/addleaves";
 import ExpenseReport from "./components/accounts/expense_report/expense_report";
-import RequisitionReport from "./components/accounts/requisition_report/requisition_report";
 import UserAttendance from "./components/attendance/userattendance";
 function App() {
   return (
@@ -27,7 +26,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/attendance/my" element={<div>My Attendance Page</div>} />
-          <Route path="/attendance/user" element={<UserAttendance/>} />
+          <Route path="/attendance/user_attendance" element={<UserAttendance/>} />
           <Route path="/leaves/add" element={<AddLeaves />} />
           <Route path="/leaves/my" element={<div>My Leaves Page</div>} />
           <Route path="/leaves/all" element={<div>All Leaves Page</div>} />
@@ -43,8 +42,7 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/analytics/useranalytics" element={<UserAnalytics/>} />
           <Route path="/analytics/adminanalytics" element={<AdminAnalytics/>} />
-          <Route path="/accounts/expensereport" element={<ExpenseReport />} />
-          <Route path="/accounts/requisitionreport" element={<RequisitionReport />} />
+           <Route path="/accounts/expensereport" element={<ExpenseReport />} />
           <Route
             path="/project/manage"
             element={<ManageProjectExpenses/>}
