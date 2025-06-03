@@ -14,43 +14,38 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+const getStatusText = (status) => {
+  // Convert to string for consistent comparison
+  status = String(status);
+
+  switch (status) {
+    case "2":
+      return "Approved";
+    case "1":
+      return "Partially Approved";
+    case "0":
+      return "Rejected";
+    case "null":
+    case null:
+    case undefined:
+      return "Unattended";
+    default:
+      return "Unattended";
+  }
+};
+
 const getStatusColor = (status) => {
   switch (status) {
     case "Approved":
       return "#10b981";
-    case "Pending":
-      return "#f59e0b";
+    case "Partially Approved":
+      return "#fbbf24";
     case "Rejected":
       return "#ef4444";
     case "Unattended":
       return "#64748b";
-    case "Partially Approved":
-      return "#fbbf24";
     default:
       return "#64748b";
-  }
-};
-
-const getStatusText = (status) => {
-  switch (String(status)) {
-    case "1":
-    case 1:
-      return "Approved";
-    case "2":
-    case 2:
-      return "Rejected";
-    case "3":
-    case 3:
-      return "Pending";
-    case "4":
-    case 4:
-      return "Partially Approved";
-    case "Unattended":
-    case "0":
-    case 0:
-      return "Unattended";
-    default:
-      return "Unattended";
   }
 };
 

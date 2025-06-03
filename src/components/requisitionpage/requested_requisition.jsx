@@ -46,13 +46,12 @@ const RequisitionsWeb = () => {
         }
 
         const response = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/manage_requisitions.php"
+          "https://demo-expense.geomaticxevs.in/ET-api/all-requisition.php"
         );
         const data = await response.json();
-
         if (Array.isArray(data)) {
           const userRequisitions = data.filter(
-            (item) => item.submitted_to_id === parseInt(userId, 10)
+            (item) => item.requisition_submitted_to === parseInt(userId, 10)
           );
           const transformedData = userRequisitions.map((item) => ({
             id: item.requisition_id.toString(),
@@ -309,8 +308,16 @@ const RequisitionsWeb = () => {
                     {requisition.requisition_date}
                   </span>
                 </div>
+                {requisition.requisition_status !== "Pending" && (
+                  <div className="requisition-info">
+                    <span className="info-label">Approved Amount:</span>
+                    <span className="info-value amount">
+                      ₹{(requisition.approved_amount || 0).toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
-              {requisition.requisition_status === "Pending" && (
+              {requisition.requisition_status === "Pending" ? (
                 <div className="requisition-actions">
                   <button
                     className="action-button approve"
@@ -351,7 +358,7 @@ const RequisitionsWeb = () => {
                     Reject
                   </button>
                 </div>
-              )}
+              ) : null}
             </div>
           ))}
         </div>

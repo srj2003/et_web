@@ -99,6 +99,7 @@ const AddLeaves = () => {
           "https://demo-expense.geomaticxevs.in/ET-api/add-leaves1.php?fetch_roles=true"
         );
         const data = await response.json();
+        console.log("Fetched roles:", data);
         if (data.status === "success" && data.roles) {
           setRoles(data.roles);
         }
@@ -303,7 +304,9 @@ const AddLeaves = () => {
                 className="file-input"
               />
               <label htmlFor="document-upload" className="file-label">
-                <span className="file-upload-icon"><Upload size={18} /></span>
+                <span className="file-upload-icon">
+                  <Upload size={18} />
+                </span>
                 <span className="file-upload-text">Upload Documents</span>
               </label>
             </div>
@@ -371,7 +374,54 @@ const AddLeaves = () => {
       {showRoleModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            {/* Role selection modal content */}
+            <div className="modal-header">
+              <h3>Select Role</h3>
+              <button
+                className="modal-close"
+                onClick={() => setShowRoleModal(false)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search roles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="modal-list">
+                {roles.length > 0 ? (
+                  roles
+                    .filter((role) =>
+                      role.label
+                        ?.toLowerCase()
+                        .includes(searchQuery.toLowerCase())
+                    )
+                    .map((role) => (
+                      <div
+                        key={role.value}
+                        className={`modal-item ${
+                          selectedRole === role.value ? "selected" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedRole(role.value);
+                          setSelectedUser(null);
+                          setShowRoleModal(false);
+                          setSearchQuery("");
+                        }}
+                      >
+                        {role.label}
+                      </div>
+                    ))
+                ) : (
+                  <div className="no-data">No roles available</div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -379,7 +429,55 @@ const AddLeaves = () => {
       {showNameModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            {/* Name selection modal content */}
+            <div className="modal-header">
+              <h3>Select Name</h3>
+              <button
+                className="modal-close"
+                onClick={() => setShowNameModal(false)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search names..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="modal-list">
+                {users.length > 0 ? (
+                  users
+                    .filter((user) =>
+                      user.name
+                        ?.toLowerCase()
+                        .includes(searchQuery.toLowerCase())
+                    )
+                    .map((user) => (
+                      <div
+                        key={user.id}
+                        className={`modal-item ${
+                          selectedUser === user.id ? "selected" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedUser(user.id);
+                          setShowNameModal(false);
+                          setSearchQuery("");
+                        }}
+                      >
+                        {user.name}
+                      </div>
+                    ))
+                ) : (
+                  <div className="no-data">
+                    No users available for selected role
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
