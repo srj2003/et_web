@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Assuming you are using react-router-dom for navigation
 import {
   Home,
@@ -20,6 +20,39 @@ import "./sidebar.css"; // We will create/update this CSS file
 // Placeholder for the logo image - replace with your actual logo path
 const logoUrl = "https://i.postimg.cc/5203y3vn/geomaticx-logo.png"; // Example path, or import if using build system
 
+// Add role configuration
+const ROLE_ACCESS = {
+  attendance: {
+    my_attendance: "all", // Available to everyone
+    user_attendance: [1, 2, 3, 4, 6, 8],
+  },
+  leaves: {
+    add_leave: "all", // Available to everyone
+    my_leaves: "all", // Available to everyone
+    all_leaves: [1, 2, 3, 4, 6, 8],
+    manage_leaves: [1, 2, 3, 4, 6, 8],
+  },
+  expenses: {
+    add_expenses: "all", // Available to everyone
+    my_expenses: "all", // Available to everyone
+    all_expenses: [1, 2, 3, 4, 6, 8],
+    manage_expenses: [1, 2, 3, 4, 6, 8],
+  },
+  project: {
+    manage_project_expense: [1, 3, 8],
+  },
+  requisition: {
+    add_requisition: [1, 2, 3, 4, 5, 6], // Available to everyone
+    my_requisitions: [1, 2, 3, 4, 5, 6], // Available to everyone
+    all_requisitions: [1, 2, 3, 4, 5, 6],
+    manage_requisitions: [1, 2, 3, 4, 5, 6],
+  },
+  accounts: {
+    requisition_report: [1, 8],
+    expense_report: [1, 8],
+  },
+};
+
 const menuItemsData = [
   // {
   //   id: "dashboard",
@@ -33,7 +66,11 @@ const menuItemsData = [
     icon: CalendarCheck,
     subItems: [
       { id: "my_attendance", title: "My Attendance", path: "/attendance/my" },
-      { id: "user_attendance", title: "User Attendance", path: "/attendance/user_attendance" },
+      {
+        id: "user_attendance",
+        title: "User Attendance",
+        path: "/attendance/user_attendance",
+      },
     ],
   },
   {
@@ -52,18 +89,34 @@ const menuItemsData = [
     title: "Expenses",
     icon: CreditCard,
     subItems: [
-      { id: "add_expenses", title: "Add Expenses", path: "/expenses/addexpense" },
+      {
+        id: "add_expenses",
+        title: "Add Expenses",
+        path: "/expenses/addexpense",
+      },
       { id: "my_expenses", title: "My Expenses", path: "/expenses/myexpense" },
-      { id: "all_expenses", title: "All Expenses", path: "/expenses/allexpenses" },
-      { id: "manage_expenses", title: "Manage Expenses", path: "/expenses/requestedexpenses" },
+      {
+        id: "all_expenses",
+        title: "All Expenses",
+        path: "/expenses/allexpenses",
+      },
+      {
+        id: "manage_expenses",
+        title: "Manage Expenses",
+        path: "/expenses/requestedexpenses",
+      },
     ],
   },
   {
     id: "project",
     title: "Projects",
-    icon: KanbanSquare, 
+    icon: KanbanSquare,
     subItems: [
-      { id: "manage_project_expense", title: "Manage Projects", path: "/project/manage" },
+      {
+        id: "manage_project_expense",
+        title: "Manage Projects",
+        path: "/project/manage",
+      },
     ],
   },
   {
@@ -71,10 +124,26 @@ const menuItemsData = [
     title: "Requisitions",
     icon: ClipboardPaste,
     subItems: [
-      { id: "add_requisition", title: "Add Requisition", path: "/requisition/add" },
-      { id: "my_requisitions", title: "My Requisitions", path: "/requisition/my" },
-      { id: "all_requisitions", title: "All Requisitions", path: "/requisition/all" },
-      { id: "manage_requisitions", title: "Manage Requisitions", path: "/requisition/manage" },
+      {
+        id: "add_requisition",
+        title: "Add Requisition",
+        path: "/requisition/add",
+      },
+      {
+        id: "my_requisitions",
+        title: "My Requisitions",
+        path: "/requisition/my",
+      },
+      {
+        id: "all_requisitions",
+        title: "All Requisitions",
+        path: "/requisition/all",
+      },
+      {
+        id: "manage_requisitions",
+        title: "Manage Requisitions",
+        path: "/requisition/manage",
+      },
     ],
   },
   {
@@ -84,17 +153,52 @@ const menuItemsData = [
     subItems: [
       // Add sub-items here if/when they are defined.
       // Example:
-       { id: "requisition_report", title: "Requisition Report", path: "/accounts/requisitionreport" },
-       { id: "expense_report", title: "Expense Report", path: "/accounts/expensereport" },
-       
+      {
+        id: "requisition_report",
+        title: "Requisition Report",
+        path: "/accounts/requisitionreport",
+      },
+      {
+        id: "expense_report",
+        title: "Expense Report",
+        path: "/accounts/expensereport",
+      },
     ],
   },
-  
 ];
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const [openMenus, setOpenMenus] = useState({});
+  const [roleId, setRoleId] = useState(null);
+  const [filteredMenuItems, setFilteredMenuItems] = useState([]);
+
+  useEffect(() => {
+    const storedRoleId = parseInt(localStorage.getItem("roleId"));
+    setRoleId(storedRoleId);
+
+    // Filter menu items based on role
+    const filtered = menuItemsData
+      .map((item) => {
+        if (item.subItems) {
+          const filteredSubItems = item.subItems.filter((subItem) => {
+            const access = ROLE_ACCESS[item.id]?.[subItem.id];
+            return (
+              access === "all" ||
+              (Array.isArray(access) && access.includes(storedRoleId))
+            );
+          });
+
+          return filteredSubItems.length > 0
+            ? { ...item, subItems: filteredSubItems }
+            : null;
+        }
+        return item;
+      })
+      .filter(Boolean);
+
+    setFilteredMenuItems(filtered);
+  }, []);
 
   const toggleMenu = (id) => {
     setOpenMenus((prevOpenMenus) => ({
@@ -104,21 +208,24 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    // Clear user data from localStorage or your auth state
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userToken');
-    // Navigate to login page
-    navigate('/');
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("roleId");
+    navigate("/");
   };
 
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
         {/* Replace with your actual logo. You might need to adjust styling. */}
-        <img src={logoUrl} alt="Geomaticx Logo" onError={(e) => e.target.style.display='none'} />
+        <img
+          src={logoUrl}
+          alt="Geomaticx Logo"
+          onError={(e) => (e.target.style.display = "none")}
+        />
       </div>
       <ul className="sidebar-menu">
-        {menuItemsData.map((item) => {
+        {filteredMenuItems.map((item) => {
           const IconComponent = item.icon;
           const isOpen = openMenus[item.id] || false;
 
@@ -130,9 +237,9 @@ const Sidebar = () => {
                     <IconComponent size={20} className="menu-icon" />
                     <span className="menu-title">{item.title}</span>
                   </div>
-                  <ChevronDown 
-                    size={18} 
-                    className={`menu-arrow ${isOpen ? 'open' : ''}`}
+                  <ChevronDown
+                    size={18}
+                    className={`menu-arrow ${isOpen ? "open" : ""}`}
                   />
                 </div>
                 {isOpen && (
@@ -150,7 +257,9 @@ const Sidebar = () => {
             );
           } else {
             // Handling items that are direct links or non-expandable 'Accounts' if subItems is empty
-            const isAccountsEmpty = item.id === "accounts" && (!item.subItems || item.subItems.length === 0);
+            const isAccountsEmpty =
+              item.id === "accounts" &&
+              (!item.subItems || item.subItems.length === 0);
             return (
               <li key={item.id} className="menu-item">
                 {isAccountsEmpty ? (

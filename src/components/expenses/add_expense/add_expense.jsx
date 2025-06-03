@@ -424,6 +424,32 @@ const ExpenseFormWeb = () => {
         </div>
     );
 
+    const handleDateClick = (e) => {
+        e.stopPropagation();
+        setShowBillDatePicker(true);
+    };
+
+    const handleDateChange = (e) => {
+        setCurrentExpense({
+            ...currentExpense,
+            billDate: e.target.value
+        });
+        setShowBillDatePicker(false);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showBillDatePicker && !event.target.closest('.date-input') && !event.target.closest('.date-picker')) {
+                setShowBillDatePicker(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showBillDatePicker]);
+
     if (isLoadingUser) {
         return (
             <div className="loading-container">
@@ -545,10 +571,7 @@ const ExpenseFormWeb = () => {
 
                     <div className="form-group">
                         <label>Bill Date *</label>
-                        <div
-                            className="date-input"
-                            onClick={() => setShowBillDatePicker(true)}
-                        >
+                        <div className="date-input" onClick={handleDateClick}>
                             {currentExpense.billDate || 'Select Bill Date'}
                             <Calendar size={20} />
                         </div>
@@ -556,14 +579,9 @@ const ExpenseFormWeb = () => {
                             <input
                                 type="date"
                                 value={currentExpense.billDate}
-                                onChange={(e) => {
-                                    setCurrentExpense({
-                                        ...currentExpense,
-                                        billDate: e.target.value,
-                                    });
-                                    setShowBillDatePicker(false);
-                                }}
+                                onChange={handleDateChange}
                                 className="date-picker"
+                                max={new Date().toISOString().split('T')[0]}
                             />
                         )}
                     </div>

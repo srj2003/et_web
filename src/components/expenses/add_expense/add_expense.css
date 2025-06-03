@@ -4,19 +4,22 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow-x: hidden; /* Critical for preventing horizontal scroll */
+    overflow-x: hidden;
+    /* Critical for preventing horizontal scroll */
     font-family: 'Inter', 'Inter-SemiBold', sans-serif;
 }
 
 body {
     position: relative;
-    background-color: #f8f9fa; /* A light, neutral background for the page */
+    background-color: #f8f9fa;
+    /* A light, neutral background for the page */
 }
 
 /* Main Container - Adjusted to account for a 320px fixed sidebar */
 .expense-form-container {
     /* Original properties */
-    width: auto; /* Allows margin to define actual content width area */
+    width: auto;
+    /* Allows margin to define actual content width area */
     min-height: 100vh;
     font-family: 'Inter', 'Inter-SemiBold', sans-serif;
     position: relative;
@@ -25,31 +28,42 @@ body {
     animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* === Overflow Fix & Professional Layout === */
-    margin-left: 320px; /* Account for the 320px fixed sidebar */
-    padding: 2rem;      /* Consistent padding around the content */
-    transition: margin-left 0.3s ease-in-out, padding-top 0.3s ease-in-out; /* Smooth transition for responsive sidebar */
+    margin-left: 320px;
+    /* Account for the 320px fixed sidebar */
+    padding: 2rem;
+    /* Consistent padding around the content */
+    transition: margin-left 0.3s ease-in-out, padding-top 0.3s ease-in-out;
+    /* Smooth transition for responsive sidebar */
 }
 
 /* Responsive adjustments for sidebar layout changes */
 /* Assuming 900px is the breakpoint where your sidebar might become horizontal or hide */
 @media (max-width: 900px) {
     .expense-form-container {
-        margin-left: 0; /* Remove left margin when sidebar is not fixed on the side */
-        padding-top: calc(60px + 1.5rem); /* Example: if sidebar is 60px high, add its height + desired spacing */
-        padding-left: 1.5rem; /* Adjust horizontal padding for smaller screens */
+        margin-left: 0;
+        /* Remove left margin when sidebar is not fixed on the side */
+        padding-top: calc(60px + 1.5rem);
+        /* Example: if sidebar is 60px high, add its height + desired spacing */
+        padding-left: 1.5rem;
+        /* Adjust horizontal padding for smaller screens */
         padding-right: 1.5rem;
     }
 }
 
 @media (max-width: 768px) {
     .expense-form-container {
-        padding: 1rem; /* Further reduce padding on very small screens */
+        padding: 1rem;
+        /* Further reduce padding on very small screens */
     }
+
     .form-title {
-        font-size: 2rem; /* Adjust title size */
+        font-size: 2rem;
+        /* Adjust title size */
     }
+
     .form-section {
-        padding: 1.25rem; /* Adjust section padding */
+        padding: 1.25rem;
+        /* Adjust section padding */
     }
 }
 
@@ -100,47 +114,59 @@ body {
 .expense-form-container::after {
     content: '';
     position: absolute;
-    width: clamp(250px, 40vw, 600px); /* Responsive size for decorative elements */
+    width: clamp(250px, 40vw, 600px);
+    /* Responsive size for decorative elements */
     height: clamp(250px, 40vw, 600px);
     border-radius: 50%;
-    background: linear-gradient(45deg, rgba(99, 102, 241, 0.07), rgba(79, 70, 229, 0.07)); /* Softer gradient */
+    background: linear-gradient(45deg, rgba(99, 102, 241, 0.07), rgba(79, 70, 229, 0.07));
+    /* Softer gradient */
     z-index: 0;
-    pointer-events: none; /* Make them non-interactive */
+    pointer-events: none;
+    /* Make them non-interactive */
 }
 
 .expense-form-container::before {
-    top: -200px;  /* Adjust positioning as needed */
+    top: -200px;
+    /* Adjust positioning as needed */
     right: -200px;
     animation: float 8s ease-in-out infinite;
 }
 
 .expense-form-container::after {
-    bottom: -200px; /* Adjust positioning as needed */
+    bottom: -200px;
+    /* Adjust positioning as needed */
     left: -200px;
     animation: float 8s ease-in-out infinite reverse;
 }
 
 @keyframes float {
+
     0%,
     100% {
         transform: translateY(0) rotate(0deg);
     }
+
     50% {
-        transform: translateY(-15px) rotate(4deg); /* Subtle animation */
+        transform: translateY(-15px) rotate(4deg);
+        /* Subtle animation */
     }
 }
 
 /* Form Title */
 .form-title {
-    font-size: 2.25rem; /* Slightly refined size */
-    font-weight: 700;   /* Ensure strong weight */
+    font-size: 2.25rem;
+    /* Slightly refined size */
+    font-weight: 700;
+    /* Ensure strong weight */
     color: #1e293b;
-    margin: 0 auto 2.5rem auto; /* Centered with bottom margin */
+    margin: 0 auto 2.5rem auto;
+    /* Centered with bottom margin */
     text-align: center;
     position: relative;
     padding-bottom: 1.25rem;
     letter-spacing: -0.5px;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05); /* Softer shadow */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);
+    /* Softer shadow */
 }
 
 .form-title::after {
@@ -149,35 +175,48 @@ body {
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 100px; /* Slightly smaller underline */
-    height: 3px;  /* Thinner underline */
+    width: 100px;
+    /* Slightly smaller underline */
+    height: 3px;
+    /* Thinner underline */
     background: linear-gradient(90deg, #6366f1, #4f46e5);
     border-radius: 1.5px;
-    box-shadow: 0 1px 3px rgba(99, 102, 241, 0.25); /* Softer shadow */
+    box-shadow: 0 1px 3px rgba(99, 102, 241, 0.25);
+    /* Softer shadow */
 }
 
 /* Form Sections */
 .form-section {
-    background: rgba(255, 255, 255, 0.95); /* Higher opacity for better readability */
-    backdrop-filter: blur(8px); /* Slightly reduced blur if performance is a concern */
-    border-radius: 16px; /* Consistent, slightly softer radius */
-    padding: 2rem;       /* Generous internal padding */
-    margin: 0 auto 2rem auto; /* Centered, with bottom margin for separation */
+    background: rgba(255, 255, 255, 0.95);
+    /* Higher opacity for better readability */
+    backdrop-filter: blur(8px);
+    /* Slightly reduced blur if performance is a concern */
+    border-radius: 16px;
+    /* Consistent, slightly softer radius */
+    padding: 2rem;
+    /* Generous internal padding */
+    margin: 0 auto 2rem auto;
+    /* Centered, with bottom margin for separation */
     width: 100%;
-    max-width: 960px; /* Set a max-width for very wide screens for better readability */
+    max-width: 960px;
+    /* Set a max-width for very wide screens for better readability */
     box-sizing: border-box;
     box-shadow:
-        0 5px 15px -3px rgba(0, 0, 0, 0.07), /* Refined shadow */
+        0 5px 15px -3px rgba(0, 0, 0, 0.07),
+        /* Refined shadow */
         0 2px 8px -2px rgba(0, 0, 0, 0.05),
         inset 0 1px 2px rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(229, 231, 235, 0.8); /* Softer border color */
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    /* Softer border color */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    overflow: visible; /* Keep as is */
+    overflow: visible;
+    /* Keep as is */
 }
 
 .form-section:hover {
-    transform: translateY(-4px); /* Subtle lift */
+    transform: translateY(-4px);
+    /* Subtle lift */
     box-shadow:
         0 10px 25px -5px rgba(0, 0, 0, 0.08),
         0 4px 10px -4px rgba(0, 0, 0, 0.06),
@@ -195,7 +234,8 @@ body {
     background: linear-gradient(90deg, #6366f1, #4f46e5);
     opacity: 0;
     transition: opacity 0.3s ease;
-    border-top-left-radius: 16px; /* Match parent radius */
+    border-top-left-radius: 16px;
+    /* Match parent radius */
     border-top-right-radius: 16px;
 }
 
@@ -204,12 +244,15 @@ body {
 }
 
 .section-title {
-    font-size: 1.6rem; /* Slightly adjusted size */
+    font-size: 1.6rem;
+    /* Slightly adjusted size */
     font-weight: 600;
-    color: #2c3e50; /* Darker, professional blue-gray */
+    color: #2c3e50;
+    /* Darker, professional blue-gray */
     margin-bottom: 1.75rem;
     padding-bottom: 0.875rem;
-    border-bottom: 1px solid rgba(99, 102, 241, 0.15); /* Softer border */
+    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+    /* Softer border */
     position: relative;
     letter-spacing: -0.2px;
 }
@@ -217,10 +260,12 @@ body {
 .section-title::after {
     content: '';
     position: absolute;
-    bottom: -1px; /* Align with the border */
+    bottom: -1px;
+    /* Align with the border */
     left: 0;
     width: 70px;
-    height: 2px; /* Consistent height */
+    height: 2px;
+    /* Consistent height */
     background: linear-gradient(90deg, #6366f1, #4f46e5);
     border-radius: 1px;
 }
@@ -228,8 +273,10 @@ body {
 /* Form Grid */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Min item width */
-    gap: 1.5rem; /* Spacing between grid items */
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    /* Min item width */
+    gap: 1.5rem;
+    /* Spacing between grid items */
     width: 100%;
     box-sizing: border-box;
 }
@@ -238,29 +285,38 @@ body {
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* Space between label and input */
-    min-width: 0; /* Essential for flex/grid children to prevent overflow */
+    gap: 0.5rem;
+    /* Space between label and input */
+    min-width: 0;
+    /* Essential for flex/grid children to prevent overflow */
 }
 
-.form-group.full-width { /* Apply this class in JSX for full-span elements */
+.form-group.full-width {
+    /* Apply this class in JSX for full-span elements */
     grid-column: 1 / -1;
 }
 
 /* Form Labels */
 label {
     font-size: 0.9rem;
-    font-weight: 500; /* Changed from 600 for a slightly lighter feel */
-    color: #34495e;   /* Professional dark blue-gray */
+    font-weight: 500;
+    /* Changed from 600 for a slightly lighter feel */
+    color: #34495e;
+    /* Professional dark blue-gray */
     display: flex;
     align-items: center;
-    gap: 0.4rem;      /* Space next to icon if any */
+    gap: 0.4rem;
+    /* Space next to icon if any */
     letter-spacing: 0.1px;
-    margin-bottom: 0.25rem; /* Reduced margin as .form-group provides gap */
+    margin-bottom: 0.25rem;
+    /* Reduced margin as .form-group provides gap */
 }
 
-label::after { /* Required field indicator */
+label::after {
+    /* Required field indicator */
     content: '*';
-    color: #e74c3c; /* Softer red */
+    color: #e74c3c;
+    /* Softer red */
     margin-left: 0.25rem;
 }
 
@@ -270,40 +326,51 @@ input[type="number"],
 textarea,
 .select-input,
 .date-input {
-    padding: 0.875rem 1.125rem; /* Comfortable padding */
-    border: 1px solid #bdc3c7; /* Softer gray border */
-    border-radius: 8px;        /* Standardized radius */
+    padding: 0.875rem 1.125rem;
+    /* Comfortable padding */
+    border: 1px solid #bdc3c7;
+    /* Softer gray border */
+    border-radius: 8px;
+    /* Standardized radius */
     font-size: 0.95rem;
     color: #2c3e50;
     background: #ffffff;
     transition: all 0.25s ease;
     width: 100%;
     box-sizing: border-box;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04); /* Very subtle inset shadow */
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    /* Very subtle inset shadow */
 }
 
 input[type="text"]:focus,
 input[type="number"]:focus,
 textarea:focus,
-.select-input:focus-within, /* For custom select if it contains an input */
-.date-input:focus-within { /* For custom date picker */
+.select-input:focus-within,
+/* For custom select if it contains an input */
+.date-input:focus-within {
+    /* For custom date picker */
     outline: none;
-    border-color: #4f46e5; /* Primary accent color for focus */
+    border-color: #4f46e5;
+    /* Primary accent color for focus */
     box-shadow:
-        0 0 0 3px rgba(79, 70, 229, 0.12), /* Softer focus ring */
+        0 0 0 3px rgba(79, 70, 229, 0.12),
+        /* Softer focus ring */
         inset 0 1px 2px rgba(0, 0, 0, 0.04);
     /* transform: translateY(-1px); /* Optional: subtle lift on focus */
 }
 
 input[readOnly] {
-    background: #f4f6f8; /* Slightly different background for readonly */
+    background: #f4f6f8;
+    /* Slightly different background for readonly */
     cursor: not-allowed;
-    border-color: #e0e0e0; /* Lighter border for readonly */
+    border-color: #e0e0e0;
+    /* Lighter border for readonly */
 }
 
 textarea {
     resize: vertical;
-    min-height: 100px; /* Adjusted min-height */
+    min-height: 100px;
+    /* Adjusted min-height */
     line-height: 1.5;
 }
 
@@ -313,10 +380,12 @@ textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: relative; /* For positioning the arrow */
+    position: relative;
+    /* For positioning the arrow */
 }
 
-.select-input::after { /* Custom dropdown arrow */
+.select-input::after {
+    /* Custom dropdown arrow */
     content: '▼';
     font-size: 0.7rem;
     color: #7f8c8d;
@@ -330,30 +399,48 @@ textarea {
     transform: translateY(1px);
 }
 
-/* Date Input */
+/* Date Input and Picker Styles */
 .date-input {
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0.875rem 1.125rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #2c3e50;
+    background: #ffffff;
+    transition: all 0.25s ease;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.date-picker { /* Styling for the actual date input field when shown */
+.date-input:hover {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.date-picker {
     position: absolute;
-    top: calc(100% + 0.3rem); /* Position below the trigger */
+    top: calc(100% + 0.5rem);
     left: 0;
-    z-index: 10;
+    z-index: 1000;
+    background: white;
+    border: 1px solid #e0e6ed;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    /* Ensure this is styled if you are using a custom pop-up calendar */
+    padding: 1rem;
 }
 
-/* File Upload */
+/* File Upload Styles */
 .file-upload {
     position: relative;
+    margin-bottom: 1rem;
 }
 
-.file-input { /* Hide the default file input */
+.file-input {
     position: absolute;
     width: 0;
     height: 0;
@@ -364,48 +451,49 @@ textarea {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.875rem 1.25rem; /* Consistent padding */
-    background: linear-gradient(135deg, #5c6ac4 0%, #4855a3 100%); /* Refined gradient */
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
     color: white;
-    border-radius: 8px; /* Consistent radius */
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.25s ease;
     font-weight: 500;
-    box-shadow: 0 3px 5px -1px rgba(0,0,0,0.1), 0 2px 3px -1px rgba(0,0,0,0.08);
+    box-shadow: 0 3px 5px -1px rgba(99, 102, 241, 0.2);
+    width: 100%;
+    justify-content: center;
 }
 
 .file-label:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 10px -2px rgba(0,0,0,0.12), 0 3px 6px -2px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 10px -2px rgba(99, 102, 241, 0.3);
 }
 
 .file-preview,
 .image-preview {
-    margin-top: 0.8rem;
+    margin-top: 1rem;
     padding: 1rem;
-    background: #f8f9fa; /* Light background for preview */
+    background: #f8f9fa;
     border-radius: 8px;
-    border: 1px dashed #cbd5e1; /* Dashed border for visual cue */
+    border: 1px dashed #cbd5e1;
     transition: all 0.25s ease;
 }
 
 .file-preview:hover,
 .image-preview:hover {
-    border-color: #4f46e5; /* Highlight on hover */
-    /* transform: translateY(-1px); /* Optional */
-    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Optional */
+    border-color: #4f46e5;
+    background: #f0f4ff;
 }
 
 .image-preview {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.8rem;
 }
 
 .preview-image {
     max-width: 100%;
     height: auto;
-    border-radius: 6px; /* Slightly smaller radius for inner image */
+    border-radius: 6px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -413,23 +501,27 @@ textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.4rem 0; /* Minimal padding */
-    /* background-color: white; /* Optional background if needed */
-    /* border-radius: 4px; /* Optional */
+    padding: 0.5rem;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .remove-file {
     background: none;
     border: none;
-    color: #e74c3c; /* Softer red */
+    color: #e74c3c;
     cursor: pointer;
     padding: 0.4rem;
     border-radius: 4px;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
 .remove-file:hover {
-    background-color: #fadbd8; /* Light red background on hover */
+    background-color: #fadbd8;
     transform: scale(1.05);
 }
 
@@ -440,19 +532,23 @@ textarea {
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    padding: 1rem 1.75rem; /* Generous padding for primary actions */
+    padding: 1rem 1.75rem;
+    /* Generous padding for primary actions */
     border-radius: 8px;
-    font-size: 1.05rem; /* Slightly larger font */
+    font-size: 1.05rem;
+    /* Slightly larger font */
     font-weight: 500;
     cursor: pointer;
     transition: all 0.25s ease;
     border: none;
     width: 100%;
-    margin-top: 1.5rem; /* Spacing above button */
+    margin-top: 1.5rem;
+    /* Spacing above button */
     text-transform: uppercase;
     letter-spacing: 0.5px;
     position: relative;
-    overflow: hidden; /* For hover effect */
+    overflow: hidden;
+    /* For hover effect */
 }
 
 .add-expense-button {
@@ -462,7 +558,8 @@ textarea {
 }
 
 .submit-all-button {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%); /* Keep original green */
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    /* Keep original green */
     color: white;
     box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2), 0 2px 4px -1px rgba(16, 185, 129, 0.15);
 }
@@ -477,7 +574,8 @@ textarea {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-    transition: left 0.6s ease; /* Smoother transition */
+    transition: left 0.6s ease;
+    /* Smoother transition */
 }
 
 .add-expense-button:hover::before,
@@ -487,23 +585,28 @@ textarea {
 
 .add-expense-button:hover,
 .submit-all-button:hover {
-    transform: translateY(-2px); /* Subtle lift */
-    box-shadow: 0 7px 10px -2px rgba(0,0,0,0.15), 0 3px 6px -2px rgba(0,0,0,0.1); /* Enhanced shadow */
+    transform: translateY(-2px);
+    /* Subtle lift */
+    box-shadow: 0 7px 10px -2px rgba(0, 0, 0, 0.15), 0 3px 6px -2px rgba(0, 0, 0, 0.1);
+    /* Enhanced shadow */
 }
 
 .add-expense-button:disabled,
 .submit-all-button:disabled {
-    opacity: 0.6; /* Clearer disabled state */
+    opacity: 0.6;
+    /* Clearer disabled state */
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-.section-header { /* Container for section title and reset button */
+.section-header {
+    /* Container for section title and reset button */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.75rem; /* Matches section title margin */
+    margin-bottom: 1.75rem;
+    /* Matches section title margin */
     gap: 1rem;
 }
 
@@ -511,11 +614,14 @@ textarea {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem 1rem; /* Balanced padding */
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); /* Refined red gradient */
+    padding: 0.6rem 1rem;
+    /* Balanced padding */
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    /* Refined red gradient */
     color: white;
     border: none;
-    border-radius: 8px; /* Consistent radius */
+    border-radius: 8px;
+    /* Consistent radius */
     cursor: pointer;
     transition: all 0.25s ease;
     font-weight: 500;
@@ -532,35 +638,44 @@ textarea {
 /* Expenses List */
 .expenses-list {
     display: grid;
-    gap: 1.25rem; /* Spacing between expense items */
+    gap: 1.25rem;
+    /* Spacing between expense items */
     margin-top: 1.5rem;
 }
 
 .expense-item {
-    background: #ffffff; /* Solid white for clarity */
+    background: #ffffff;
+    /* Solid white for clarity */
     /* backdrop-filter: blur(10px); /* Optional if you prefer the glass effect */
-    border-radius: 12px; /* Softer radius */
-    padding: 1.25rem 1.5rem; /* Adjusted padding */
+    border-radius: 12px;
+    /* Softer radius */
+    padding: 1.25rem 1.5rem;
+    /* Adjusted padding */
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Align items to top */
+    align-items: flex-start;
+    /* Align items to top */
     gap: 1.25rem;
-    border: 1px solid #e0e6ed; /* Lighter border */
+    border: 1px solid #e0e6ed;
+    /* Lighter border */
     transition: all 0.25s ease;
-    box-shadow: 0 3px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04);
+    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
 }
 
 .expense-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 12px -2px rgba(0,0,0,0.08), 0 3px 7px -2px rgba(0,0,0,0.06);
-    border-color: rgba(79, 70, 229, 0.3); /* Accent border on hover */
+    box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.08), 0 3px 7px -2px rgba(0, 0, 0, 0.06);
+    border-color: rgba(79, 70, 229, 0.3);
+    /* Accent border on hover */
 }
 
 .expense-info {
-    flex: 1; /* Allow info to take available space */
+    flex: 1;
+    /* Allow info to take available space */
 }
 
-.expense-info h3 { /* Expense item title (e.g., type) */
+.expense-info h3 {
+    /* Expense item title (e.g., type) */
     font-size: 1.1rem;
     font-weight: 600;
     color: #2c3e50;
@@ -569,9 +684,11 @@ textarea {
 }
 
 .expense-amount {
-    font-size: 1.3rem; /* Slightly smaller but still prominent */
+    font-size: 1.3rem;
+    /* Slightly smaller but still prominent */
     font-weight: 600;
-    color: #059669; /* Consistent green for amount */
+    color: #059669;
+    /* Consistent green for amount */
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
@@ -579,13 +696,16 @@ textarea {
     /* text-shadow: 1px 1px 2px rgba(16, 185, 129, 0.15); /* Softer shadow */
 }
 
-.expense-amount::before { /* Currency symbol */
+.expense-amount::before {
+    /* Currency symbol */
     content: '₹';
-    font-size: 1.1rem; /* Slightly smaller */
+    font-size: 1.1rem;
+    /* Slightly smaller */
 }
 
 .expense-description {
-    color: #566573; /* Softer gray for description */
+    color: #566573;
+    /* Softer gray for description */
     margin-bottom: 0.75rem;
     line-height: 1.5;
     font-size: 0.9rem;
@@ -593,8 +713,10 @@ textarea {
 
 .expense-actions {
     display: flex;
-    flex-direction: column; /* Stack buttons on smaller widths if needed, or keep row */
-    gap: 0.6rem; /* Space between edit/remove buttons */
+    flex-direction: column;
+    /* Stack buttons on smaller widths if needed, or keep row */
+    gap: 0.6rem;
+    /* Space between edit/remove buttons */
 }
 
 .edit-button,
@@ -602,8 +724,10 @@ textarea {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.6rem 0.9rem; /* Smaller buttons for item actions */
-    border-radius: 6px;     /* Smaller radius */
+    padding: 0.6rem 0.9rem;
+    /* Smaller buttons for item actions */
+    border-radius: 6px;
+    /* Smaller radius */
     font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
@@ -614,46 +738,54 @@ textarea {
 }
 
 .edit-button {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); /* Keep blue */
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    /* Keep blue */
     color: white;
 }
 
 .remove-button {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); /* Keep red */
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    /* Keep red */
     color: white;
 }
 
 .edit-button:hover,
 .remove-button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow on hover */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow on hover */
 }
 
 /* Total Section */
 .total-section {
     margin-top: 2rem;
-    padding: 1.5rem 2rem; /* Adjusted padding */
+    padding: 1.5rem 2rem;
+    /* Adjusted padding */
     background: #ffffff;
-    border-radius: 12px; /* Consistent radius */
+    border-radius: 12px;
+    /* Consistent radius */
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 1.5rem;
-    box-shadow: 0 3px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.05);
+    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
     border: 1px solid #e0e6ed;
 }
 
 .total-label {
-    font-size: 1.1rem; /* Adjusted size */
+    font-size: 1.1rem;
+    /* Adjusted size */
     font-weight: 500;
     color: #34495e;
     letter-spacing: 0.1px;
 }
 
 .total-amount {
-    font-size: 1.75rem; /* Prominent total amount */
+    font-size: 1.75rem;
+    /* Prominent total amount */
     font-weight: 600;
-    color: #059669; /* Match expense item amount color */
+    color: #059669;
+    /* Match expense item amount color */
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -672,26 +804,35 @@ textarea {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.55); /* Slightly darker overlay */
-    backdrop-filter: blur(6px); /* Adjusted blur */
+    background: rgba(0, 0, 0, 0.55);
+    /* Slightly darker overlay */
+    backdrop-filter: blur(6px);
+    /* Adjusted blur */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    padding: 1rem; /* Add padding to prevent modal edge from touching screen edge */
+    padding: 1rem;
+    /* Add padding to prevent modal edge from touching screen edge */
 }
 
 .modal-container {
-    background: #ffffff; /* Solid white for modal */
+    background: #ffffff;
+    /* Solid white for modal */
     /* backdrop-filter: blur(10px); /* Removed if using solid background */
-    border-radius: 12px; /* Consistent radius */
-    width: 100%; /* Take full width of padded overlay area */
-    max-width: min(550px, calc(100vw - 2rem)); /* Ensure it fits viewport with padding */
+    border-radius: 12px;
+    /* Consistent radius */
+    width: 100%;
+    /* Take full width of padded overlay area */
+    max-width: min(550px, calc(100vw - 2rem));
+    /* Ensure it fits viewport with padding */
     margin: 0 auto;
-    max-height: calc(100vh - 2rem); /* Ensure it fits vertically */
+    max-height: calc(100vh - 2rem);
+    /* Ensure it fits vertically */
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 30px -5px rgba(0,0,0,0.2); /* Prominent shadow for modal */
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2);
+    /* Prominent shadow for modal */
     /* border: 1px solid rgba(255, 255, 255, 0.8); /* Optional border */
     animation: modalSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -701,6 +842,7 @@ textarea {
         opacity: 0;
         transform: translateY(-25px) scale(0.97);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -708,8 +850,10 @@ textarea {
 }
 
 .modal-header {
-    padding: 1.25rem 1.5rem; /* Adjusted padding */
-    border-bottom: 1px solid #e0e6ed; /* Softer border */
+    padding: 1.25rem 1.5rem;
+    /* Adjusted padding */
+    border-bottom: 1px solid #e0e6ed;
+    /* Softer border */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -733,7 +877,8 @@ textarea {
 }
 
 .close-button:hover {
-    background: #ecf0f1; /* Light gray background on hover */
+    background: #ecf0f1;
+    /* Light gray background on hover */
     color: #2c3e50;
     transform: rotate(90deg);
 }
@@ -744,12 +889,14 @@ textarea {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    background: #f8f9fa; /* Light background for search bar */
+    background: #f8f9fa;
+    /* Light background for search bar */
 }
 
 .search-bar input {
     flex: 1;
-    padding: 0.75rem 1rem; /* Adjusted padding */
+    padding: 0.75rem 1rem;
+    /* Adjusted padding */
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     font-size: 0.95rem;
@@ -760,7 +907,8 @@ textarea {
 .search-bar input:focus {
     outline: none;
     border-color: #4f46e5;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1); /* Softer focus */
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    /* Softer focus */
     /* transform: translateY(-1px); /* Optional */
 }
 
@@ -781,33 +929,43 @@ textarea {
 }
 
 .modal-content {
-    padding: 0.5rem 1.5rem 1.5rem 1.5rem; /* Top padding reduced as items have own margin */
+    padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+    /* Top padding reduced as items have own margin */
     overflow-y: auto;
     /* max-height calculation from original is fine */
-    max-height: calc(80vh - 200px); /* Or more dynamic calculation if needed */
+    max-height: calc(80vh - 200px);
+    /* Or more dynamic calculation if needed */
     scroll-behavior: smooth;
 }
+
 /* Scrollbar for modal content (original is fine) */
 
 .modal-item {
-    padding: 0.8rem 1rem; /* Adjusted padding */
+    padding: 0.8rem 1rem;
+    /* Adjusted padding */
     cursor: pointer;
-    border-radius: 6px; /* Consistent radius */
+    border-radius: 6px;
+    /* Consistent radius */
     transition: all 0.2s ease;
     margin-bottom: 0.4rem;
-    background: transparent; /* Transparent by default */
-    border: 1px solid transparent; /* Placeholder for border consistency */
+    background: transparent;
+    /* Transparent by default */
+    border: 1px solid transparent;
+    /* Placeholder for border consistency */
 }
 
 .modal-item:hover {
-    background: #f0f4ff; /* Light accent on hover */
+    background: #f0f4ff;
+    /* Light accent on hover */
     /* transform: translateX(5px); /* Optional hover effect */
     /* border-color: rgba(99, 102, 241, 0.15); /* Optional */
 }
 
 .modal-item.selected {
-    background: rgba(79, 70, 229, 0.1); /* Clearer selected state */
-    color: #4f46e5; /* Accent color for text */
+    background: rgba(79, 70, 229, 0.1);
+    /* Clearer selected state */
+    color: #4f46e5;
+    /* Accent color for text */
     font-weight: 500;
     border-color: rgba(79, 70, 229, 0.2);
 }
@@ -817,24 +975,34 @@ textarea {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Should take full viewport if it's the only thing on page */
+    min-height: 100vh;
+    /* Should take full viewport if it's the only thing on page */
     /* background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%); */
     /* The main container background should cover this if loading is within it */
 }
 
 .loading-spinner {
-    width: 45px; /* Slightly smaller */
+    width: 45px;
+    /* Slightly smaller */
     height: 45px;
-    border: 3px solid rgba(99, 102, 241, 0.15); /* Softer border */
-    border-top: 3px solid #4f46e5; /* Accent color for spinner */
+    border: 3px solid rgba(99, 102, 241, 0.15);
+    /* Softer border */
+    border-top: 3px solid #4f46e5;
+    /* Accent color for spinner */
     border-radius: 50%;
-    animation: spin 0.8s linear infinite; /* Slightly faster spin */
+    animation: spin 0.8s linear infinite;
+    /* Slightly faster spin */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 
@@ -842,12 +1010,15 @@ textarea {
 .submit-button-container {
     position: relative;
     width: 100%;
-    padding: 1rem 0; /* Vertical padding, horizontal handled by parent or max-width */
+    padding: 1rem 0;
+    /* Vertical padding, horizontal handled by parent or max-width */
     margin-top: 1.5rem;
-    max-width: 960px; /* Match .form-section max-width */
+    max-width: 960px;
+    /* Match .form-section max-width */
     margin-left: auto;
     margin-right: auto;
 }
+
 /* .submit-all-button margin-bottom was removed as parent now handles bottom padding */
 
 
@@ -858,12 +1029,17 @@ textarea {
    However, to stick to minimal changes from your original intent:
 */
 * {
-    max-width: 100%; /* This can sometimes have unintended side effects on inline or replaced elements */
+    max-width: 100%;
+    /* This can sometimes have unintended side effects on inline or replaced elements */
     box-sizing: border-box;
 }
 
 /* This specific rule is good for text-based inputs */
-input, textarea, .select-input, .date-input, .modal-item {
+input,
+textarea,
+.select-input,
+.date-input,
+.modal-item {
     /* max-width: 100%; /* Already covered by global * */
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -873,8 +1049,10 @@ input, textarea, .select-input, .date-input, .modal-item {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px) scale(0.98); /* Slightly adjusted intro */
+        transform: translateY(20px) scale(0.98);
+        /* Slightly adjusted intro */
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
