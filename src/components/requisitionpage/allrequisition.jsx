@@ -162,6 +162,18 @@ export default function AllRequisitions() {
     );
   }
 
+  if (!requisitions.length) {
+    return (
+      <div className="no-records-container">
+        <div className="no-records-content">
+          <AlertCircle size={48} color="#64748b" />
+          <h2>No Requisitions Found</h2>
+          <p>There are no requisitions to display.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="requisitions-container">
       <h1 className="page-title">All Requisitions</h1>
@@ -277,7 +289,7 @@ export default function AllRequisitions() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalPages > 0 && (
         <div className="pagination-container">
           <button
             className="pagination-button"

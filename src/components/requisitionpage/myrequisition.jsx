@@ -197,6 +197,18 @@ export default function MyRequisitions() {
     );
   }
 
+  if (!requisitions.length) {
+    return (
+      <div className="no-records-container">
+        <div className="no-records-content">
+          <AlertCircle size={48} color="#64748b" />
+          <h2>No Requisitions Found</h2>
+          <p>You haven't submitted any requisitions yet.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="requisitions-container">
       <h1 className="page-title">My Requisitions</h1>
@@ -217,8 +229,8 @@ export default function MyRequisitions() {
             <Clock size={24} color="#f59e0b" />
           </div>
           <div className="stat-info">
-            <h3>Pending</h3>
-            <p className="stat-value">{stats.pending}</p>
+            <h3>Unattended</h3>
+            <p className="stat-value">{stats.unattended}</p>
           </div>
         </div>
         <div className="stat-card">
@@ -259,10 +271,9 @@ export default function MyRequisitions() {
           className="filter-button"
         >
           <option>All</option>
-          <option>Pending</option>
+          <option>Unattended</option>
           <option>Approved</option>
           <option>Rejected</option>
-          <option>Unattended</option>
           <option>Partially Approved</option>
         </select>
       </div>
@@ -316,7 +327,7 @@ export default function MyRequisitions() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalPages > 0 && (
         <div className="pagination-container">
           <button
             className="pagination-button"

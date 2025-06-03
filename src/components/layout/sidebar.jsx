@@ -33,7 +33,7 @@ const menuItemsData = [
     icon: CalendarCheck,
     subItems: [
       { id: "my_attendance", title: "My Attendance", path: "/attendance/my" },
-      { id: "user_attendance", title: "User Attendance", path: "/attendance/user" },
+      { id: "user_attendance", title: "User Attendance", path: "/attendance/user_attendance" },
     ],
   },
   {

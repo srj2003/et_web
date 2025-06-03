@@ -18,6 +18,9 @@ import ManageProjectExpenses from "./components/project/manage_project_expenses"
 import AddLeaves from "./components/leavespage/addleaves/addleaves";
 import ExpenseReport from "./components/accounts/expense_report/expense_report";
 import UserAttendance from "./components/attendance/userattendance";
+import AllLeaves from "./components/leavespage/allleaves/allleaves";
+import ManageLeaves from "./components/leavespage/requestedleaves/requestedleaves";
+import MyLeaves from "./components/leavespage/myleaves/myleaves";
 function App() {
   return (
     <BrowserRouter>
@@ -28,9 +31,9 @@ function App() {
           <Route path="/attendance/my" element={<div>My Attendance Page</div>} />
           <Route path="/attendance/user_attendance" element={<UserAttendance/>} />
           <Route path="/leaves/add" element={<AddLeaves />} />
-          <Route path="/leaves/my" element={<div>My Leaves Page</div>} />
-          <Route path="/leaves/all" element={<div>All Leaves Page</div>} />
-          <Route path="/leaves/manage" element={<div>Manage Leaves Page</div>} />
+          <Route path="/leaves/my" element={<MyLeaves/>} />
+          <Route path="/leaves/all" element={<AllLeaves/>} />
+          <Route path="/leaves/manage" element={<ManageLeaves/>} />
           <Route path="/expenses/addexpense" element={<AddExpense />} />
           <Route path="/expenses/myexpense" element={<MyExpense />} />
           <Route path="/expenses/allexpenses" element={<AllExpenses />} />

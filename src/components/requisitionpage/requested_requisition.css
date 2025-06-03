@@ -103,11 +103,26 @@
 
 /* Filters Section */
 .filters-section {
-    background: white;
-    border-radius: 1rem;
-    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
     margin-bottom: 2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-button {
+    min-width: 150px;
+    padding: 0.75rem;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 12px;
+    background: white;
+    color: #1e293b;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: rgba(99, 102, 241, 0.05);
 }
 
 .search-container {
@@ -541,6 +556,14 @@
         width: 95%;
         margin: 1rem;
     }
+
+    .filters-section {
+        flex-direction: column;
+    }
+    
+    .filter-button {
+        width: 100%;
+    }
 }
 
 /* Animations */
@@ -582,4 +605,33 @@
     background: linear-gradient(90deg, #6366f1, #4f46e5);
     border-radius: 2px;
     box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+}
+
+/* No Records Found */
+.no-records-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 2rem;
+}
+
+.no-records-content {
+  text-align: center;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.no-records-content h2 {
+  margin: 1rem 0;
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.no-records-content p {
+  color: #64748b;
+  font-size: 1rem;
 }

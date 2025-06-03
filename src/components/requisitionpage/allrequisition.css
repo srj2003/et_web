@@ -16,33 +16,14 @@
     overflow-x: hidden;
     box-sizing: border-box;
     scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
+    /* Add these lines to hide scrollbar */
+    -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+    scrollbar-width: none;  /* Hide scrollbar for Firefox */
 }
 
-/* Custom scrollbar for the main container */
+/* Add this to hide scrollbar for Chrome, Safari and Opera */
 .requisitions-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.requisitions-container::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-}
-
-.requisitions-container::-webkit-scrollbar-thumb {
-    background: #6366f1;
-    border-radius: 4px;
-    transition: background 0.2s ease;
-}
-
-.requisitions-container::-webkit-scrollbar-thumb:hover {
-    background: #4f46e5;
-}
-
-/* For Firefox */
-.requisitions-container {
-    scrollbar-width: thin;
-    scrollbar-color: #6366f1 #f1f5f9;
+    display: none;
 }
 
 .requisitions-container>* {
@@ -777,6 +758,35 @@
     box-shadow:
         0 8px 12px -1px rgba(99, 102, 241, 0.3),
         0 4px 6px -1px rgba(99, 102, 241, 0.2);
+}
+
+/* No Records State */
+.no-records-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 2rem;
+}
+
+.no-records-content {
+  text-align: center;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.no-records-content h2 {
+  margin: 1rem 0;
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.no-records-content p {
+  color: #64748b;
+  font-size: 1rem;
 }
 
 /* Responsive Design */

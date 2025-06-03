@@ -19,6 +19,7 @@ const RequisitionsWeb = () => {
   const [selectedRequisition, setSelectedRequisition] = useState(null);
   const [showRequisitionDetails, setShowRequisitionDetails] = useState(false);
   const [approvedAmount, setApprovedAmount] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("All");
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -157,13 +158,19 @@ const RequisitionsWeb = () => {
     }
   };
 
-  const filteredRequisitions = requisitions.filter(
-    (requisition) =>
+  const filteredRequisitions = requisitions.filter((requisition) => {
+    const matchesSearch =
       requisition.employee.toLowerCase().includes(searchQuery.toLowerCase()) ||
       requisition.requisition_title
         .toLowerCase()
-        .includes(searchQuery.toLowerCase())
-  );
+        .includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      selectedStatus === "All" ||
+      requisition.requisition_status === selectedStatus;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const totalPages = Math.ceil(filteredRequisitions.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -177,6 +184,19 @@ const RequisitionsWeb = () => {
       <div className="loading-container">
         <div className="loading-spinner"></div>
         <p>Loading requisitions...</p>
+      </div>
+    );
+  }
+
+  // Add after loading check
+  if (!requisitions.length) {
+    return (
+      <div className="no-records-container">
+        <div className="no-records-content">
+          <AlertCircle size={48} color="#64748b" />
+          <h2>No Requested Requisitions</h2>
+          <p>No requisitions have been submitted for your approval.</p>
+        </div>
       </div>
     );
   }
@@ -223,7 +243,6 @@ const RequisitionsWeb = () => {
             </div>
           </div>
         </div>
-
         <div className="filters-section">
           <div className="search-container">
             <Search size={20} color="#64748b" />
@@ -235,8 +254,18 @@ const RequisitionsWeb = () => {
               className="search-input"
             />
           </div>
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="filter-button"
+          >
+            <option value="All">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Partially Approved">Partially Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
         </div>
-
         <div className="requisitions-grid">
           {paginatedRequisitions.map((requisition) => (
             <div
@@ -326,30 +355,29 @@ const RequisitionsWeb = () => {
             </div>
           ))}
         </div>
-
-        <div className="pagination">
-          <button
-            className={`page-button ${currentPage === 1 ? "disabled" : ""}`}
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <span className="pagination-text">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className={`page-button ${
-              currentPage === totalPages ? "disabled" : ""
-            }`}
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
+        {totalPages > 0 && (
+          <div className="pagination-container">
+            <button
+              className="pagination-button"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft size={20} />
+              Previous
+            </button>
+            <div className="pagination-number">
+              Page {currentPage} of {totalPages}
+            </div>
+            <button
+              className="pagination-button"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        )}{" "}
       </div>
 
       {showRequisitionDetails && selectedRequisition && (
