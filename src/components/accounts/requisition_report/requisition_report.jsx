@@ -42,7 +42,7 @@ const RequisitionDetailsModal = ({ requisition, visible, onClose }) => {
     };
 
     return (
-        <div className={`modal-overlay ${visible ? 'visible' : ''}`}>
+        <div className={`requisition-modal-overlay ${visible ? 'visible' : ''}`}>
             <div className="modal-panel">
                 <button className="modal-back-button" onClick={onClose}>
                     <ArrowLeft size={20} />
