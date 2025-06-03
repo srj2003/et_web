@@ -15,7 +15,7 @@ import moment from "moment";
 import Select from "react-select";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "./Users.css";
+import "./users.css";
 // import defaultProfileImage from "../../assets/images/default_profile.png";
 
 const Users = () => {
