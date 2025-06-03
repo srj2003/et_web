@@ -23,6 +23,7 @@ import ManageLeaves from "./components/leavespage/requestedleaves/requestedleave
 import MyLeaves from "./components/leavespage/myleaves/myleaves";
 import RequisitionReport from "./components/accounts/requisition_report/requisition_report";
 import ProfileScreen from "./components/profile/profile";
+import Help from "./components/help/help";
 function App() {
   return (
     <BrowserRouter>
@@ -50,6 +51,7 @@ function App() {
            <Route path="/accounts/expensereport" element={<ExpenseReport />} />
            <Route path="/accounts/requisitionreport" element={<RequisitionReport />} />
            <Route path="/profile" element={<ProfileScreen />} />
+           <Route path="/help" element={<Help />} />
           <Route
             path="/project/manage"
             element={<ManageProjectExpenses/>}

@@ -18,7 +18,7 @@ import {
 import "./sidebar.css"; // We will create/update this CSS file
 
 // Placeholder for the logo image - replace with your actual logo path
-const logoUrl = "src/assets/GM.png"; // Example path, or import if using build system
+const logoUrl = "https://i.postimg.cc/5203y3vn/geomaticx-logo.png"; // Example path, or import if using build system
 
 const menuItemsData = [
   // {
