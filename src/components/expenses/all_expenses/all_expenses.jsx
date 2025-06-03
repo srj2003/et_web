@@ -449,39 +449,40 @@ const AllExpensesWeb = () => {
                                                 <th>Unit</th>
                                                 <th>Amount</th>
                                                 <th>Date</th>
-                                                <th>Actions</th>
+                                                <th>Product</th>
+                                                <th>Bill</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {selectedExpense.expense_details.map((detail, index) => (
-                                                <tr key={index}>
-                                                    <td>{detail.expense_head_title}</td>
-                                                    <td>{detail.expense_product_desc}</td>
-                                                    <td>{detail.expense_product_qty}</td>
-                                                    <td>{detail.expense_product_unit}</td>
-                                                    <td>₹{detail.expense_product_amount}</td>
-                                                    <td>{formatDate(detail.expense_bill_date)}</td>
-                                                    <td className="action-buttons">
-                                                        {detail.expense_product_photo_path && (
-                                                            <button
-                                                                className="view-button product"
-                                                                onClick={() => window.open(detail.expense_product_photo_path, '_blank')}
-                                                                title="View Product Image"
-                                                            >
-                                                                <img src="/product-icon.png" alt="Product" />
-                                                            </button>
-                                                        )}
-                                                        {detail.expense_product_bill_photo_path && (
-                                                            <button
-                                                                className="view-button bill"
-                                                                onClick={() => window.open(detail.expense_product_bill_photo_path, '_blank')}
-                                                                title="View Bill Image"
-                                                            >
-                                                                <img src="/bill-icon.png" alt="Bill" />
-                                                            </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
+                                                 <tr key={index}>
+                                                 <td>{detail.expense_head_title}</td>
+                                                 <td>{detail.expense_product_desc}</td>
+                                                 <td>{detail.expense_product_qty}</td>
+                                                 <td>{detail.expense_product_unit}</td>
+                                                 <td>₹{detail.expense_product_amount}</td>
+                                                 <td>{formatDate(detail.expense_bill_date)}</td>
+                                                 <td className="action-buttons">
+                                                     {detail.expense_product_photo_path && (
+                                                         <button
+                                                             className="view-button product"
+                                                             onClick={() => window.open(`https://demo-expense.geomaticxevs.in/ET-api/${detail.expense_product_photo_path}`, '_blank')}
+                                                             title="View Product Image"
+                                                         >
+                                                             <img src={`https://demo-expense.geomaticxevs.in/ET-api/${detail.expense_product_photo_path}`} alt="Product" />
+                                                         </button>
+                                                     )}
+                                                     {detail.expense_product_bill_photo_path && (
+                                                         <button
+                                                             className="view-button bill"
+                                                             onClick={() => window.open(`https://demo-expense.geomaticxevs.in/ET-api/${detail.expense_product_bill_photo_path}`, '_blank')}
+                                                             title="View Bill Image"
+                                                         >
+                                                             <img src={`https://demo-expense.geomaticxevs.in/ET-api/${detail.expense_product_bill_photo_path}`} alt="Bill" />
+                                                         </button>
+                                                     )}
+                                                 </td>
+                                             </tr>
                                             ))}
                                         </tbody>
                                     </table>
