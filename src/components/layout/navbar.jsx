@@ -141,6 +141,11 @@ const Navbar = () => {
                                     <p className="profile-role">{userData?.role_name || 'Loading...'}</p>
                                 </div>
                             </div>
+                            <div className="profile-actions">
+                                <Link to="/profile" className="profile-action-link">
+                                    View Profile
+                                </Link>
+                            </div>
                         </div>
                     )}
                 </div>

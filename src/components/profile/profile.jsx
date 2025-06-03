@@ -1,7 +1,7 @@
 // profile.jsx
 import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Calendar, Edit, Briefcase, Camera, XCircle, User, Award } from 'lucide-react';
-import './profile.css';
+import styles from './Profile.module.css';
 
 const ProfileScreen = () => {
     const [isEditing, setIsEditing] = useState(false);
@@ -183,8 +183,8 @@ const ProfileScreen = () => {
 
     if (loading) {
         return (
-            <div className="loading-container">
-                <div className="loading-spinner"></div>
+            <div className={styles.loadingContainer}>
+                <div className={styles.loadingSpinner}></div>
                 <p>Loading profile information...</p>
             </div>
         );
@@ -192,11 +192,11 @@ const ProfileScreen = () => {
 
     if (error) {
         return (
-            <div className="error-container">
-                <XCircle size={60} className="error-icon" />
-                <h2 className="error-text">Failed to Load Profile</h2>
-                <p className="error-subtext">{error}</p>
-                <p className="error-subtext">Please refresh the page or try again later.</p>
+            <div className={styles.errorContainer}>
+                <XCircle size={60} className={styles.errorIcon} />
+                <h2 className={styles.errorText}>Failed to Load Profile</h2>
+                <p className={styles.errorSubtext}>{error}</p>
+                <p className={styles.errorSubtext}>Please refresh the page or try again later.</p>
             </div>
         );
     }
@@ -204,23 +204,23 @@ const ProfileScreen = () => {
     if (!userData) return null;
 
     return (
-        <div className="dashboard-layout">
-            <main className="profile-main-content">
-                <header className="profile-page-header">
+        <div className={styles.profileContainer}>
+            <main className={styles.mainContent}>
+                <header className={styles.pageHeader}>
                     <h1>User Profile</h1>
                     <p>Manage your personal and work information.</p>
                 </header>
 
-                <section className="profile-summary-card">
-                    <div className="avatar-section">
-                        <div className="avatar-wrapper">
+                <section className={styles.summaryCard}>
+                    <div className={styles.avatarSection}>
+                        <div className={styles.avatarWrapper}>
                             <img
                                 src={profileImage || '/default-profile.png'}
                                 alt="Profile"
-                                className="avatar"
+                                className={styles.avatar}
                             />
-                            <label htmlFor="profile-image-input" className="camera-overlay">
-                                <Camera size={240} />
+                            <label htmlFor="profile-image-input" className={styles.cameraOverlay}>
+                                <Camera size={24} />
                                 <input
                                     id="profile-image-input"
                                     type="file"
@@ -230,98 +230,102 @@ const ProfileScreen = () => {
                                 />
                             </label>
                         </div>
-                        <div className="user-details">
-                            <h2 className="user-name">
-                                {`${userData.u_fname}${userData.u_mname ? ` ${userData.u_mname} ` : ' '
-                                    }${userData.u_lname}`}
+                        <div className={styles.userDetails}>
+                            <h2 className={styles.userName}>
+                                {`${userData.u_fname}${userData.u_mname ? ` ${userData.u_mname} ` : ' '}${userData.u_lname}`}
                             </h2>
-                            <p className="user-id">ID: {userData.user_id}</p>
-                            <p className="user-role"><Award size={16} /> {userRole || 'Not assigned'}</p>
+                            <p className={styles.userId}>ID: {userData.user_id}</p>
+                            <p className={styles.userRole}>
+                                <Award size={16} /> {userRole || 'Not assigned'}
+                            </p>
                         </div>
                     </div>
                 </section>
 
-                <div className="profile-sections-grid">
-                    <section className="profile-section">
-                        <h3 className="section-title">Contact Information</h3>
-                        <div className="info-item">
-                            <Mail size={20} className="info-icon" />
-                            <div className="info-content">
-                                <label className="info-label">Email Address</label>
+                <div className={styles.sectionsGrid}>
+                    <section className={styles.section}>
+                        <h3 className={styles.sectionTitle}>Contact Information</h3>
+                        <div className={styles.infoItem}>
+                            <Mail size={20} className={styles.infoIcon} />
+                            <div className={styles.infoContent}>
+                                <label className={styles.infoLabel}>Email Address</label>
                                 {editingField === 'email' ? (
                                     <input
                                         type="email"
-                                        className="edit-input"
+                                        className={styles.editInput}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="Enter email"
                                     />
                                 ) : (
-                                    <span className="info-display">{email || 'Not provided'}</span>
+                                    <span className={styles.infoDisplay}>{email || 'Not provided'}</span>
                                 )}
                             </div>
-                            <button className="edit-action-button" onClick={() => handleEditClick('email')}>
+                            <button
+                                className={styles.editButton}
+                                onClick={() => handleEditClick('email')}
+                            >
                                 <Edit size={16} />
                             </button>
                         </div>
 
-                        <div className="info-item">
-                            <Phone size={20} className="info-icon" />
-                            <div className="info-content">
-                                <label className="info-label">Phone Number</label>
+                        <div className={styles.infoItem}>
+                            <Phone size={20} className={styles.infoIcon} />
+                            <div className={styles.infoContent}>
+                                <label className={styles.infoLabel}>Phone Number</label>
                                 {editingField === 'phone' ? (
                                     <input
                                         type="tel"
-                                        className="edit-input"
+                                        className={styles.editInput}
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
                                         placeholder="Enter phone number"
                                     />
                                 ) : (
-                                    <span className="info-display">{userData.u_mob || 'Not provided'}</span>
+                                    <span className={styles.infoDisplay}>{userData.u_mob || 'Not provided'}</span>
                                 )}
                             </div>
-                            <button className="edit-action-button" onClick={() => handleEditClick('phone')}>
+                            <button className={styles.editButton} onClick={() => handleEditClick('phone')}>
                                 <Edit size={16} />
                             </button>
                         </div>
 
-                        <div className="info-item">
-                            <MapPin size={20} className="info-icon" />
-                            <div className="info-content">
-                                <label className="info-label">Location</label>
+                        <div className={styles.infoItem}>
+                            <MapPin size={20} className={styles.infoIcon} />
+                            <div className={styles.infoContent}>
+                                <label className={styles.infoLabel}>Location</label>
                                 {editingField === 'location' ? (
                                     <input
                                         type="text"
-                                        className="edit-input"
+                                        className={styles.editInput}
                                         value={location}
                                         onChange={(e) => setLocation(e.target.value)}
                                         placeholder="Enter location"
                                     />
                                 ) : (
-                                    <span className="info-display">{userData.u_street_addr || 'Not provided'}</span>
+                                    <span className={styles.infoDisplay}>{userData.u_street_addr || 'Not provided'}</span>
                                 )}
                             </div>
-                            <button className="edit-action-button" onClick={() => handleEditClick('location')}>
+                            <button className={styles.editButton} onClick={() => handleEditClick('location')}>
                                 <Edit size={16} />
                             </button>
                         </div>
                     </section>
 
-                    <section className="profile-section">
-                        <h3 className="section-title">Work Information</h3>
-                        <div className="info-item static-info">
-                            <Briefcase size={20} className="info-icon" />
-                            <div className="info-content">
-                                <label className="info-label">Current Role</label>
-                                <span className="info-display">{userRole || 'Not assigned'}</span>
+                    <section className={styles.section}>
+                        <h3 className={styles.sectionTitle}>Work Information</h3>
+                        <div className={styles.infoItem}>
+                            <Briefcase size={20} className={styles.infoIcon} />
+                            <div className={styles.infoContent}>
+                                <label className={styles.infoLabel}>Current Role</label>
+                                <span className={styles.infoDisplay}>{userRole || 'Not assigned'}</span>
                             </div>
                         </div>
-                        <div className="info-item static-info">
-                            <Calendar size={20} className="info-icon" />
-                            <div className="info-content">
-                                <label className="info-label">Joined Date</label>
-                                <span className="info-display">
+                        <div className={styles.infoItem}>
+                            <Calendar size={20} className={styles.infoIcon} />
+                            <div className={styles.infoContent}>
+                                <label className={styles.infoLabel}>Joined Date</label>
+                                <span className={styles.infoDisplay}>
                                     {userData.u_created_at
                                         ? new Date(userData.u_created_at).toLocaleDateString()
                                         : 'N/A'}
@@ -332,11 +336,17 @@ const ProfileScreen = () => {
                 </div>
 
                 {(isEditing || isImageChanged) && (
-                    <div className="profile-actions-sticky">
-                        <button className="cancel-button" onClick={handleCancelEdit}>
+                    <div className={styles.actionBar}>
+                        <button
+                            className={styles.cancelButton}
+                            onClick={handleCancelEdit}
+                        >
                             Cancel
                         </button>
-                        <button className="save-button" onClick={handleSave}>
+                        <button
+                            className={styles.saveButton}
+                            onClick={handleSave}
+                        >
                             Save Changes
                         </button>
                     </div>
