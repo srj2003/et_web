@@ -69,7 +69,7 @@ const menuItemsData = [
       {
         id: "user_attendance",
         title: "User Attendance",
-        path: "/attendance/user_attendance",
+        path: "/attendance/userattendance",
       },
     ],
   },
