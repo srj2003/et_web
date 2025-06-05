@@ -501,10 +501,12 @@ const ExpenseFormWeb = () => {
             <section className="form-section">
                 <div className="section-header">
                     <h2 className="section-title">Expense Details</h2>
-                    <button className="reset-button" onClick={resetForm}>
-                        <Trash2 size={16} />
-                        Reset
-                    </button>
+                    <div className="reset-button-container">
+                        <button className="reset-button" onClick={resetForm}>
+                            <Trash2 size={14} />
+                            Reset
+                        </button>
+                    </div>
                 </div>
 
                 <div className="form-grid">
@@ -571,19 +573,18 @@ const ExpenseFormWeb = () => {
 
                     <div className="form-group">
                         <label>Bill Date *</label>
-                        <div className="date-input" onClick={handleDateClick}>
-                            {currentExpense.billDate || 'Select Bill Date'}
-                            <Calendar size={20} />
-                        </div>
-                        {showBillDatePicker && (
-                            <input
-                                type="date"
-                                value={currentExpense.billDate}
-                                onChange={handleDateChange}
-                                className="date-picker"
-                                max={new Date().toISOString().split('T')[0]}
-                            />
-                        )}
+                        <input
+                            type="date"
+                            value={currentExpense.billDate}
+                            onChange={(e) =>
+                                setCurrentExpense({
+                                    ...currentExpense,
+                                    billDate: e.target.value
+                                })
+                            }
+                            className="date-input"
+                            max={new Date().toISOString().split('T')[0]}
+                        />
                     </div>
 
                     <div className="form-group full-width">
