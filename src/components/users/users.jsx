@@ -14,6 +14,7 @@ import {
     FileText,
     X,
     Eye,
+    AlertCircle,
 } from "lucide-react";
 import moment from "moment";
 import Select from "react-select";
@@ -42,6 +43,8 @@ const Users = () => {
     const [profileImageLoading, setProfileImageLoading] = useState(false);
     const [imageUri, setImageUri] = useState(null);
     const [activeTab, setActiveTab] = useState('all');
+    const [formErrors, setFormErrors] = useState({});
+    const [submitError, setSubmitError] = useState('');
 
     const [formData, setFormData] = useState({
         userId: "",
@@ -52,15 +55,17 @@ const Users = () => {
         email: "",
         mobile: "",
         city: "",
-        role_name: "",
         state: "",
         country: "",
         zipCode: "",
+        role_name: "",
         streetAddress: "",
         organization: "",
         password: "",
         profileImage: "",
         cv: "",
+        cvName: "",
+        cvSize: 0,
         active: false,
         isDeleted: false,
         is_logged_out: false,
@@ -200,58 +205,133 @@ const Users = () => {
     const handleCVUpload = async (event) => {
         const file = event.target.files[0];
         if (file) {
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                toast.error("File size should not exceed 10MB");
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onloadend = () => {
                 setFormData(prev => ({
                     ...prev,
-                    cv: reader.result
+                    cv: reader.result,
+                    cvName: file.name,
+                    cvSize: file.size
                 }));
             };
             reader.readAsDataURL(file);
         }
     };
 
+    const validateForm = () => {
+        const errors = {};
+        
+        if (!formData.userId?.trim()) {
+            errors.userId = 'User ID is required';
+        }
+        if (!formData.firstName?.trim()) {
+            errors.firstName = 'First name is required';
+        }
+        if (!formData.email?.trim()) {
+            errors.email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            errors.email = 'Invalid email format';
+        }
+        if (!formData.mobile?.trim()) {
+            errors.mobile = 'Mobile number is required';
+        }
+        if (!formData.password?.trim()) {
+            errors.password = 'Password is required';
+        }
+        if (!selectedRole) {
+            errors.role = 'Role is required';
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleSubmitUser = async () => {
+        setSubmitError('');
+        
+        if (!validateForm()) {
+            setSubmitError('Please fill in all required fields');
+            return;
+        }
+
         try {
-            const userData = {
-                ...formData,
-                role_name: selectedRole,
-                created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
-            };
+            // Create FormData object for multipart/form-data
+            const formDataObj = new FormData();
+            
+            // Required fields as per PHP API
+            formDataObj.append('user_id', formData.userId);
+            formDataObj.append('first_name', formData.firstName);
+            formDataObj.append('last_name', formData.lastName || '');
+            formDataObj.append('email', formData.email);
+            formDataObj.append('mobile', formData.mobile);
+            formDataObj.append('password', formData.password);
+
+            // Optional fields
+            formDataObj.append('middle_name', formData.middleName || '');
+            formDataObj.append('gender', formData.gender || 'male');
+            formDataObj.append('city', formData.city || '');
+            formDataObj.append('state', formData.state || '');
+            formDataObj.append('country', formData.country || '');
+            formDataObj.append('zip_code', formData.zipCode || '');
+            formDataObj.append('street_address', formData.streetAddress || '');
+            formDataObj.append('organization', formData.organization || '');
+            formDataObj.append('role_name', selectedRole || 'user');
+            formDataObj.append('active', formData.active ? '1' : '0');
+            formDataObj.append('is_deleted', '0');
+            formDataObj.append('created_at', moment().format("YYYY-MM-DD HH:mm:ss"));
+            formDataObj.append('updated_at', moment().format("YYYY-MM-DD HH:mm:ss"));
+
+            // Handle profile image
+            if (formData.profileImage) {
+                const profileImageBlob = await fetch(formData.profileImage).then(r => r.blob());
+                formDataObj.append('profile_image', profileImageBlob, 'profile_image.jpg');
+            }
+
+            // Handle CV
+            if (formData.cv) {
+                const cvBlob = await fetch(formData.cv).then(r => r.blob());
+                formDataObj.append('cv', cvBlob, formData.cvName || 'document.pdf');
+            }
+
+            console.log('Sending form data...'); // Debug log
+            for (let pair of formDataObj.entries()) {
+                console.log(pair[0] + ': ' + (pair[1] instanceof Blob ? 'File' : pair[1])); // Debug log
+            }
 
             const response = await fetch(
-                "https://demo-expense.geomaticxevs.in/ET-api/user_form.php",
+                "https://demo-expense.geomaticxevs.in/ET-api/add_users.php",
                 {
                     method: "POST",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(userData),
+                    body: formDataObj
                 }
             );
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
             const result = await response.json();
+            console.log('API Response:', result);
+
+            if (!response.ok) {
+                throw new Error(result.message || `HTTP error! status: ${response.status}`);
+            }
 
             if (result.success) {
                 toast.success("User added successfully!");
                 setShowAddUser(false);
                 setSelectedRole(null);
-                fetchData();
-                fetchData1();
+                await fetchData();
+                await fetchData1();
+                resetForm();
             } else {
-                toast.error(result.message || "Failed to add user");
+                throw new Error(result.message || "Failed to add user");
             }
         } catch (error) {
             console.error("Error submitting user:", error);
-            toast.error("Something went wrong while adding the user. Please try again!");
-        } finally {
-            setImageUri(null);
-            resetForm();
+            setSubmitError(error.message || "Something went wrong while adding the user");
+            toast.error(error.message || "Failed to add user");
         }
     };
 
@@ -411,12 +491,18 @@ const Users = () => {
             password: "",
             profileImage: "",
             cv: "",
-            active: false,
+            cvName: "",
+            cvSize: 0,
+            active: true,
             isDeleted: false,
             is_logged_out: false,
             created_at: "",
             updated_at: "",
         });
+        setSelectedRole(null);
+        setFormErrors({});
+        setSubmitError('');
+        setImageUri(null);
     };
 
     const resetFormRole = () => {
@@ -459,7 +545,7 @@ const Users = () => {
     };
 
     const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
+        if (!bytes || bytes === 0) return '0 Bytes';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -816,16 +902,23 @@ const Users = () => {
                                     style={{ display: 'none' }}
                                 />
 
-                                <div className="form-group">
-                                    <label>User ID</label>
+                                <div className={`form-group ${formErrors.userId ? 'error' : ''}`}>
+                                    <label className="required-field">User ID</label>
                                     <input
                                         type="text"
                                         value={formData.userId}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, userId: e.target.value })
-                                        }
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, userId: e.target.value });
+                                            setFormErrors({ ...formErrors, userId: '' });
+                                        }}
                                         placeholder="Enter user ID"
                                     />
+                                    {formErrors.userId && (
+                                        <div className="error-message">
+                                            <AlertCircle size={16} />
+                                            {formErrors.userId}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="form-group">
@@ -955,10 +1048,10 @@ const Users = () => {
                                                 <FileText className="cv-file-icon" size={24} />
                                                 <div className="cv-file-details">
                                                     <div className="cv-file-name">
-                                                        {formData.cv.name || 'Document.pdf'}
+                                                        {formData.cvName || 'Document.pdf'}
                                                     </div>
                                                     <div className="cv-file-size">
-                                                        {formatFileSize(formData.cv.size || 0)}
+                                                        {formatFileSize(formData.cvSize)}
                                                     </div>
                                                 </div>
                                                 <div className="cv-file-actions">
@@ -966,7 +1059,7 @@ const Users = () => {
                                                         className="cv-action-button"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            // Add preview functionality here
+                                                            // Add preview functionality here if needed
                                                         }}
                                                     >
                                                         <Eye size={18} />
@@ -975,7 +1068,12 @@ const Users = () => {
                                                         className="cv-action-button"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setFormData({...formData, cv: null});
+                                                            setFormData(prev => ({
+                                                                ...prev, 
+                                                                cv: "",
+                                                                cvName: "",
+                                                                cvSize: 0
+                                                            }));
                                                         }}
                                                     >
                                                         <X size={18} />
@@ -1009,14 +1107,27 @@ const Users = () => {
                                     />
                                 </div>
 
-                                <div className="form-group">
-                                    <label>Role</label>
-                                    <input
-                                        type="text"
-                                        value={selectedRole || ""}
-                                        readOnly
-                                        className="readonly-input"
+                                <div className={`form-group ${formErrors.role ? 'error' : ''}`}>
+                                    <label className="required-field">Role</label>
+                                    <Select
+                                        options={data.map((role) => ({
+                                            value: role.role_name,
+                                            label: role.role_name,
+                                        }))}
+                                        value={selectedRole ? { value: selectedRole, label: selectedRole } : null}
+                                        onChange={(option) => {
+                                            setSelectedRole(option ? option.value : null);
+                                            setFormErrors({ ...formErrors, role: '' });
+                                        }}
+                                        placeholder="Select Role"
+                                        className={formErrors.role ? 'select-error' : ''}
                                     />
+                                    {formErrors.role && (
+                                        <div className="error-message">
+                                            <AlertCircle size={16} />
+                                            {formErrors.role}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="form-group">
@@ -1061,7 +1172,7 @@ const Users = () => {
                                     <label>Created At</label>
                                     <input
                                         type="text"
-                                        value={formData.created_at}
+                                        value={moment().format("YYYY-MM-DD HH:mm:ss")}
                                         readOnly
                                         className="readonly-input"
                                     />
@@ -1089,6 +1200,13 @@ const Users = () => {
                                     }
                                 />
                             </div>
+
+                            {submitError && (
+                                <div className="form-submit-error">
+                                    <AlertCircle size={18} />
+                                    {submitError}
+                                </div>
+                            )}
 
                             <div className="button-container">
                                 <button className="submit-button" onClick={handleSubmitUser}>
