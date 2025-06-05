@@ -248,6 +248,20 @@ body {
     border-bottom: 1px solid rgba(99, 102, 241, 0.1);
     color: #1e293b;
     transition: all 0.3s ease;
+    vertical-align: middle; /* Center vertically */
+    text-align: left;      /* Left align by default */
+}
+
+/* Center align specific column (Status column) */
+.users-table td:nth-child(4) {
+    text-align: center;    /* Center the status column content */
+    width: 100px;  /* Fixed width for status column */
+    vertical-align: middle;
+}
+
+/* Center align the status header */
+.users-table th:nth-child(4) {
+    text-align: center;
 }
 
 .user-row {
@@ -284,19 +298,21 @@ body {
     color: #64748b;
 }
 
-.status-badge {
+/* Update status badge styles */
+.status-badge1 {
     width: 0.75rem;
     height: 0.75rem;
     border-radius: 50%;
-    display: inline-block;
+    display: block;
+    margin: 0 auto;  /* Center horizontally */
 }
 
-.status-badge.active {
+.status-badge1.active {
     background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
     box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
 }
 
-.status-badge.inactive {
+.status-badge1.inactive {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
 }
@@ -473,6 +489,45 @@ body {
     color: #1e293b;
     margin-bottom: 1.5rem;
     letter-spacing: -0.25px;
+}
+
+/* Categories Header */
+.categories-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.categories-header .back-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    color: #475569;
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.categories-header .back-button:hover {
+    background: rgba(99, 102, 241, 0.05);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+}
+
+.categories-header .back-button span {
+    font-size: 0.9rem;
 }
 
 /* Responsive Design */
@@ -909,158 +964,35 @@ body {
     height: 18px;
 }
 
-.form-group.error input,
-.form-group.error .css-13cymwt-control {
-    border-color: #ef4444 !important;
-    background-color: rgba(239, 68, 68, 0.05);
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
-.form-group.error input:focus,
-.form-group.error .css-13cymwt-control:hover {
-    border-color: #ef4444 !important;
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+.header-content .title {
+  font-size: 1.25rem;
+  color: #1e293b;
+  font-weight: 600;
+  margin: 0;
 }
 
-.error-message {
-    color: #ef4444;
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.header-content .back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  color: #475569;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-.error-message svg {
-    width: 16px;
-    height: 16px;
-}
-
-.required-field::after {
-    content: '*';
-    color: #ef4444;
-    margin-left: 4px;
-}
-
-.form-submit-error {
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid #ef4444;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    color: #ef4444;
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.readonly-input {
-    background-color: #f8fafc !important;
-    color: #64748b !important;
-    cursor: not-allowed !important;
-}
-
-/* Select Component Styles */
-.form-group .css-13cymwt-control {
-    border: 2px solid rgba(99, 102, 241, 0.2);
-    border-radius: 12px;
-    min-height: 45px;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-}
-
-.form-group .css-13cymwt-control:hover {
-    border-color: rgba(99, 102, 241, 0.4);
-}
-
-.form-group .css-t3ipsp-control {
-    border: 2px solid #6366f1 !important;
-    border-radius: 12px;
-    min-height: 45px;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
-}
-
-.form-group .select-error .css-13cymwt-control {
-    border-color: #ef4444;
-    background-color: rgba(239, 68, 68, 0.05);
-}
-
-.form-group .select-error .css-13cymwt-control:hover {
-    border-color: #ef4444;
-}
-
-.form-group .css-1nmdiq5-menu {
-    background-color: white;
-    border-radius: 12px;
-    margin-top: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(99, 102, 241, 0.1);
-}
-
-.form-group .css-1n6sfyn-MenuList {
-    padding: 8px;
-}
-
-.form-group .css-1n6sfyn-MenuList > div {
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.form-group .css-1n6sfyn-MenuList > div:hover {
-    background-color: rgba(99, 102, 241, 0.1);
-}
-
-.button-container {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    justify-content: flex-end;
-}
-
-.submit-button {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    color: white;
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2),
-        0 2px 4px -1px rgba(99, 102, 241, 0.1);
-}
-
-.submit-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 12px -1px rgba(99, 102, 241, 0.3),
-        0 4px 6px -1px rgba(99, 102, 241, 0.2);
-}
-
-.submit-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.cancel-button {
-    background: white;
-    color: #475569;
-    border: 2px solid rgba(99, 102, 241, 0.2);
-    padding: 0.75rem 2rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.cancel-button:hover {
-    background: rgba(99, 102, 241, 0.05);
-    border-color: rgba(99, 102, 241, 0.3);
-    transform: translateY(-2px);
+.header-content .back-button:hover {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
 }
