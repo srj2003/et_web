@@ -25,6 +25,8 @@ import RequisitionReport from "./components/accounts/requisition_report/requisit
 import ProfileScreen from "./components/profile/profile";
 import MyAttendance from './components/attendance/my_attendance/myattendance';
 import Help from "./components/help/help";
+import HolidayList from "./components/holiday/holiday";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 function App() {
   return (
     <BrowserRouter>
@@ -57,6 +59,7 @@ function App() {
             path="/project/manage"
             element={<ManageProjectExpenses />}
           />
+          <Route path="/holiday" element={<HolidayList />} />
         </Route>
 
       </Routes>

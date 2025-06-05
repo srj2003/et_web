@@ -10,6 +10,10 @@ import {
     Plus,
     Upload,
     Check,
+    Mail,
+    FileText,
+    X,
+    Eye,
 } from "lucide-react";
 import moment from "moment";
 import Select from "react-select";
@@ -454,6 +458,14 @@ const Users = () => {
         setIsEditing(false);
     };
 
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
     return (
         <div className="users-container">
             <div className="header">
@@ -498,8 +510,8 @@ const Users = () => {
                     <div className="table-container">
                         <table className="users-table">
                             <thead>
-                                <tr>
-                                    <th>USER</th>
+                                <tr className="user-th">
+                                    <th >USER</th>
                                     <th>EMAIL</th>
                                     <th>MOBILE</th>
                                     <th>STATUS</th>
@@ -508,7 +520,7 @@ const Users = () => {
                             </thead>
                             <tbody>
                                 {paginatedFilteredUsers.map((user) => (
-                                    <tr
+                                    <tr 
                                         key={user.u_id}
                                         className="user-row"
                                         onClick={() => handleViewProfile(user)}
@@ -571,10 +583,10 @@ const Users = () => {
                             >
                                 <ChevronLeft size={20} />
                             </button>
-                            <div className="page-numbers">
+                            <span className="page-numbers">
                                 <span className="current-page">{currentPage}</span>
                                 <span>of {totalFilteredPages}</span>
-                            </div>
+                            </span>
                             <button
                                 className={`page-button ${currentPage === totalFilteredPages ? "disabled" : ""}`}
                                 onClick={() => setCurrentPage((p) => Math.min(totalFilteredPages, p + 1))}
@@ -759,14 +771,42 @@ const Users = () => {
                             <div className="form-section">
                                 <h3 className="section-title">Profile Details</h3>
 
-                                <div className="upload-container" onClick={() => document.getElementById('profileImage').click()}>
-                                    {imageUri && (
-                                        <img src={imageUri} alt="Profile" className="preview-image" />
+                                <div 
+                                    className="profile-upload-container" 
+                                    onClick={() => document.getElementById('profileImage').click()}
+                                >
+                                    {imageUri ? (
+                                        <>
+                                            <img 
+                                                src={imageUri} 
+                                                alt="Profile Preview" 
+                                                className="profile-image-preview" 
+                                            />
+                                            <div className="profile-upload-overlay">
+                                                <Upload size={24} />
+                                                <span className="profile-upload-text">Change Photo</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="profile-upload-placeholder">
+                                            <Upload size={32} />
+                                            <span className="profile-upload-placeholder-text">
+                                                Upload Profile Photo
+                                            </span>
+                                        </div>
                                     )}
-                                    <div className="upload-circle">
-                                        <Upload size={24} />
-                                    </div>
-                                    <span className="upload-text">Upload Profile Image</span>
+                                    {imageUri && (
+                                        <div 
+                                            className="profile-image-actions"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setImageUri(null);
+                                                setFormData(prev => ({...prev, profileImage: null}));
+                                            }}
+                                        >
+                                            <X size={16} />
+                                        </div>
+                                    )}
                                 </div>
                                 <input
                                     type="file"
@@ -826,14 +866,17 @@ const Users = () => {
 
                                 <div className="form-group">
                                     <label>Email</label>
-                                    <input
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, email: e.target.value })
-                                        }
-                                        placeholder="Enter email address"
-                                    />
+                                    <div className="email-input-container">
+                                        <Mail size={18} />
+                                        <input
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) =>
+                                                setFormData({ ...formData, email: e.target.value })
+                                            }
+                                            placeholder="Enter email address"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="form-group">
@@ -891,21 +934,64 @@ const Users = () => {
                                     </div>
                                 </div>
 
-                                <div className="upload-container" onClick={() => document.getElementById('cvFile').click()}>
-                                    <div className="upload-circle">
-                                        <Upload size={24} />
+                                <div className="form-group">
+                                    <label>CV/Resume</label>
+                                    <div 
+                                        className="cv-upload-container"
+                                        onClick={() => document.getElementById('cvFile').click()}
+                                    >
+                                        <div className="cv-upload-icon">
+                                            <Upload size={24} />
+                                        </div>
+                                        <h3 className="cv-upload-text">
+                                            {formData.cv ? 'Update CV' : 'Upload your CV'}
+                                        </h3>
+                                        <p className="cv-upload-subtext">
+                                            PDF format up to 10MB
+                                        </p>
+                                        
+                                        {formData.cv && (
+                                            <div className="cv-file-info">
+                                                <FileText className="cv-file-icon" size={24} />
+                                                <div className="cv-file-details">
+                                                    <div className="cv-file-name">
+                                                        {formData.cv.name || 'Document.pdf'}
+                                                    </div>
+                                                    <div className="cv-file-size">
+                                                        {formatFileSize(formData.cv.size || 0)}
+                                                    </div>
+                                                </div>
+                                                <div className="cv-file-actions">
+                                                    <button 
+                                                        className="cv-action-button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            // Add preview functionality here
+                                                        }}
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                    <button 
+                                                        className="cv-action-button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setFormData({...formData, cv: null});
+                                                        }}
+                                                    >
+                                                        <X size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <span className="upload-text">
-                                        {formData.cv ? "Update CV (PDF)" : "Upload CV (PDF)"}
-                                    </span>
+                                    <input
+                                        type="file"
+                                        id="cvFile"
+                                        accept=".pdf"
+                                        onChange={handleCVUpload}
+                                        style={{ display: 'none' }}
+                                    />
                                 </div>
-                                <input
-                                    type="file"
-                                    id="cvFile"
-                                    accept=".pdf"
-                                    onChange={handleCVUpload}
-                                    style={{ display: 'none' }}
-                                />
                             </div>
 
                             <div className="form-section">

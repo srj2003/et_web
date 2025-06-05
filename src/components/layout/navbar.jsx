@@ -7,7 +7,7 @@ const NAV_ACCESS = {
   users: [1, 2, 3, 4, 8],
   analytics: {
     useranalytics: "all",
-    adminanalytics: [1, 2, 3, 4, 8],
+    adminanalytics: "all",
   },
   holidays: "all",
 };
@@ -116,14 +116,12 @@ const Navbar = () => {
             Users
           </Link>
         )}
-        {(hasAccess("analytics/useranalytics") ||
-          hasAccess("analytics/adminanalytics")) && (
-          <Link to="/analytics/useranalytics" className="navbar-item">
-            Analytics
-          </Link>
-        )}
+        {/* Always show Analytics since useranalytics is set to "all" */}
+        <Link to="/analytics/useranalytics" className="navbar-item">
+          Analytics
+        </Link>
         {hasAccess("holidays") && (
-          <Link to="/team" className="navbar-item">
+          <Link to="/holiday" className="navbar-item">
             Holidays
           </Link>
         )}
