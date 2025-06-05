@@ -209,7 +209,7 @@ export default function MyAttendance() {
         <div className="scroll-container">
           <div className="form-container">
             <div className="title-container">
-              <h2 className="title">Attendance Tracker</h2>
+              <h2 className="myattendance-title">Attendance Tracker</h2>
               <IconButton onClick={onRefresh} color="primary" aria-label="refresh" >
                 <RefreshIcon />
               </IconButton>
