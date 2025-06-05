@@ -446,7 +446,7 @@ export default function RequestedLeaves() {
                         {selectedLeave.documents.map((doc, index) => (
                           <a
                             key={index}
-                            href={doc.url}
+                            href={"https://demo-expense.geomaticxevs.in/ET-api/"+doc.url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="document-card"
