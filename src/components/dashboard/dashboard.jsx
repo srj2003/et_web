@@ -1,12 +1,37 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import './dashboard.css';
-import { 
-  Bell, Search, Users, Settings, LogOut, User, MapPin, 
-  Calendar as CalendarIcon, ChevronLeft, ChevronRight,
-  FileText, DollarSign, FileCheck, ClipboardList, 
-  RefreshCw, Wallet, Receipt 
-} from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import "./dashboard.css";
+import {
+  Bell,
+  Search,
+  Users,
+  Settings,
+  LogOut,
+  User,
+  MapPin,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  DollarSign,
+  FileCheck,
+  ClipboardList,
+  RefreshCw,
+  Wallet,
+  Receipt,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 // import Calendar  from './calendar';// Add this import at the top
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
@@ -62,7 +87,9 @@ const AttendanceDetails = ({ attendance }) => {
           <div className="attendance-row">
             <span className="attendance-label">Logout Time:</span>
             <span className="attendance-value">
-              {new Date(attendance?.logout_timestamp || "").toLocaleTimeString()}
+              {new Date(
+                attendance?.logout_timestamp || ""
+              ).toLocaleTimeString()}
             </span>
           </div>
           <div className="attendance-row">
@@ -98,38 +125,38 @@ const FinancialCharts = ({ analytics }) => {
   // Prepare data from analytics
   const monthlyData = [
     {
-      name: 'Expenses',
+      name: "Expenses",
       value: analytics?.monthly_analytics?.expense || 0,
-      color: '#818cf8'
+      color: "#818cf8",
     },
     {
-      name: 'Expense Requests',
+      name: "Expense Requests",
       value: analytics?.monthly_analytics?.expense_requests || 0,
-      color: '#10b981'
+      color: "#10b981",
     },
     {
-      name: 'Requisition Requests',
+      name: "Requisition Requests",
       value: analytics?.monthly_analytics?.requisition_requests || 0,
-      color: '#f59e0b'
-    }
+      color: "#f59e0b",
+    },
   ];
 
   const cashFlowData = [
     {
-      name: 'Credit Amount',
+      name: "Credit Amount",
       value: analytics?.cash_in_hand?.details?.credit_amount || 0,
-      color: '#4338ca'
+      color: "#4338ca",
     },
     {
-      name: 'Debit Amount',
+      name: "Debit Amount",
       value: analytics?.cash_in_hand?.details?.debit_amount || 0,
-      color: '#ef4444'
+      color: "#ef4444",
     },
     {
-      name: 'Requisition Debit',
+      name: "Requisition Debit",
       value: analytics?.cash_in_hand?.details?.req_debit_amount || 0,
-      color: '#f59e0b'
-    }
+      color: "#f59e0b",
+    },
   ];
 
   return (
@@ -143,8 +170,8 @@ const FinancialCharts = ({ analytics }) => {
             <div className="chart-legend">
               {monthlyData.map((item) => (
                 <div key={item.name} className="legend-item">
-                  <span 
-                    className="legend-color" 
+                  <span
+                    className="legend-color"
                     style={{ backgroundColor: item.color }}
                   />
                   <span>{item.name}</span>
@@ -155,13 +182,13 @@ const FinancialCharts = ({ analytics }) => {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-              <XAxis 
-                dataKey="name" 
+              <XAxis
+                dataKey="name"
                 axisLine={false}
                 tickLine={false}
                 fontSize={12}
               />
-              <YAxis 
+              <YAxis
                 axisLine={false}
                 tickLine={false}
                 fontSize={12}
@@ -172,8 +199,12 @@ const FinancialCharts = ({ analytics }) => {
                   if (active && payload && payload.length) {
                     return (
                       <div className="chart-tooltip">
-                        <p className="tooltip-title">{payload[0].payload.name}</p>
-                        <p className="tooltip-value">₹{payload[0].value.toLocaleString()}</p>
+                        <p className="tooltip-title">
+                          {payload[0].payload.name}
+                        </p>
+                        <p className="tooltip-value">
+                          ₹{payload[0].value.toLocaleString()}
+                        </p>
                       </div>
                     );
                   }
@@ -196,8 +227,8 @@ const FinancialCharts = ({ analytics }) => {
             <div className="chart-legend">
               {cashFlowData.map((item) => (
                 <div key={item.name} className="legend-item">
-                  <span 
-                    className="legend-color" 
+                  <span
+                    className="legend-color"
                     style={{ backgroundColor: item.color }}
                   />
                   <span>{item.name}</span>
@@ -225,8 +256,12 @@ const FinancialCharts = ({ analytics }) => {
                   if (active && payload && payload.length) {
                     return (
                       <div className="chart-tooltip">
-                        <p className="tooltip-title">{payload[0].payload.name}</p>
-                        <p className="tooltip-value">₹{payload[0].value.toLocaleString()}</p>
+                        <p className="tooltip-title">
+                          {payload[0].payload.name}
+                        </p>
+                        <p className="tooltip-value">
+                          ₹{payload[0].value.toLocaleString()}
+                        </p>
                       </div>
                     );
                   }
@@ -240,7 +275,6 @@ const FinancialCharts = ({ analytics }) => {
     </div>
   );
 };
-
 
 export default function DashboardWeb() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -308,9 +342,21 @@ export default function DashboardWeb() {
 
       const data = await response.json();
       const allowedCategories = [
-        "success", "morning", "money", "life", "learning",
-        "leadership", "knowledge", "intelligence", "hope",
-        "health", "god", "future", "faith", "experience", "education",
+        "success",
+        "morning",
+        "money",
+        "life",
+        "learning",
+        "leadership",
+        "knowledge",
+        "intelligence",
+        "hope",
+        "health",
+        "god",
+        "future",
+        "faith",
+        "experience",
+        "education",
       ];
 
       const matchingQuote = data.find((quote) =>
@@ -457,7 +503,7 @@ export default function DashboardWeb() {
 
       // Example endpoint, adjust as per your backend
       const response = await fetch(
-        `https://demo-expense.geomaticxevs.in/ET-api/attendance_analytics.php?user_id=${userId}`
+        `https://demo-expense.geomaticxevs.in/ET-api/fetch_analytics.php?user_id=${userId}`
       );
       const result = await response.json();
       if (result.status === 200) {
@@ -497,7 +543,13 @@ export default function DashboardWeb() {
       console.error("Error loading dashboard data:", error);
       setError("Failed to load dashboard data");
     }
-  }, [fetchUserData, fetchUserCount, fetchQuote, fetchAnalytics, fetchAttendanceStats]);
+  }, [
+    fetchUserData,
+    fetchUserCount,
+    fetchQuote,
+    fetchAnalytics,
+    fetchAttendanceStats,
+  ]);
 
   useEffect(() => {
     if (!initialLoadDone.current) {
@@ -606,15 +658,13 @@ export default function DashboardWeb() {
     if (!todayAttendance?.has_login) {
       return (
         <>
-          <p className="login-status-text">
-            Login to register your attendance
-          </p>
+          <p className="login-status-text">Login to register your attendance</p>
           <button
-            className={`login-button ${isLoggingIn ? 'loading' : ''}`}
+            className={`login-button ${isLoggingIn ? "loading" : ""}`}
             onClick={handleLogin}
             disabled={isLoggingIn}
           >
-            {isLoggingIn ? 'Logging in...' : 'Login'}
+            {isLoggingIn ? "Logging in..." : "Login"}
           </button>
         </>
       );
@@ -623,9 +673,7 @@ export default function DashboardWeb() {
     if (todayAttendance.attendance?.is_logged_out) {
       return (
         <>
-          <p className="login-status-text">
-            Today's attendance completed
-          </p>
+          <p className="login-status-text">Today's attendance completed</p>
           <AttendanceDetails attendance={todayAttendance.attendance} />
         </>
       );
@@ -636,11 +684,11 @@ export default function DashboardWeb() {
         <p className="login-status-text">Currently logged in</p>
         <AttendanceDetails attendance={todayAttendance.attendance} />
         <button
-          className={`logout-button ${isLoggingOut ? 'loading' : ''}`}
+          className={`logout-button ${isLoggingOut ? "loading" : ""}`}
           onClick={handleLogout}
           disabled={isLoggingOut}
         >
-          {isLoggingOut ? 'Logging out...' : 'Logout'}
+          {isLoggingOut ? "Logging out..." : "Logout"}
         </button>
       </>
     );
@@ -665,7 +713,7 @@ export default function DashboardWeb() {
               {analyticsIcons[key] || <BarChart size={28} />}
             </div>
             <div className="analytics-generic-title">
-              {key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+              {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
             </div>
             <div className="analytics-generic-value">
               {typeof value === "number" ? value.toLocaleString() : value}
@@ -679,7 +727,7 @@ export default function DashboardWeb() {
     ? Object.entries(analytics)
         .filter(([key, value]) => typeof value === "number")
         .map(([key, value]) => ({
-          name: key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+          name: key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
           value,
         }))
     : [];
@@ -690,30 +738,30 @@ export default function DashboardWeb() {
 
     const pieData = [
       {
-        name: 'Credit Amount',
+        name: "Credit Amount",
         value: analytics.cash_in_hand.details.credit_amount || 0,
       },
       {
-        name: 'Debit Amount',
+        name: "Debit Amount",
         value: analytics.cash_in_hand.details.debit_amount || 0,
       },
       {
-        name: 'Requisition Debit',
+        name: "Requisition Debit",
         value: analytics.cash_in_hand.details.req_debit_amount || 0,
       },
     ];
 
     const barData = [
       {
-        name: 'Expenses',
+        name: "Expenses",
         value: analytics.monthly_analytics.expense || 0,
       },
       {
-        name: 'Expense Requests',
+        name: "Expense Requests",
         value: analytics.monthly_analytics.expense_requests || 0,
       },
       {
-        name: 'Requisition Requests',
+        name: "Requisition Requests",
         value: analytics.monthly_analytics.requisition_requests || 0,
       },
     ];
@@ -722,7 +770,7 @@ export default function DashboardWeb() {
   };
 
   // Add these colors for the pie chart
-  const COLORS = ['#6366f1', '#10b981', '#f59e0b'];
+  const COLORS = ["#6366f1", "#10b981", "#f59e0b"];
 
   if (loading || checkingAttendance) {
     return (
@@ -744,7 +792,9 @@ export default function DashboardWeb() {
   if (errorMsg) {
     locationText = errorMsg;
   } else if (location) {
-    locationText = `Latitude: ${location.coords.latitude.toFixed(4)}, Longitude: ${location.coords.longitude.toFixed(4)}`;
+    locationText = `Latitude: ${location.coords.latitude.toFixed(
+      4
+    )}, Longitude: ${location.coords.longitude.toFixed(4)}`;
   }
 
   return (
@@ -781,8 +831,17 @@ export default function DashboardWeb() {
             <div className="analytics-card my-expense">
               <div className="analytics-content">
                 <h3 className="analytics-label">My Expenses</h3>
-                <p className={`analytics-value ${(analytics?.monthly_analytics?.expense ?? 0) < 0 ? 'negative' : ''}`}>
-                  ₹{(analytics?.monthly_analytics?.expense ?? 0).toLocaleString()}
+                <p
+                  className={`analytics-value ${
+                    (analytics?.monthly_analytics?.expense ?? 0) < 0
+                      ? "negative"
+                      : ""
+                  }`}
+                >
+                  ₹
+                  {(
+                    analytics?.monthly_analytics?.expense ?? 0
+                  ).toLocaleString()}
                 </p>
               </div>
               <div className="analytics-icon">
@@ -794,8 +853,17 @@ export default function DashboardWeb() {
               <div className="analytics-card requested">
                 <div className="analytics-content">
                   <h3 className="analytics-label">Requested Expenses</h3>
-                  <p className={`analytics-value ${(analytics?.monthly_analytics?.expense_requests ?? 0) < 0 ? 'negative' : ''}`}>
-                    ₹{(analytics?.monthly_analytics?.expense_requests ?? 0).toLocaleString()}
+                  <p
+                    className={`analytics-value ${
+                      (analytics?.monthly_analytics?.expense_requests ?? 0) < 0
+                        ? "negative"
+                        : ""
+                    }`}
+                  >
+                    ₹
+                    {(
+                      analytics?.monthly_analytics?.expense_requests ?? 0
+                    ).toLocaleString()}
                   </p>
                 </div>
                 <div className="analytics-icon">
@@ -808,8 +876,17 @@ export default function DashboardWeb() {
               <div className="analytics-card cash-in-hand">
                 <div className="analytics-content">
                   <h3 className="analytics-label">Cash in Hand</h3>
-                  <p className={`analytics-value ${(analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0 ? 'negative' : ''}`}>
-                    ₹{(analytics?.cash_in_hand?.cash_in_hand ?? 0).toLocaleString()}
+                  <p
+                    className={`analytics-value ${
+                      (analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0
+                        ? "negative"
+                        : ""
+                    }`}
+                  >
+                    ₹
+                    {(
+                      analytics?.cash_in_hand?.cash_in_hand ?? 0
+                    ).toLocaleString()}
                   </p>
                 </div>
                 <div className="analytics-icon">
@@ -822,8 +899,18 @@ export default function DashboardWeb() {
               <div className="analytics-card requisition">
                 <div className="analytics-content">
                   <h3 className="analytics-label">Requested Requisition</h3>
-                  <p className={`analytics-value ${(analytics?.monthly_analytics?.requisition_requests ?? 0) < 0 ? 'negative' : ''}`}>
-                    ₹{(analytics?.monthly_analytics?.requisition_requests ?? 0).toLocaleString()}
+                  <p
+                    className={`analytics-value ${
+                      (analytics?.monthly_analytics?.requisition_requests ??
+                        0) < 0
+                        ? "negative"
+                        : ""
+                    }`}
+                  >
+                    ₹
+                    {(
+                      analytics?.monthly_analytics?.requisition_requests ?? 0
+                    ).toLocaleString()}
                   </p>
                 </div>
                 <div className="analytics-icon">
@@ -837,21 +924,24 @@ export default function DashboardWeb() {
         {userData && userData.not_logged_out_count > 0 && (
           <div className="warning-container">
             <p className="warning-text">
-              Warning: you have not logged out for {userData.not_logged_out_count} day
+              Warning: you have not logged out for{" "}
+              {userData.not_logged_out_count} day
               {userData.not_logged_out_count > 1 ? "s" : ""}
             </p>
             <button
               className="info-button"
-              onClick={() => alert("If not logged out for 3 consecutive days, the user will be marked absent on the 3rd day")}
+              onClick={() =>
+                alert(
+                  "If not logged out for 3 consecutive days, the user will be marked absent on the 3rd day"
+                )
+              }
             >
               i
             </button>
           </div>
         )}
 
-        <div className="login-section">
-          {renderLoginSection()}
-        </div>
+        <div className="login-section">{renderLoginSection()}</div>
 
         {/* <div className="location-section">
           <div className="section-header">
@@ -862,7 +952,6 @@ export default function DashboardWeb() {
             <p>{locationText}</p>
           </div>
         </div> */}
-        
 
         <QuoteSection quote={quote} loading={loadingQuote} />
 
@@ -911,11 +1000,8 @@ export default function DashboardWeb() {
           </div>
         )} */}
 
-        
-
         {/* Add this after your existing analytics section */}
         <FinancialCharts analytics={analytics} />
-        
       </div>
 
       {/* <div className="dashboard-right-section">
