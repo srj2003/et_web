@@ -25,6 +25,7 @@
     display: flex;
     gap: 1rem;
     align-items: center;
+    width: 10%;
 }
 
 .navbar-item {
@@ -168,8 +169,8 @@
 }
 
 .profile-image {
-    width: 40px;
-    height: 40px;
+    width: 3.5rem;
+    height: 3.5rem;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(255, 255, 255, 0.5);

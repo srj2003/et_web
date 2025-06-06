@@ -1,65 +1,47 @@
-CSS Variables:root {
-  --primary-color: #6366f1;
-  --success-color: #10b981;
-  --error-color: #ef4444;
-  --warning-color: #f59e0b;
-  --gray-color: #6b7280;
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --border-color: #e2e8f0;
-  --bg-light: #f8fafc;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-}
-
-/* Base Layout */
 .main-container {
   display: flex;
   align-items: flex-start;
-  background-color: var(--bg-light);
+  background-color: #f8fafc;
   min-height: 100vh;
   width: 100%;
-  padding: var(--spacing-md);
+  padding: 20px;
   box-sizing: border-box;
+  overflow: visible;
 }
 
 .scroll-container {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: var(--spacing-md);
+  padding: 16px;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 .form-container {
   background-color: white;
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: var(--spacing-lg);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
 }
 
-/* Header Styles */
 .title-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 24px;
 }
 
-.title {
+.myattendance-title {
   font-size: 34px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #1e293b;
   margin: 0;
 }
 
 .refresh-button {
-  padding: 10px;
+  padding: 16px;
   border-radius: 20px;
   background-color: #f1f5f9;
   border: none;
@@ -67,11 +49,13 @@ CSS Variables:root {
   display: flex;
   align-items: center;
   justify-content: center;
-  size: 10px;
+  height: 45px;
+  width: 45px;
 }
 
 .refresh-button i {
   color: #7275f7;
+  font-size: 24px;
 }
 
 .filter-container {
@@ -138,6 +122,9 @@ CSS Variables:root {
 }
 
 .filter-header {
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
   font-size: 24px;
   margin-left: 10px;
   margin-bottom: 10px;
@@ -147,14 +134,11 @@ span {
   font-size: 24px;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
 
-  100% {
-    transform: rotate(360deg);
-  }
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .mark-attendance-container {
@@ -213,10 +197,16 @@ span {
 }
 
 .calendar-view {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 24px;
   display: grid;
   grid-template-columns: 1fr 0.8fr 1fr;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
+  gap: 16px;
+  align-items: start;
+  min-height: 0;
+  overflow: visible;
 }
 
 .left-section {
@@ -232,23 +222,29 @@ span {
 }
 
 .count-container {
-  background-color: var(--bg-light);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  height: 100%;
 }
 
 .count-inner-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-md);
+  gap: 12px;
+  height: 100%;
 }
 
 .count-box {
-  padding: var(--spacing-md);
-  border-radius: var(--radius-sm);
+  width: 100%;
+  border-radius: 10px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   color: white;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .count-box:hover {
@@ -258,11 +254,13 @@ span {
 .count-value {
   font-size: 24px;
   font-weight: bold;
+  margin-bottom: 4px;
 }
 
 .count-label {
   font-size: 14px;
   font-weight: 600;
+  text-align: center;
 }
 
 .detailed-note-container {
@@ -286,8 +284,7 @@ span {
   padding: 0 8px;
 }
 
-.initial-values,
-.final-calculation {
+.initial-values, .final-calculation {
   font-size: 19px;
   font-weight: 600;
   color: #475569;
@@ -354,7 +351,7 @@ span {
   .calendar-view {
     grid-template-columns: 1fr 1fr;
   }
-
+  
   .right-section {
     grid-column: 1 / -1;
   }
@@ -364,11 +361,11 @@ span {
   .main-container {
     padding: 12px;
   }
-
+  
   .scroll-container {
     padding: 12px;
   }
-
+  
   .left-section,
   .middle-section,
   .right-section {
@@ -403,7 +400,7 @@ span {
   .main-container {
     padding: 8px;
   }
-
+  
   .scroll-container {
     padding: 8px;
   }
@@ -411,7 +408,7 @@ span {
   .count-inner-container {
     grid-template-columns: 1fr;
   }
-
+  
   .calendar-view {
     padding: 12px;
     gap: 12px;
@@ -423,8 +420,7 @@ span {
 
   .date-input {
     min-width: 100%;
-    font-size: 16px;
-    /* Better for mobile tap targets */
+    font-size: 16px; /* Better for mobile tap targets */
   }
 }
 
@@ -449,133 +445,132 @@ span {
 
 .react-calendar {
   width: 100% !important;
-  background: white;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  margin: 0 !important;
 }
 
-.react-calendar__navigation {
-  margin-bottom: var(--spacing-md);
+/* New Calendar Styles - Focused Update */
+.left-section .react-calendar {
+  width: 100%;
+  max-width: 400px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 12px;
+  margin-bottom: 20px;
 }
 
-.react-calendar__month-view__days__day {
-  height: 40px !important;
-  width: 40px !important;
-  border-radius: 50% !important;
-  margin: 2px !important;
-  font-size: 16px !important;
-  color: var(--text-primary) !important;
-}
-
-/* Status Tiles */
-.tile-present {
-  background-color: var(--success-color) !important;
-  color: white !important;
-}
-
-.tile-absent {
-  background-color: var(--error-color) !important;
-  color: white !important;
-}
-
-.tile-not-logged-out {
-  background-color: var(--warning-color) !important;
-  color: white !important;
-}
-
-.tile-holiday {
-  background-color: var(--gray-color) !important;
-  color: white !important;
-}
-
-.tile-hidden {
-  opacity: 0.3 !important;
-  background-color: var(--bg-light) !important;
-}
-
-/* Filter Buttons */
-.filter-buttons {
+.left-section .react-calendar__navigation {
   display: flex;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-  margin-top: var(--spacing-sm);
+  height: 40px;
+  margin-bottom: 12px;
 }
 
-.filter-button {
-  min-width: 150px !important;
-  padding: 12px 24px !important;
-  border-radius: var(--radius-md) !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  text-transform: none !important;
-  box-shadow: var(--shadow-md) !important;
+.left-section .react-calendar__navigation button {
+  min-width: 40px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
 }
 
-.filter-button#present.MuiButton-contained {
-  background-color: #10b981 !important;
-  color: white !important;
+.left-section .react-calendar__navigation button:enabled:hover {
+  background-color: #f8fafc;
+  border-radius: 8px;
 }
 
-.filter-button#present.MuiButton-outlined {
-  border-color: #10b981 !important;
-  color: #10b981 !important;
-  border-width: 2px !important;
+.left-section .react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.7em;
+  color: #4a5568;
+  margin-bottom: 8px;
 }
 
-.filter-button#absent.MuiButton-contained {
-  background-color: #ef4444 !important;
-  color: white !important;
+.left-section .react-calendar__month-view__days__day {
+  height: 34px;
+  width: 34px;
+  border-radius: 50%;
+  margin: 2px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.filter-button#absent.MuiButton-outlined {
-  border-color: #ef4444 !important;
-  color: #ef4444 !important;
-  border-width: 2px !important;
+/* Date Status Styles */
+.left-section .tile-present {
+  background-color: #10b981;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
-.filter-button#not-logged-out.MuiButton-contained {
-  background-color: #f59e0b !important;
-  color: white !important;
+.left-section .tile-absent {
+  background-color: #ef4444;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
-.filter-button#not-logged-out.MuiButton-outlined {
-  border-color: #f59e0b !important;
-  color: #f59e0b !important;
-  border-width: 2px !important;
+.left-section .tile-not-logged-out {
+  background-color: #f59e0b;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
 }
 
-.filter-button#show-all.MuiButton-contained {
-  background-color: #6366f1 !important;
-  color: white !important;
+.left-section .tile-holiday {
+  background-color: #64748b;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(100, 116, 139, 0.2);
 }
 
-.filter-button#show-all.MuiButton-outlined {
-  border-color: #6366f1 !important;
-  color: #6366f1 !important;
-  border-width: 2px !important;
+.left-section .tile-sunday {
+  background-color: #94a3b8;
+  color: white;
+  font-weight: 600;
 }
 
-.filter-button:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
+/* Hover and Active States */
+.left-section .react-calendar__tile:enabled:hover {
+  background-color: #f1f5f9;
+  transform: scale(1.05);
 }
 
-.filter-button:active {
-  transform: translateY(0) !important;
+.left-section .react-calendar__tile--now {
+  background: #6366f1;
+  color: white;
+  font-weight: 600;
+}
+
+.left-section .react-calendar__tile--now:enabled:hover {
+  background: #818cf8;
+}
+
+.left-section .react-calendar__tile--active {
+  background: #3b82f6;
+  color: white;
+  font-weight: 600;
 }
 
 /* Date Range Styles */
 .date-range-container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .date-pickers {
   display: flex;
-  gap: var(--spacing-md);
+  gap: 16px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -586,17 +581,19 @@ span {
 }
 
 .date-picker-separator {
-  color: var(--text-secondary);
+  color: #64748b;
   font-weight: bold;
+  margin: 0 8px;
 }
 
 .date-range-display {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--bg-light);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
   font-size: 24px;
-  color: var(--text-primary);
+  color: #334155;
 }
 
 .date-range-display span {
@@ -634,6 +631,7 @@ span {
 @media (max-width: 768px) {
   .date-pickers {
     flex-direction: column;
+    gap: 12px;
   }
 
   .date-picker-wrapper {
@@ -726,307 +724,82 @@ span {
   color: #1e293b !important;
 }
 
+.left-section .tile-hidden {
+  opacity: 0.3 !important;
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  transform: scale(0.95) !important;
+  transition: all 0.2s ease !important;
+}
+
+.left-section .tile-hidden:hover {
+  opacity: 0.5 !important;
+  transform: scale(1) !important;
+}
+
+.left-section .react-calendar__tile {
+  padding: 10px !important;
+  border-radius: 50% !important;
+  margin: 2px !important;
+  font-weight: 500 !important;
+}
+
+.left-section .react-calendar__month-view__days__day--weekend {
+  color: #ef4444 !important;
+}
+
+.left-section .react-calendar__month-view__days__day--neighboringMonth {
+  color: #cbd5e1 !important;
+}
+
+/* Enhanced Calendar Navigation */
+.left-section .react-calendar__navigation {
+  margin-bottom: 20px !important;
+}
+
+.left-section .react-calendar__navigation button {
+  font-size: 18px !important;
+  padding: 8px !important;
+  background-color: #f8fafc !important;
+  border-radius: 8px !important;
+  margin: 0 2px !important;
+}
+
+.left-section .react-calendar__navigation button:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.left-section .react-calendar__navigation button:disabled {
+  background-color: #e2e8f0 !important;
+}
+
+/* Status Indicators */
+.left-section .tile-present,
+.left-section .tile-absent,
+.left-section .tile-not-logged-out,
+.left-section .tile-holiday,
+.left-section .tile-sunday {
+  font-weight: 600 !important;
+  color: white !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.left-section .tile-present { background-color: #10b981 !important; }
+.left-section .tile-absent { background-color: #ef4444 !important; }
+.left-section .tile-not-logged-out { background-color: #f59e0b !important; }
+.left-section .tile-holiday { background-color: #6b7280 !important; }
+.left-section .tile-sunday { background-color: #94a3b8 !important; }
+
+/* No Data State */
+.left-section .tile-no-data {
+  background-color: #f8fafc !important;
+  color: #94a3b8 !important;
+  border: 1px dashed #e2e8f0 !important;
+}
+
 .left-section .react-calendar__tile:enabled:hover {
   background-color: #f1f5f9 !important;
   transform: scale(1.05) !important;
   transition: all 0.2s ease !important;
-}
-
-/* Add namespace prefix to all classes */
-.my-attendance-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.my-attendance-header {
-  margin-bottom: 20px;
-}
-
-.my-attendance-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-}
-
-.my-attendance-filters {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.my-attendance-date-picker {
-  min-width: 200px;
-}
-
-.my-attendance-table-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.my-attendance-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.my-attendance-table th {
-  background-color: #f8f9fa;
-  padding: 12px;
-  text-align: left;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #dee2e6;
-  font-size: 0.875rem;
-}
-
-.my-attendance-table td {
-  padding: 12px;
-  border-bottom: 1px solid #dee2e6;
-  color: #333;
-  font-size: 0.875rem;
-}
-
-.my-attendance-status {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.my-attendance-status-present {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-}
-
-.my-attendance-status-absent {
-  background-color: #ffebee;
-  color: #c62828;
-}
-
-.my-attendance-status-late {
-  background-color: #fff3e0;
-  color: #ef6c00;
-}
-
-.my-attendance-status-holiday {
-  background-color: #e3f2fd;
-  color: #1565c0;
-}
-
-.my-attendance-pagination {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.my-attendance-pagination-button {
-  padding: 8px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.my-attendance-pagination-button:hover {
-  background-color: #f8f9fa;
-}
-
-.my-attendance-pagination-button.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-.my-attendance-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-}
-
-.my-attendance-error {
-  color: #dc3545;
-  text-align: center;
-  padding: 20px;
-  font-size: 0.875rem;
-}
-
-.my-attendance-no-data {
-  text-align: center;
-  padding: 20px;
-  color: #6c757d;
-  font-size: 0.875rem;
-}
-
-/* Responsive styles */
-@media (max-width: 768px) {
-  .my-attendance-filters {
-    flex-direction: column;
-  }
-
-  .my-attendance-date-picker {
-    width: 100%;
-  }
-
-  .my-attendance-table-container {
-    overflow-x: auto;
-  }
-
-  .my-attendance-table th,
-  .my-attendance-table td {
-    padding: 8px;
-    font-size: 0.875rem;
-  }
-}
-
-/* Animation classes */
-.my-attendance-fade-in {
-  animation: my-attendance-fadeIn 0.3s ease-in;
-}
-
-@keyframes my-attendance-fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Utility classes - scoped to container */
-.my-attendance-container .my-attendance-text-center {
-  text-align: center;
-}
-
-.my-attendance-container .my-attendance-text-right {
-  text-align: right;
-}
-
-.my-attendance-container .my-attendance-text-left {
-  text-align: left;
-}
-
-.my-attendance-container .my-attendance-mt-1 {
-  margin-top: 0.25rem;
-}
-
-.my-attendance-container .my-attendance-mt-2 {
-  margin-top: 0.5rem;
-}
-
-.my-attendance-container .my-attendance-mt-3 {
-  margin-top: 1rem;
-}
-
-.my-attendance-container .my-attendance-mb-1 {
-  margin-bottom: 0.25rem;
-}
-
-.my-attendance-container .my-attendance-mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.my-attendance-container .my-attendance-mb-3 {
-  margin-bottom: 1rem;
-}
-
-.my-attendance-container .my-attendance-ml-1 {
-  margin-left: 0.25rem;
-}
-
-.my-attendance-container .my-attendance-ml-2 {
-  margin-left: 0.5rem;
-}
-
-.my-attendance-container .my-attendance-ml-3 {
-  margin-left: 1rem;
-}
-
-.my-attendance-container .my-attendance-mr-1 {
-  margin-right: 0.25rem;
-}
-
-.my-attendance-container .my-attendance-mr-2 {
-  margin-right: 0.5rem;
-}
-
-.my-attendance-container .my-attendance-mr-3 {
-  margin-right: 1rem;
-}
-
-.my-attendance-container .my-attendance-p-1 {
-  padding: 0.25rem;
-}
-
-.my-attendance-container .my-attendance-p-2 {
-  padding: 0.5rem;
-}
-
-.my-attendance-container .my-attendance-p-3 {
-  padding: 1rem;
-}
-
-.my-attendance-container .my-attendance-rounded {
-  border-radius: 4px;
-}
-
-.my-attendance-container .my-attendance-shadow {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.my-attendance-container .my-attendance-border {
-  border: 1px solid #dee2e6;
-}
-
-.my-attendance-container .my-attendance-bg-white {
-  background-color: white;
-}
-
-.my-attendance-container .my-attendance-bg-light {
-  background-color: #f8f9fa;
-}
-
-.my-attendance-container .my-attendance-text-primary {
-  color: #007bff;
-}
-
-.my-attendance-container .my-attendance-text-success {
-  color: #28a745;
-}
-
-.my-attendance-container .my-attendance-text-danger {
-  color: #dc3545;
-}
-
-.my-attendance-container .my-attendance-text-warning {
-  color: #ffc107;
-}
-
-.my-attendance-container .my-attendance-text-info {
-  color: #17a2b8;
-}
-
-.my-attendance-container .my-attendance-text-muted {
-  color: #6c757d;
-}
-
-.my-attendance-container .my-attendance-font-bold {
-  font-weight: 600;
-}
-
-.my-attendance-container .my-attendance-font-normal {
-  font-weight: 400;
-}
-
-.my-attendance-container .my-attendance-font-light {
-  font-weight: 300;
 }

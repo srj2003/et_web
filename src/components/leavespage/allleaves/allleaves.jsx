@@ -205,6 +205,7 @@ export default function AllLeaves() {
               </div>
               <span
                 className={`status-badge status-${leave.leave_track_status_text.toLowerCase()}`}
+                title={leave.leave_track_status_text}
               >
                 {leave.leave_track_status_text}
               </span>

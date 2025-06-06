@@ -65,7 +65,9 @@ const menuItemsData = [
     title: "Attendances",
     icon: CalendarCheck,
     subItems: [
-      { id: "my_attendance", title: "My Attendance", path: "/attendance/my" },
+      { id: "my_attendance", 
+        title: "My Attendance", 
+        path: "/attendance/myattendance" },
       {
         id: "user_attendance",
         title: "User Attendance",
