@@ -1,12 +1,14 @@
 :root {
     --sidebar-width: 320px;
     --navbar-height: 64px;
+    --mobile-sidebar-height: 60px;
 }
 
 .main-layout {
     display: flex;
     min-height: 100vh;
     width: 100%;
+    position: relative;
 }
 
 .main-content {
@@ -15,6 +17,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    transition: margin-left 0.3s ease;
 }
 
 .content-wrapper {
@@ -29,6 +32,7 @@
     left: var(--sidebar-width);
     right: 0;
     bottom: 0;
+    transition: left 0.3s ease;
 }
 
 /* Custom scrollbar for Webkit browsers */
@@ -58,9 +62,18 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .main-content {
         margin-left: 0;
         width: 100%;
+        padding-top: var(--mobile-sidebar-height);
+    }
+
+    .content-wrapper {
+        left: 0;
+        top: calc(var(--mobile-sidebar-height) + var(--navbar-height));
+        height: calc(100vh - var(--mobile-sidebar-height) - var(--navbar-height));
+        width: 100%;
+        padding: 1rem;
     }
 }

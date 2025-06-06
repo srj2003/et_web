@@ -5,6 +5,10 @@ import Navbar from "./navbar";
 import "./MainLayout.css";
 
 const MainLayout = () => {
+  const closeSidebar = () => {
+    document.body.classList.remove('sidebar-open');
+  };
+
   return (
     <div className="main-layout">
       <Sidebar />
@@ -14,6 +18,7 @@ const MainLayout = () => {
           <Outlet />
         </div>
       </div>
+      <div className="sidebar-overlay" onClick={closeSidebar}></div>
     </div>
   );
 };

@@ -83,6 +83,9 @@ const Users = () => {
     role_is_del: false,
   });
 
+  // Add default avatar data URL
+  const defaultAvatar = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjFGNUY5Ii8+CjxwYXRoIGQ9Ik03NSA4OUM1Ny4zMjY5IDg5IDQzIDczLjY3MzEgNDMgNTZDNDMgMzguMzI2OSA1Ny4zMjY5IDI0IDc1IDI0QzkyLjY3MzEgMjQgMTA3IDM4LjMyNjkgMTA3IDU2QzEwNyA3My42NzMxIDkyLjY3MzEgODkgNzUgODlaIiBmaWxsPSIjOTRBM0I4Ii8+CjxwYXRoIGQ9Ik0xMDcuNzc4IDE0NS45MjVDMTA1LjY3NiAxMzQuODIxIDk1LjU1NjQgMTI2IDgzLjY2NjcgMTI2SDY2LjMzMzRDNTQuNDQzNiAxMjYgNDQuMzIzOCAxMzQuODIxIDQyLjIyMjIgMTQ1LjkyNUM0Mi4wNzU0IDE0Ni42MzcgNDIgMTQ3LjM2NyA0MiAxNDhDNDIgMTQ5LjEwNSA0Mi44OTU0IDE1MCA0NCAxNTBIMTA2QzEwNy4xMDUgMTUwIDEwOCAxNDkuMTA1IDEwOCAxNDhDMTA4IDE0Ny4zNjcgMTA3LjkyNSAxNDYuNjM3IDEwNy43NzggMTQ1LjkyNVoiIGZpbGw9IiM5NEEzQjgiLz4KPC9zdmc+Cg==";
+
   const fetchData = async () => {
     try {
       const response = await fetch(
@@ -238,11 +241,15 @@ const Users = () => {
   const validateForm = () => {
     const errors = {};
 
+    // Required fields validation
     if (!formData.userId?.trim()) {
       errors.userId = "User ID is required";
     }
     if (!formData.firstName?.trim()) {
       errors.firstName = "First name is required";
+    }
+    if (!formData.lastName?.trim()) {
+      errors.lastName = "Last name is required";
     }
     if (!formData.email?.trim()) {
       errors.email = "Email is required";
@@ -251,9 +258,13 @@ const Users = () => {
     }
     if (!formData.mobile?.trim()) {
       errors.mobile = "Mobile number is required";
+    } else if (!/^\d{10}$/.test(formData.mobile.replace(/[^0-9]/g, ''))) {
+      errors.mobile = "Mobile number must be 10 digits";
     }
     if (!formData.password?.trim()) {
       errors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
     }
     if (!selectedRole) {
       errors.role = "Role is required";
@@ -282,6 +293,7 @@ const Users = () => {
       formDataObj.append("email", formData.email);
       formDataObj.append("mobile", formData.mobile);
       formDataObj.append("password", formData.password);
+      formDataObj.append("role_name", selectedRole || "user");
 
       // Optional fields
       formDataObj.append("middle_name", formData.middleName || "");
@@ -292,7 +304,6 @@ const Users = () => {
       formDataObj.append("zip_code", formData.zipCode || "");
       formDataObj.append("street_address", formData.streetAddress || "");
       formDataObj.append("organization", formData.organization || "");
-      formDataObj.append("role_name", selectedRole || "user");
       formDataObj.append("active", formData.active ? "1" : "0");
       formDataObj.append("is_deleted", "0");
       formDataObj.append("created_at", moment().format("YYYY-MM-DD HH:mm:ss"));
@@ -303,11 +314,7 @@ const Users = () => {
         const profileImageBlob = await fetch(formData.profileImage).then((r) =>
           r.blob()
         );
-        formDataObj.append(
-          "profile_image",
-          profileImageBlob,
-          "profile_image.jpg"
-        );
+        formDataObj.append("profile_image", profileImageBlob, "profile_image.jpg");
       }
 
       // Handle CV
@@ -316,29 +323,21 @@ const Users = () => {
         formDataObj.append("cv", cvBlob, formData.cvName || "document.pdf");
       }
 
-      console.log("Sending form data..."); // Debug log
-      for (let pair of formDataObj.entries()) {
-        console.log(
-          pair[0] + ": " + (pair[1] instanceof Blob ? "File" : pair[1])
-        ); // Debug log
-      }
-
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/add_users.php",
         {
           method: "POST",
           body: formDataObj,
+          credentials: "same-origin",
         }
       );
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
       console.log("API Response:", result);
-
-      if (!response.ok) {
-        throw new Error(
-          result.message || `HTTP error! status: ${response.status}`
-        );
-      }
 
       if (result.success) {
         toast.success("User added successfully!");
@@ -352,9 +351,7 @@ const Users = () => {
       }
     } catch (error) {
       console.error("Error submitting user:", error);
-      setSubmitError(
-        error.message || "Something went wrong while adding the user"
-      );
+      setSubmitError(error.message || "Something went wrong while adding the user");
       toast.error(error.message || "Failed to add user");
     }
   };
@@ -457,7 +454,7 @@ const Users = () => {
         state: editedUser?.u_state,
         country: editedUser?.u_country,
         organization: editedUser?.u_organization,
-        profile_image: editedUser?.u_pro_img,
+        profile_image: editedUser?.u_pro_img || null,
         cv: editedUser?.u_cv,
       };
 
@@ -1009,16 +1006,23 @@ const Users = () => {
                   )}
                 </div>
 
-                <div className="form-group">
-                  <label>First Name</label>
+                <div className={`form-group ${formErrors.firstName ? "error" : ""}`}>
+                  <label className="required-field">First Name</label>
                   <input
                     type="text"
                     value={formData.firstName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, firstName: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, firstName: e.target.value });
+                      setFormErrors({ ...formErrors, firstName: "" });
+                    }}
                     placeholder="Enter first name"
                   />
+                  {formErrors.firstName && (
+                    <div className="error-message">
+                      <AlertCircle size={16} />
+                      {formErrors.firstName}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -1033,55 +1037,83 @@ const Users = () => {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label>Last Name</label>
+                <div className={`form-group ${formErrors.lastName ? "error" : ""}`}>
+                  <label className="required-field">Last Name</label>
                   <input
                     type="text"
                     value={formData.lastName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, lastName: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, lastName: e.target.value });
+                      setFormErrors({ ...formErrors, lastName: "" });
+                    }}
                     placeholder="Enter last name"
                   />
+                  {formErrors.lastName && (
+                    <div className="error-message">
+                      <AlertCircle size={16} />
+                      {formErrors.lastName}
+                    </div>
+                  )}
                 </div>
 
-                <div className="form-group">
-                  <label>Email</label>
+                <div className={`form-group ${formErrors.email ? "error" : ""}`}>
+                  <label className="required-field">Email</label>
                   <div className="email-input-container">
                     <Mail size={18} />
                     <input
                       type="email"
                       value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        setFormErrors({ ...formErrors, email: "" });
+                      }}
                       placeholder="Enter email address"
                     />
                   </div>
+                  {formErrors.email && (
+                    <div className="error-message">
+                      <AlertCircle size={16} />
+                      {formErrors.email}
+                    </div>
+                  )}
                 </div>
 
-                <div className="form-group">
-                  <label>Mobile Number</label>
+                <div className={`form-group ${formErrors.mobile ? "error" : ""}`}>
+                  <label className="required-field">Mobile Number</label>
                   <input
                     type="tel"
                     value={formData.mobile}
-                    onChange={(e) =>
-                      setFormData({ ...formData, mobile: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, mobile: e.target.value });
+                      setFormErrors({ ...formErrors, mobile: "" });
+                    }}
                     placeholder="Enter mobile number"
                   />
+                  {formErrors.mobile && (
+                    <div className="error-message">
+                      <AlertCircle size={16} />
+                      {formErrors.mobile}
+                    </div>
+                  )}
                 </div>
 
-                <div className="form-group">
-                  <label>Password</label>
+                <div className={`form-group ${formErrors.password ? "error" : ""}`}>
+                  <label className="required-field">Password</label>
                   <input
                     type="password"
                     value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, password: e.target.value });
+                      setFormErrors({ ...formErrors, password: "" });
+                    }}
                     placeholder="Enter password"
                   />
+                  {formErrors.password && (
+                    <div className="error-message">
+                      <AlertCircle size={16} />
+                      {formErrors.password}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -1473,27 +1505,58 @@ const Users = () => {
               <div className="profile-image-container">
                 <img
                   src={
-                    editedUser.u_pro_img || "https://via.placeholder.com/150"
+                    imageUri || editedUser.u_pro_img || defaultAvatar
                   }
                   alt="Profile"
                   className="profile-image"
                 />
                 {isEditing && (
-                  <button
-                    className="upload-button"
-                    onClick={() =>
-                      document.getElementById("editProfileImage").click()
-                    }
-                  >
-                    <Upload size={20} />
-                    <span>Update Photo</span>
-                  </button>
+                  <div className="profile-image-actions-container">
+                    {(imageUri || editedUser.u_pro_img) && (
+                      <button
+                        className="image-action-button remove"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageUri(null);
+                          setEditedUser({
+                            ...editedUser,
+                            u_pro_img: null
+                          });
+                        }}
+                      >
+                        <Trash2 size={16} />
+                        <span>Remove</span>
+                      </button>
+                    )}
+                    <button
+                      className="image-action-button update"
+                      onClick={() =>
+                        document.getElementById("editProfileImage").click()
+                      }
+                    >
+                      <Upload size={16} />
+                      <span>Update</span>
+                    </button>
+                  </div>
                 )}
                 <input
                   type="file"
                   id="editProfileImage"
                   accept="image/*"
-                  onChange={handleImageUpload}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setImageUri(reader.result);
+                        setEditedUser({
+                          ...editedUser,
+                          u_pro_img: reader.result
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
                   style={{ display: "none" }}
                 />
               </div>

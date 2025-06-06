@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Menu } from "lucide-react";
 import "./navbar.css";
 
 const NAV_ACCESS = {
@@ -20,6 +21,11 @@ const Navbar = () => {
   const [companyLogo, setCompanyLogo] = useState("");
   const [loading, setLoading] = useState(true);
   const [roleId, setRoleId] = useState(null);
+
+  // Add state for sidebar visibility
+  const toggleSidebar = () => {
+    document.body.classList.toggle('sidebar-open');
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -106,6 +112,13 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-left">
+        <button 
+          className="menu-toggle" 
+          onClick={toggleSidebar}
+          aria-label="Toggle Sidebar"
+        >
+          <Menu size={24} />
+        </button>
         {hasAccess("dashboard") && (
           <Link to="/dashboard" className="navbar-item">
             Dashboard
