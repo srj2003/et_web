@@ -131,7 +131,7 @@ const Navbar = () => {
 
       <div className="navbar-right">
         <div className="notification-container">
-          <button
+          {/* <button
             className="notification-button"
             onClick={() => setShowNotifications(!showNotifications)}
           >
@@ -152,7 +152,7 @@ const Navbar = () => {
             {notifications.length > 0 && (
               <span className="notification-badge">{notifications.length}</span>
             )}
-          </button>
+          </button> */}
 
           {showNotifications && (
             <div className="notification-dropdown">
