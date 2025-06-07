@@ -570,6 +570,7 @@ const Users = () => {
       (user.u_mob && user.u_mob.toLowerCase().includes(searchLower)) ||
       (user.u_email && user.u_email.toLowerCase().includes(searchLower))
     );
+    
   });
 
   const totalFilteredPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
@@ -701,23 +702,24 @@ const Users = () => {
           </div>
 
           <div className="pagination">
-            <span className="pagination-text">
-              Showing {startIndex + 1} to{" "}
-              {Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)} of{" "}
-              {filteredUsers.length} entries
-            </span>
+            <div className="pagination-text">
+              Showing <strong>{startIndex + 1}</strong> to{" "}
+              <strong>{Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)}</strong> of{" "}
+              <strong>{filteredUsers.length}</strong> entries
+            </div>
             <div className="pagination-controls">
               <button
                 className={`page-button ${currentPage === 1 ? "disabled" : ""}`}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                aria-label="Previous page"
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={16} />
               </button>
-              <span className="page-numbers">
+              <div className="page-numbers">
                 <span className="current-page">{currentPage}</span>
-                <span>of {totalFilteredPages}</span>
-              </span>
+                <span className="total-pages">of {totalFilteredPages}</span>
+              </div>
               <button
                 className={`page-button ${
                   currentPage === totalFilteredPages ? "disabled" : ""
@@ -726,8 +728,9 @@ const Users = () => {
                   setCurrentPage((p) => Math.min(totalFilteredPages, p + 1))
                 }
                 disabled={currentPage === totalFilteredPages}
+                aria-label="Next page"
               >
-                <ChevronRight size={20} />
+                <ChevronRight size={16} />
               </button>
             </div>
           </div>
@@ -814,24 +817,23 @@ const Users = () => {
               </div>
 
               <div className="pagination">
-                <span className="pagination-text">
-                  Showing {startIndex + 1} to{" "}
-                  {Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)}{" "}
-                  of {filteredUsers.length} entries
-                </span>
+                <div className="pagination-text">
+                  Showing <strong>{startIndex + 1}</strong> to{" "}
+                  <strong>{Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)}</strong> of{" "}
+                  <strong>{filteredUsers.length}</strong> entries
+                </div>
                 <div className="pagination-controls">
                   <button
-                    className={`page-button ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-button ${currentPage === 1 ? "disabled" : ""}`}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
+                    aria-label="Previous page"
                   >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={16} />
                   </button>
                   <div className="page-numbers">
                     <span className="current-page">{currentPage}</span>
-                    <span>of {totalFilteredPages}</span>
+                    <span className="total-pages">of {totalFilteredPages}</span>
                   </div>
                   <button
                     className={`page-button ${
@@ -841,8 +843,9 @@ const Users = () => {
                       setCurrentPage((p) => Math.min(totalFilteredPages, p + 1))
                     }
                     disabled={currentPage === totalFilteredPages}
+                    aria-label="Next page"
                   >
-                    <ChevronRight size={20} />
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
@@ -875,24 +878,23 @@ const Users = () => {
               </div>
 
               <div className="pagination">
-                <span className="pagination-text">
-                  Showing {startIndex + 1} to{" "}
-                  {Math.min(startIndex + ITEMS_PER_PAGE, filteredRoles.length)}{" "}
-                  of {filteredRoles.length} entries
-                </span>
+                <div className="pagination-text">
+                  Showing <strong>{startIndex + 1}</strong> to{" "}
+                  <strong>{Math.min(startIndex + ITEMS_PER_PAGE, filteredRoles.length)}</strong> of{" "}
+                  <strong>{filteredRoles.length}</strong> entries
+                </div>
                 <div className="pagination-controls">
                   <button
-                    className={`page-button ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-button ${currentPage === 1 ? "disabled" : ""}`}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
+                    aria-label="Previous page"
                   >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={16} />
                   </button>
                   <div className="page-numbers">
                     <span className="current-page">{currentPage}</span>
-                    <span>of {totalPages}</span>
+                    <span className="total-pages">of {totalPages}</span>
                   </div>
                   <button
                     className={`page-button ${
@@ -902,8 +904,9 @@ const Users = () => {
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages}
+                    aria-label="Next page"
                   >
-                    <ChevronRight size={20} />
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               </div>

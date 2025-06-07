@@ -115,34 +115,33 @@ const Navbar = () => {
         <button 
           className="menu-toggle" 
           onClick={toggleSidebar}
-          aria-label="Toggle Sidebar"
+          aria-label="Toggle Menu"
         >
           <Menu size={24} />
         </button>
-        {hasAccess("dashboard") && (
-          <Link to="/dashboard" className="navbar-item">
-            Dashboard
+        <div className="navbar-links">
+          {hasAccess("dashboard") && (
+            <Link to="/dashboard" className="navbar-item">
+              Dashboard
+            </Link>
+          )}
+          {hasAccess("users") && (
+            <Link to="/users" className="navbar-item">
+              Users
+            </Link>
+          )}
+          <Link to="/analytics/useranalytics" className="navbar-item">
+            Analytics
           </Link>
-        )}
-        {hasAccess("users") && (
-          <Link to="/users" className="navbar-item">
-            Users
-          </Link>
-        )}
-        {/* Always show Analytics since useranalytics is set to "all" */}
-        <Link to="/analytics/useranalytics" className="navbar-item">
-          Analytics
-        </Link>
-        {hasAccess("holidays") && (
-          <Link to="/holiday" className="navbar-item">
-            Holidays
-          </Link>
-        )}
+          {hasAccess("holidays") && (
+            <Link to="/holiday" className="navbar-item">
+              Holidays
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="navbar-right">
-        
-
         <div className="profile-container">
           <button
             className="profile-button"
