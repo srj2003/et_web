@@ -95,15 +95,17 @@ export default function RequestedLeaves() {
   }, []);
 
   useEffect(() => {
-    const filteredData = leaves.filter((leave) => {
-      const matchesSearch =
-        leave.user_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        leave.leave_title?.toLowerCase().includes(searchQuery.toLowerCase());
-      const leaveStatus = getStatusText(leave.leave_track_status);
-      const matchesStatus =
-        selectedStatus === "All" || leaveStatus === selectedStatus;
-      return matchesSearch && matchesStatus;
-    });
+    const filteredData = leaves
+      .filter(leave => leave.leave_id) // Ensure leave exists
+      .filter((leave) => {
+        const matchesSearch =
+          leave.user_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          leave.leave_title?.toLowerCase().includes(searchQuery.toLowerCase());
+        const leaveStatus = getStatusText(leave.leave_track_status);
+        const matchesStatus =
+          selectedStatus === "All" || leaveStatus === selectedStatus;
+        return matchesSearch && matchesStatus;
+      });
     setFiltered(filteredData);
     setCurrentPage(1);
   }, [searchQuery, selectedStatus, leaves]);
@@ -121,6 +123,15 @@ export default function RequestedLeaves() {
         alert("User ID not found");
         return;
       }
+
+      // Find the card element
+      const cardElement = document.querySelector(`[data-leave-id="${leaveId}"]`);
+      if (!cardElement) return;
+
+      // Add the disappearing animation class
+      cardElement.classList.add(
+        action === "approve" ? "disappearing-approve" : "disappearing-reject"
+      );
 
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/approve_reject_leaves.php",
@@ -140,18 +151,36 @@ export default function RequestedLeaves() {
 
       const data = await response.json();
       if (data.status === "success") {
-        alert(`Leave ${action}d successfully`);
-        // Update the local state
-        setLeaves(
-          leaves.map((leave) =>
-            leave.leave_id === leaveId
-              ? { ...leave, leave_track_status: action === "approve" ? 1 : 2 }
-              : leave
-          )
-        );
+        // Wait for the disappearing animation
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Update leaves state to remove the card
+        const updatedLeaves = leaves.filter(leave => leave.leave_id !== leaveId);
+        
+        // Add appearing class to cards that will move
+        const remainingCards = document.querySelectorAll('.leave-card:not(.disappearing-approve):not(.disappearing-reject)');
+        remainingCards.forEach(card => {
+          card.classList.add('appearing');
+        });
+
+        // Update state to trigger re-render
+        setLeaves(updatedLeaves);
         setSelectedLeave(null);
+
+        // Remove appearing class after animation
+        setTimeout(() => {
+          remainingCards.forEach(card => {
+            card.classList.remove('appearing');
+          });
+        }, 300);
+
       } else {
         alert(data.message || "Failed to process action");
+        // Remove animation class if action failed
+        cardElement.classList.remove(
+          "disappearing-approve",
+          "disappearing-reject"
+        );
       }
     } catch (error) {
       console.error("Error handling action:", error);
@@ -249,7 +278,9 @@ export default function RequestedLeaves() {
           <div
             className="leave-card"
             key={leave.leave_id || idx}
+            data-leave-id={leave.leave_id}
             onClick={() => setSelectedLeave(leave)}
+            data-status={getStatusText(leave.leave_track_status)}
           >
             <div className="leave-header">
               <div className="leave-header-content">

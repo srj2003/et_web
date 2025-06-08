@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Assuming you are using react-router-dom for navigation
+import { Link, useNavigate, useLocation } from "react-router-dom"; // Assuming you are using react-router-dom for navigation
 import {
   Home,
   CalendarCheck,
@@ -171,9 +171,11 @@ const menuItemsData = [
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [openMenus, setOpenMenus] = useState({});
   const [roleId, setRoleId] = useState(null);
   const [filteredMenuItems, setFilteredMenuItems] = useState([]);
+  const [activeItem, setActiveItem] = useState("");
 
   useEffect(() => {
     const storedRoleId = parseInt(localStorage.getItem("roleId"));
@@ -202,6 +204,26 @@ const Sidebar = () => {
     setFilteredMenuItems(filtered);
   }, []);
 
+  // Add effect to handle active menu based on current path
+  useEffect(() => {
+    const currentPath = location.pathname;
+    
+    // Find and set active menu item
+    filteredMenuItems.forEach((item) => {
+      if (item.subItems) {
+        const activeSubItem = item.subItems.find(
+          (subItem) => subItem.path === currentPath
+        );
+        if (activeSubItem) {
+          setActiveItem(currentPath);
+          setOpenMenus((prev) => ({ ...prev, [item.id]: true }));
+        }
+      } else if (item.path === currentPath) {
+        setActiveItem(currentPath);
+      }
+    });
+  }, [location.pathname, filteredMenuItems]);
+
   const toggleMenu = (id) => {
     setOpenMenus((prevOpenMenus) => ({
       ...prevOpenMenus,
@@ -214,6 +236,14 @@ const Sidebar = () => {
     localStorage.removeItem("userToken");
     localStorage.removeItem("roleId");
     navigate("/");
+  };
+
+  const isMenuActive = (item) => {
+    if (item.path === activeItem) return true;
+    if (item.subItems) {
+      return item.subItems.some(subItem => subItem.path === activeItem);
+    }
+    return false;
   };
 
   return (
@@ -230,11 +260,15 @@ const Sidebar = () => {
         {filteredMenuItems.map((item) => {
           const IconComponent = item.icon;
           const isOpen = openMenus[item.id] || false;
+          const isActive = isMenuActive(item);
 
           if (item.subItems && item.subItems.length > 0) {
             return (
               <li key={item.id} className={`menu-item ${isOpen ? "open" : ""}`}>
-                <div className="menu-link" onClick={() => toggleMenu(item.id)}>
+                <div 
+                  className={`menu-link ${isActive ? "active" : ""}`}
+                  onClick={() => toggleMenu(item.id)}
+                >
                   <div className="menu-content">
                     <IconComponent size={20} className="menu-icon" />
                     <span className="menu-title">{item.title}</span>
@@ -248,7 +282,12 @@ const Sidebar = () => {
                   <ul className="submenu">
                     {item.subItems.map((subItem) => (
                       <li key={subItem.id} className="submenu-item">
-                        <Link to={subItem.path} className="submenu-link">
+                        <Link
+                          to={subItem.path}
+                          className={`submenu-link ${
+                            subItem.path === activeItem ? "active" : ""
+                          }`}
+                        >
                           {subItem.title}
                         </Link>
                       </li>
@@ -273,7 +312,12 @@ const Sidebar = () => {
                     <ChevronDown size={18} className="menu-arrow muted" />
                   </div>
                 ) : (
-                  <Link to={item.path || "#"} className="menu-link">
+                  <Link
+                    to={item.path || "#"}
+                    className={`menu-link ${
+                      item.path === activeItem ? "active" : ""
+                    }`}
+                  >
                     <IconComponent size={20} className="menu-icon" />
                     <span className="menu-title">{item.title}</span>
                   </Link>
@@ -289,7 +333,12 @@ const Sidebar = () => {
         <div className="bottom-divider"></div>
         <ul className="bottom-menu">
           <li className="menu-item">
-            <Link to="/help" className="menu-link">
+            <Link
+              to="/help"
+              className={`menu-link ${
+                location.pathname === "/help" ? "active" : ""
+              }`}
+            >
               <HelpCircle size={20} className="menu-icon" />
               <span className="menu-title">Help</span>
             </Link>

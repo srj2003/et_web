@@ -247,30 +247,31 @@ const MyLeaves = () => {
         {paginatedLeaves.map((leave) => (
           <div key={leave.leave_id} className="leave-card">
             <div className="leave-header">
-              <h3 className="leave-title">{leave.leave_type}</h3>
-              <span
-                className={`status-badge ${getStatusClass(leave.leave_status)}`}
-              >
+              <div className="leave-title-section">
+                <h3 className="leave-title">{leave.title}</h3>
+                <p className="leave-subtitle">{leave.leave_type}</p>
+              </div>
+              <span className={`status-badge ${getStatusClass(leave.leave_status)}`}>
                 {getStatusIcon(leave.leave_status)}
                 {leave.leave_status}
               </span>
             </div>
             <div className="leave-details">
               <div className="leave-info">
-                <span className="info-label">From Date:</span>
+                <span className="info-label">From Date</span>
                 <span className="info-value">{leave.from_date}</span>
               </div>
               <div className="leave-info">
-                <span className="info-label">To Date:</span>
+                <span className="info-label">To Date</span>
                 <span className="info-value">{leave.to_date}</span>
               </div>
               <div className="leave-info">
-                <span className="info-label">Duration:</span>
+                <span className="info-label">Duration</span>
                 <span className="info-value">{leave.duration} days</span>
               </div>
               {leave.leave_reason && (
                 <div className="leave-info full-width">
-                  <span className="info-label">Reason:</span>
+                  <span className="info-label">Reason</span>
                   <span className="info-value">{leave.leave_reason}</span>
                 </div>
               )}
