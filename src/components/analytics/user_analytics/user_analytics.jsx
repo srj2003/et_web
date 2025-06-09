@@ -104,8 +104,11 @@ const StatCard = ({ icon, title, value, subValue, color }) => (
                 </div>
             )}
         </div>
-        <h3 className="stat-card-title">{title}</h3>
-        <p className="stat-card-value">{value}</p>
+        <div>
+            <h3 className="stat-card-title">{title}</h3>
+            <p className="stat-card-value">{value}</p>
+        </div>
+
     </div>
 );
 
@@ -407,7 +410,8 @@ const AnalyticsScreen = () => {
 
             <div className="filter-container">
                 <FormControl fullWidth>
-                    <InputLabel>Select Period</InputLabel>
+                    <InputLabel classname ='period-label-title
+                    ' >Select Period</InputLabel>
                     <Select
                         value={selectedPeriod}
                         onChange={(e) => {
@@ -422,7 +426,7 @@ const AnalyticsScreen = () => {
                         <MenuItem value="Custom">Custom Range</MenuItem>
                     </Select>
                 </FormControl>
-
+                <div className='date-picker-container'>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                         label="Start Date"
@@ -447,6 +451,7 @@ const AnalyticsScreen = () => {
                         renderInput={(params) => <TextField {...params} fullWidth />}
                     />
                 </LocalizationProvider>
+                </div>
             </div>
 
             {error && <div className="error-message">{error}</div>}

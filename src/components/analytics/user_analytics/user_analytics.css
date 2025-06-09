@@ -1,8 +1,16 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
 .analytics-container {
-    height: 100vh;
+    min-height: 100%;
+    height: auto;
     font-family: 'Inter', 'Inter-SemiBold', sans-serif;
     background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
-    overflow: auto;
+    overflow-y: auto;
     box-sizing: border-box;
     scroll-behavior: smooth;
     padding: 2rem;
@@ -11,8 +19,7 @@
 
 /* For Firefox */
 .analytics-container {
-    scrollbar-width: none;
-    overflow: hidden;
+    scrollbar-width: thin;
 }
 
 .analytics-container>* {
@@ -115,6 +122,10 @@
     margin-bottom: 2rem;
     position: relative;
     z-index: 1;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .period-select {
@@ -135,8 +146,16 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+/* Date picker container styles */
 .date-picker-container {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.date-picker-container .MuiFormControl-root {
     flex: 1;
+    min-width: 0;
 }
 
 .date-picker {
@@ -167,7 +186,7 @@
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
     border-radius: 1rem;
     padding: 1.5rem;
@@ -185,7 +204,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .trend-container {
@@ -193,7 +212,7 @@
     align-items: center;
     gap: 0.25rem;
     padding: 0.25rem 0.5rem;
-    background: rgba(5, 150, 105, 0.1);
+    background: rgba(5, 150, 105, 0.15);
     border-radius: 0.5rem;
 }
 
@@ -201,19 +220,20 @@
     font-size: 0.75rem;
     font-weight: 500;
     color: #059669;
+    white-space: nowrap;
 }
 
 .stat-card-title {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #64748b;
+    color: #475569;
     margin: 0 0 0.5rem 0;
 }
 
 .stat-card-value {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1e293b;
+    color: #0f172a;
     margin: 0;
 }
 
@@ -364,29 +384,26 @@
 /* Material UI Overrides */
 .MuiFormControl-root {
     background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
     border-radius: 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
 }
 
-.MuiInputBase-root {
-    background: transparent !important;
+.MuiOutlinedInput-root {
+    border-radius: 0.5rem !important;
 }
 
 .MuiOutlinedInput-notchedOutline {
-    border-color: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(203, 213, 225, 0.4) !important;
 }
 
-.MuiButton-outlined {
-    border-color: #3b82f6 !important;
-    color: #3b82f6 !important;
-    background: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(10px);
+.MuiInputLabel-root {
+    color: #64748b !important;
 }
 
-.MuiButton-outlined:hover {
-    background: rgba(59, 130, 246, 0.1) !important;
-    border-color: #2563eb !important;
+.MuiInputBase-input {
+    padding: 0.75rem !important;
+    font-size: 0.875rem !important;
+    color: #1e293b !important;
 }
 
 /* Toast Notifications */
@@ -420,26 +437,136 @@
 @media (max-width: 1024px) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+        padding: 0.5rem;
+    }
+
+    .filter-container {
+        grid-template-columns: 1fr;
+        padding: 1.25rem;
+    }
+
+    .date-picker-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
     }
 }
 
 @media (max-width: 768px) {
     .analytics-container {
         padding: 1rem;
+        height: auto;
+        min-height: 100%;
+        overflow-y: auto;
     }
 
     .filter-container {
+        padding: 1rem;
         grid-template-columns: 1fr;
+    }
+
+    .date-picker-container {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .date-picker-container .MuiFormControl-root {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Make period select full width */
+    .filter-container > .MuiFormControl-root {
+        grid-column: 1 / -1;
     }
 
     .stats-grid,
     .time-stats,
     .work-hours-grid {
         grid-template-columns: 1fr;
+        margin-bottom: 1.5rem;
     }
 
     .title {
         font-size: 1.5rem;
+    }
+
+    .section-title {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 0;
+    }
+
+    .stat-card {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .stat-card-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card-header .MuiSvgIcon-root {
+        font-size: 1.5rem !important;
+        color: #3b82f6 !important;
+    }
+
+    .stat-card-title {
+        font-size: 0.93rem;
+        color: #475569;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+    }
+
+    .stat-card-value {
+        font-size: 1.375rem;
+        color: #0f172a;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .trend-container {
+        padding: 0.2rem 0.1rem;
+        background: rgba(5, 150, 105, 0.15);
+    }
+
+    .trend-text {
+        font-size: 0.75rem;
+        color: #059669;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-container {
+        padding: 0.875rem;
+        gap: 0.75rem;
+    }
+
+    .date-picker-container {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .date-picker-container .MuiFormControl-root {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Adjust input padding and font size for better mobile display */
+    .MuiInputBase-input {
+        padding: 0.625rem !important;
+        font-size: 0.8125rem !important;
     }
 }
 

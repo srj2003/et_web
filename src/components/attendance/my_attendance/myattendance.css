@@ -34,10 +34,14 @@
 }
 
 .myattendance-title {
-  font-size: 34px;
+  font-size: 22px;
   font-weight: 600;
   color: #1e293b;
   margin: 0;
+}
+
+.myattendance-title span {
+  font-size: 22px;
 }
 
 .refresh-button {
@@ -54,7 +58,7 @@
 }
 
 .refresh-button i {
-  color: #7275f7;
+  color: #3f42f3;
   font-size: 24px;
 }
 
@@ -84,6 +88,27 @@
   box-sizing: border-box;
 }
 
+.date-input:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.date-input::placeholder {
+  color: #9ca3af;
+}
+
+.date-input:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.date-input:disabled::placeholder {
+  color: #d1d5db;
+}
+
+.date-range-
+
 .submit-button {
   background-color: #7275f7;
   color: white;
@@ -102,7 +127,10 @@
 }
 
 .submit-button:hover {
-  background-color: #5d60e6;
+  background-color: #2720b5;
+  color: white;
+  transform: scale(1.05);
+  transition: all 0.2s ease;
 }
 
 .loading-container {
@@ -133,8 +161,6 @@
 span {
   font-size: 24px;
 }
-
-
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -211,6 +237,9 @@ span {
 
 .left-section {
   width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .middle-section {
@@ -272,7 +301,7 @@ span {
 }
 
 .detailed-note-title {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 600;
   color: #1e293b;
   margin-bottom: 12px;
@@ -301,14 +330,16 @@ span {
 .number-highlight {
   color: #6366f1;
   font-weight: 600;
+  font-size: 19px;
+  display: inline-block;
 }
 
 .note-container {
   background-color: #fff1f2;
   border-radius: 12px;
-  padding: 16px;
+  padding: 26px;
   margin-top: 24px;
-  border-left: 4px solid #ef4444;
+  border-left: 6px solid #ef4444;
 }
 
 .note-title {
@@ -378,6 +409,8 @@ span {
 
   .calendar-view {
     grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 24px;
   }
 
   .filter-container {
@@ -393,6 +426,10 @@ span {
     width: 100%;
     margin-top: 8px;
     height: 44px;
+  }
+
+  .left-section .MuiDateCalendar-root {
+    max-width: 100%;
   }
 }
 
@@ -410,8 +447,8 @@ span {
   }
   
   .calendar-view {
-    padding: 12px;
-    gap: 12px;
+    padding: 8px;
+    gap: 16px;
   }
 
   .date-buttons-container {
@@ -421,6 +458,12 @@ span {
   .date-input {
     min-width: 100%;
     font-size: 16px; /* Better for mobile tap targets */
+  }
+
+  .left-section .MuiPickersDay-root {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8125rem;
   }
 }
 
@@ -592,13 +635,14 @@ span {
   background-color: #f8fafc;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
-  font-size: 24px;
+  font-size: 20px;
   color: #334155;
 }
 
 .date-range-display span {
   font-weight: 600;
   color: #1e293b;
+  font-size: 18px;
 }
 
 /* MUI DatePicker customization */
@@ -652,16 +696,17 @@ span {
 }
 
 .filter-button {
-  min-width: 150px !important;
-  padding: 12px 24px !important;
-  border-radius: 12px !important;
-  font-size: 18px !important;
+  min-width: 120px !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
   font-weight: 600 !important;
   text-transform: none !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
+/* Present Button */
 .filter-button#present.MuiButton-contained {
   background-color: #10b981 !important;
   color: white !important;
@@ -670,9 +715,10 @@ span {
 .filter-button#present.MuiButton-outlined {
   border-color: #10b981 !important;
   color: #10b981 !important;
-  border-width: 2px !important;
+  border-width: 1.5px !important;
 }
 
+/* Absent Button */
 .filter-button#absent.MuiButton-contained {
   background-color: #ef4444 !important;
   color: white !important;
@@ -681,9 +727,10 @@ span {
 .filter-button#absent.MuiButton-outlined {
   border-color: #ef4444 !important;
   color: #ef4444 !important;
-  border-width: 2px !important;
+  border-width: 1.5px !important;
 }
 
+/* Not Logged Out Button */
 .filter-button#not-logged-out.MuiButton-contained {
   background-color: #f59e0b !important;
   color: white !important;
@@ -692,9 +739,10 @@ span {
 .filter-button#not-logged-out.MuiButton-outlined {
   border-color: #f59e0b !important;
   color: #f59e0b !important;
-  border-width: 2px !important;
+  border-width: 1.5px !important;
 }
 
+/* Show All Button */
 .filter-button#show-all.MuiButton-contained {
   background-color: #6366f1 !important;
   color: white !important;
@@ -703,16 +751,54 @@ span {
 .filter-button#show-all.MuiButton-outlined {
   border-color: #6366f1 !important;
   color: #6366f1 !important;
-  border-width: 2px !important;
+  border-width: 1.5px !important;
 }
 
+/* Hover and Active States */
 .filter-button:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12) !important;
 }
 
 .filter-button:active {
   transform: translateY(0) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .filter-buttons {
+    gap: 8px;
+  }
+
+  .filter-button {
+    min-width: calc(50% - 4px) !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-buttons {
+    gap: 6px;
+  }
+
+  .filter-button {
+    min-width: 100% !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* Consistent active state on mobile */
+  .filter-button.MuiButton-contained,
+  .filter-button.MuiButton-outlined {
+    border-width: 1.5px !important;
+  }
+
+  .filter-button:active {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+  }
 }
 
 /* Calendar Tile Styles */
@@ -803,3 +889,93 @@ span {
   transform: scale(1.05) !important;
   transition: all 0.2s ease !important;
 }
+
+.note-container{
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border-left: 6px solid #ef4444;
+  background-color: #fff1f2;
+}
+
+.note-title{
+  font-size: 24px;
+  font-weight: 600;
+  color: #ef4444;
+  margin-bottom: 8px;
+}
+
+.note-text{
+  font-size: 18px;
+}
+
+/* Calendar Container Styles */
+.left-section .MuiDateCalendar-root {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* Calendar Header Styles */
+.left-section .MuiPickersCalendarHeader-root {
+  padding: 0 8px;
+  margin-bottom: 8px;
+}
+
+.left-section .MuiPickersCalendarHeader-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Calendar Navigation Buttons */
+.left-section .MuiPickersArrowSwitcher-button {
+  color: #64748b;
+  padding: 4px;
+}
+
+.left-section .MuiPickersArrowSwitcher-button:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+/* Calendar Grid Styles */
+.left-section .MuiDayCalendar-weekContainer {
+  justify-content: space-around;
+  margin: 2px 0;
+}
+
+/* Calendar Day Styles */
+.left-section .MuiPickersDay-root {
+  margin: 2px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.left-section .MuiPickersDay-root:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.left-section .MuiPickersDay-today {
+  border: 1px solid #6366f1 !important;
+  color: #6366f1 !important;
+}
+
+/* Badge Styles for Different States */
+.left-section .MuiBadge-root {
+  width: 36px;
+  height: 36px;
+}
+
+.count-inner-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  height: 100%;
+}
+
+
+

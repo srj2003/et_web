@@ -30,7 +30,6 @@ import AddWorkReport from "./components/workreport/addworkreport/add_work_report
 import MyWorkReport from "./components/workreport/myworkreport/my_work_report";
 import AllWorkReport from "./components/workreport/allworkreport/all_work_report";
 import HolidayList from "./components/holiday/holiday";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 function App() {
   return (
     <BrowserRouter>
@@ -38,7 +37,7 @@ function App() {
         <Route path="/" element={<LoginWeb />} />
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/attendance/my" element={<MyAttendance/>} />
+          <Route path="/attendance/myattendance" element={<MyAttendance/>} />
           <Route path="/attendance/userattendance" element={<UserAttendance />} />
           <Route path="/leaves/add" element={<AddLeaves />} />
           <Route path="/leaves/my" element={<MyLeaves />} />
