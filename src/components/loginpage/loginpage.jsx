@@ -80,7 +80,6 @@ export default function LoginWeb() {
           localStorage.setItem('roleId', data.data.role_id.toString());
           localStorage.setItem('currentLoginTime', Date.now().toString());
           // Store session information
-          localStorage.setItem('sessionId', data.session.id);
           localStorage.setItem('sessionName', data.session.name);
           navigate('/dashboard');
         } else {

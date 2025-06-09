@@ -174,7 +174,7 @@ const FinancialCharts = ({ analytics }) => {
                     className="legend-color"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="legend-text">{item.name}</span>
+                  <span>{item.name}</span>
                 </div>
               ))}
             </div>
@@ -406,17 +406,11 @@ export default function DashboardWeb() {
   const fetchUserData = useCallback(async () => {
     try {
       const userId = localStorage.getItem("userid");
-      const sessionId = localStorage.getItem("sessionId");
       const storedRoleId = localStorage.getItem("roleId");
       setRoleId(storedRoleId);
 
       if (!userId) {
         setError("No user ID found");
-        return;
-      }
-
-      if (!sessionId) {
-        setError("No session ID found");
         return;
       }
 
@@ -427,10 +421,7 @@ export default function DashboardWeb() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            userId,
-            sessionId
-          }),
+          body: JSON.stringify({ userId }),
         }
       );
 
@@ -645,9 +636,9 @@ export default function DashboardWeb() {
           body: JSON.stringify(logoutData),
         }
       )
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(err => console.error(err));
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(err => console.error(err));
 
       const result = await response.json();
 
