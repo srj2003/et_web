@@ -14,6 +14,7 @@ import {
   Settings,
   HelpCircle,
   LogOut,
+  FileText,
 } from "lucide-react";
 import "./sidebar.css"; // We will create/update this CSS file
 
@@ -40,6 +41,12 @@ const ROLE_ACCESS = {
   },
   project: {
     manage_project_expense: [1, 3, 8],
+    my_projects: [1, 3, 8],
+  },
+  workreport: {
+    add_workreport: "all",
+    my_work_report: "all",
+    all_work_report: [1, 2, 3, 4, 6, 8],
   },
   requisition: {
     add_requisition: [1, 2, 3, 4, 5, 6], // Available to everyone
@@ -119,6 +126,33 @@ const menuItemsData = [
         title: "Manage Projects",
         path: "/project/manage",
       },
+      {
+        id: "my_projects",
+        title: "My Projects",
+        path: "/project/my",
+      },
+    ],
+  },
+  {
+    id: "workreport",
+    title: "Work Report",
+    icon: FileText,
+    subItems: [
+      {
+        id: "add_workreport",
+        title: "Add Work Report",
+        path: "/workreport/add",
+      },
+      {
+        id: "my_work_report",
+        title: "My Work Report",
+        path: "/workreport/my",
+      },
+      {
+        id: "all_work_report",
+        title: "All Work Reports",
+        path: "/workreport/all",
+      }
     ],
   },
   {
