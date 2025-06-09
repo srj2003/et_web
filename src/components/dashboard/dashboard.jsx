@@ -174,7 +174,7 @@ const FinancialCharts = ({ analytics }) => {
                     className="legend-color"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span>{item.name}</span>
+                  <span className="legend-text">{item.name}</span>
                 </div>
               ))}
             </div>
