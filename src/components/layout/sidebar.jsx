@@ -210,9 +210,12 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("userId");
+    // Remove all items including session data
+    localStorage.removeItem("userid");
     localStorage.removeItem("userToken");
     localStorage.removeItem("roleId");
+    localStorage.removeItem("currentLoginTime");
+    alert("You have been logged out. Please login again.");
     navigate("/");
   };
 

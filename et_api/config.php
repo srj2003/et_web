@@ -67,9 +67,19 @@ if (!in_array($current_file, $public_routes)) {
 
 
 
-    // Verify session exists
+    // Verify session exists and matches database
 
-    if (!isset($_SESSION['userid'])) {
+    // Get session ID from request headers
+
+    $headers = getallheaders();
+
+    $frontend_session_id = isset($headers['Session-Id']) ? $headers['Session-Id'] : null;
+
+    $frontend_user_id = isset($headers['User-Id']) ? $headers['User-Id'] : null;
+
+
+
+    if (!$frontend_session_id || !$frontend_user_id) {
 
         http_response_code(401);
 
@@ -77,7 +87,7 @@ if (!in_array($current_file, $public_routes)) {
 
             'status' => 'error',
 
-            'message' => 'No active session found',
+            'message' => 'No session credentials provided',
 
             'code' => 401
 
@@ -89,13 +99,27 @@ if (!in_array($current_file, $public_routes)) {
 
 
 
-    // Check session timeout
+    // Check session in database
 
-    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_LIFETIME)) {
+    $conn = new mysqli($servername, $username, $password, $dbname);
 
-        session_unset();
+    $query = "SELECT * FROM user_sessions WHERE session_id = ? AND user_id = ? 
 
-        session_destroy();
+              ORDER BY login_time DESC LIMIT 1";
+
+
+
+    $stmt = $conn->prepare($query);
+
+    $stmt->bind_param('si', $frontend_session_id, $frontend_user_id);
+
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+
+
+    if ($result->num_rows === 0) {
 
         http_response_code(401);
 
@@ -103,7 +127,7 @@ if (!in_array($current_file, $public_routes)) {
 
             'status' => 'error',
 
-            'message' => 'Session expired',
+            'message' => 'Invalid session',
 
             'code' => 401
 

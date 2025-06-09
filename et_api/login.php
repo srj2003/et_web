@@ -92,6 +92,16 @@ if (json_last_error() === JSON_ERROR_NONE && isset($data['u_identify']) && isset
                 $_SESSION['role_id'] = $user['role_id'];
                 $_SESSION['last_activity'] = time();
 
+                // Store session information in user_sessions table
+                $session_id = session_id();
+                $insert_session = "INSERT INTO user_sessions (session_id, u_id) VALUES (?, ?)";
+                $stmt_session = $con->prepare($insert_session);
+                if ($stmt_session) {
+                    $stmt_session->bind_param('si', $session_id, $user['u_id']);
+                    $stmt_session->execute();
+                    $stmt_session->close();
+                }
+
                 $response = [
                     'status' => 'success',
                     'message' => 'Login successful',
