@@ -26,6 +26,10 @@ import RequisitionReport from "./components/accounts/requisition_report/requisit
 import ProfileScreen from "./components/profile/profile";
 import MyAttendance from './components/attendance/my_attendance/myattendance';
 import Help from "./components/help/help";
+import MyProjects from "./components/project/my_projects";
+import AddWorkReport from "./components/workreport/addworkreport/add_work_report";
+import MyWorkReport from "./components/workreport/myworkreport/my_work_report";
+import AllWorkReport from "./components/workreport/allworkreport/all_work_report";
 import HolidayList from "./components/holiday/holiday";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 function App() {
@@ -60,10 +64,11 @@ function App() {
           <Route path="/accounts/requisitionreport" element={<RequisitionReport />} />
           <Route path="/profile" element={<ProfileScreen />} />
           <Route path="/help" element={<Help />} />
-          <Route
-            path="/project/manage"
-            element={<ManageProjectExpenses />}
-          />
+          <Route path="/project/my" element={<MyProjects />} />
+          <Route path="/project/manage" element={<ManageProjectExpenses />} />
+          <Route path="/workreport/add" element={<AddWorkReport />} />
+          <Route path="/workreport/my" element={<MyWorkReport />} />
+          <Route path="/workreport/all" element={<AllWorkReport />} />
           <Route path="/holiday" element={<HolidayList />} />
         </Route>
 

@@ -1,7 +1,7 @@
 /* File Upload Styles */
 .file-upload {
     position: relative;
-    margin: 1rem 0;
+    margin: 0.5rem 0;
 }
 .file-upload-text {
     color: white;
@@ -26,8 +26,8 @@
 .file-label {
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
     background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
     color: white;
     border-radius: 8px;
@@ -43,17 +43,17 @@
 }
 
 .file-list {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
 .file-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 1rem;
+    padding: 0.375rem 0.75rem;
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
@@ -81,8 +81,8 @@
 
 /* Submit Button Styles */
 .submit-button-container {
-    margin-top: 2rem;
-    padding: 0 1rem 2rem;
+    margin-top: 1rem;
+    padding: 0 0.5rem 1rem;
     width: 100%;
     max-width: 960px;
     margin-left: auto;
@@ -91,8 +91,8 @@
 
 .submit-button {
     width: 100%;
-    padding: 1rem 2rem;
-    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: white;
     background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -159,7 +159,7 @@
 .modal-content {
   background: white;
   border-radius: 8px;
-  padding: 20px;
+  padding: 1rem;
   width: 90%;
   max-width: 500px;
   max-height: 80vh;
@@ -170,14 +170,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid #eee;
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #333;
 }
 
@@ -192,10 +192,10 @@
 .search-box {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
+  padding: 0.5rem 0.75rem;
   border: 1px solid #ddd;
   border-radius: 6px;
-  margin-bottom: 15px;
+  margin-bottom: 0.75rem;
 }
 
 .search-box input {
@@ -212,7 +212,7 @@
 }
 
 .modal-item {
-  padding: 12px;
+  padding: 0.5rem 0.75rem;
   cursor: pointer;
   border-bottom: 1px solid #eee;
   transition: background-color 0.2s;
@@ -232,4 +232,73 @@
   padding: 20px;
   color: #666;
   font-style: italic;
+}
+
+.expense-form-container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.form-title {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.form-section {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 1.1rem;
+  color: #374151;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+
+.form-group {
+  margin-bottom: 0.75rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea,
+.select-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.full-width {
+  grid-column: 1 / -1;
 }
