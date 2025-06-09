@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 import LoginWeb from "./components/loginpage/loginpage";
 import Layout from "./components/layout/MainLayout";
@@ -35,7 +36,11 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LoginWeb />} />
-        <Route element={<Layout />}>
+        <Route element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/attendance/myattendance" element={<MyAttendance/>} />
           <Route path="/attendance/userattendance" element={<UserAttendance />} />

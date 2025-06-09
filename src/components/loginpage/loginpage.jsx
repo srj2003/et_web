@@ -46,7 +46,7 @@ export default function LoginWeb() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoginError(''); // Clear any previous errors
+    setLoginError('');
 
     const isEmailValid = validateEmailOrPhone(email);
     const isPasswordValid = validatePassword(password);
@@ -66,29 +66,27 @@ export default function LoginWeb() {
           }),
         });
 
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Server returned non-JSON response');
         }
 
         const data = await response.json();
         console.log('Login response:', data); // Debug log
 
-        if (data.status === 'success') {
+        if (data.status === 'success' && data.data) {
           setLoginError('');
-          // Store user data in localStorage for web
-          localStorage.setItem('userid', data.data.userid.toString());
-          localStorage.setItem('roleId', data.data.role_id.toString());
+          // Store user data in localStorage with null checks
+          localStorage.setItem('userid', data.data.userid?.toString() || '');
+          localStorage.setItem('roleId', data.data.role_id?.toString() || '');
           localStorage.setItem('currentLoginTime', Date.now().toString());
-          // Store session information
-          localStorage.setItem('sessionId', data.session.id);
-          localStorage.setItem('sessionName', data.session.name);
           navigate('/dashboard');
         } else {
-          setLoginError(data.message || 'Invalid email or password');
+          setLoginError(data.message || 'Invalid login credentials');
         }
       } catch (error) {
-        console.error('Login error:', error); // Debug log
-        setLoginError('Network error. Please try again.');
+        console.error('Login error:', error);
+        setLoginError('Server error. Please try again later.');
       } finally {
         setLoading(false);
       }
