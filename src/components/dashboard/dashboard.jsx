@@ -629,16 +629,12 @@ export default function DashboardWeb() {
         "https://demo-expense.geomaticxevs.in/ET-api/user_attendance_logout.php",
         {
           method: "POST",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(logoutData),
         }
-      )
-      .then(response => response.json())
-      .then(data => console.log(data))
-      .catch(err => console.error(err));
+      );
 
       const result = await response.json();
 
@@ -710,30 +706,30 @@ export default function DashboardWeb() {
   // Prepare cards for all numeric analytics fields
   const analyticsCards = analytics
     ? Object.entries(analytics)
-      .filter(([key, value]) => typeof value === "number")
-      .map(([key, value]) => (
-        <div className="analytics-generic-card" key={key}>
-          <div className="analytics-generic-icon">
-            {analyticsIcons[key] || <BarChart size={28} />}
+        .filter(([key, value]) => typeof value === "number")
+        .map(([key, value]) => (
+          <div className="analytics-generic-card" key={key}>
+            <div className="analytics-generic-icon">
+              {analyticsIcons[key] || <BarChart size={28} />}
+            </div>
+            <div className="analytics-generic-title">
+              {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+            </div>
+            <div className="analytics-generic-value">
+              {typeof value === "number" ? value.toLocaleString() : value}
+            </div>
           </div>
-          <div className="analytics-generic-title">
-            {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-          </div>
-          <div className="analytics-generic-value">
-            {typeof value === "number" ? value.toLocaleString() : value}
-          </div>
-        </div>
-      ))
+        ))
     : null;
 
   // Prepare chart data for all numeric fields
   const analyticsChartData = analytics
     ? Object.entries(analytics)
-      .filter(([key, value]) => typeof value === "number")
-      .map(([key, value]) => ({
-        name: key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-        value,
-      }))
+        .filter(([key, value]) => typeof value === "number")
+        .map(([key, value]) => ({
+          name: key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+          value,
+        }))
     : [];
 
   // Add this function to prepare data for charts
@@ -811,8 +807,9 @@ export default function DashboardWeb() {
               {userData ? (
                 <>
                   <h1 className="name-text">
-                    {`${userData.u_fname}${userData.u_mname ? ` ${userData.u_mname} ` : " "
-                      }${userData.u_lname}`}
+                    {`${userData.u_fname}${
+                      userData.u_mname ? ` ${userData.u_mname} ` : " "
+                    }${userData.u_lname}`}
                   </h1>
                   <p className="role-text">{userData.role_name}</p>
                 </>
@@ -835,10 +832,11 @@ export default function DashboardWeb() {
               <div className="analytics-content">
                 <h3 className="analytics-label">My Expenses</h3>
                 <p
-                  className={`analytics-value ${(analytics?.monthly_analytics?.expense ?? 0) < 0
-                    ? "negative"
-                    : ""
-                    }`}
+                  className={`analytics-value ${
+                    (analytics?.monthly_analytics?.expense ?? 0) < 0
+                      ? "negative"
+                      : ""
+                  }`}
                 >
                   ₹
                   {(
@@ -856,10 +854,11 @@ export default function DashboardWeb() {
                 <div className="analytics-content">
                   <h3 className="analytics-label">Requested Expenses</h3>
                   <p
-                    className={`analytics-value ${(analytics?.monthly_analytics?.expense_requests ?? 0) < 0
-                      ? "negative"
-                      : ""
-                      }`}
+                    className={`analytics-value ${
+                      (analytics?.monthly_analytics?.expense_requests ?? 0) < 0
+                        ? "negative"
+                        : ""
+                    }`}
                   >
                     ₹
                     {(
@@ -878,10 +877,11 @@ export default function DashboardWeb() {
                 <div className="analytics-content">
                   <h3 className="analytics-label">Cash in Hand</h3>
                   <p
-                    className={`analytics-value ${(analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0
-                      ? "negative"
-                      : ""
-                      }`}
+                    className={`analytics-value ${
+                      (analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0
+                        ? "negative"
+                        : ""
+                    }`}
                   >
                     ₹
                     {(
@@ -900,11 +900,12 @@ export default function DashboardWeb() {
                 <div className="analytics-content">
                   <h3 className="analytics-label">Requested Requisition</h3>
                   <p
-                    className={`analytics-value ${(analytics?.monthly_analytics?.requisition_requests ??
-                      0) < 0
-                      ? "negative"
-                      : ""
-                      }`}
+                    className={`analytics-value ${
+                      (analytics?.monthly_analytics?.requisition_requests ??
+                        0) < 0
+                        ? "negative"
+                        : ""
+                    }`}
                   >
                     ₹
                     {(

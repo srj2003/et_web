@@ -197,7 +197,6 @@ export default function AllLeaves() {
             className="leave-card"
             key={leave.leave_id || idx}
             onClick={() => setSelectedLeave(leave)}
-            data-status={leave.leave_track_status_text}
           >
             <div className="leave-header">
               <div className="leave-header-content">
