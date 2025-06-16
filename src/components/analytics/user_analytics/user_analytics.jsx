@@ -39,11 +39,17 @@ import './user_analytics.css';
 
 const fetchAttendanceData = async (userId, startDate, endDate) => {
     try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            throw new Error('Authentication token not found');
+        }
+
         const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/fetch_analytics.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({
                 user_id: userId,
