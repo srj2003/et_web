@@ -570,19 +570,19 @@ const ManageExpenseWeb = () => {
                                                         {detail.expense_product_photo_path && (
                                                             <button
                                                                 className="view-button product"
-                                                                onClick={() => window.open(detail.expense_product_photo_path, '_blank')}
+                                                                onClick={() => window.open(`https://demo-expense.geomaticxevs.in/ET-api/${detail.expense_product_photo_path}`, '_blank')}
                                                                 title="View Product Image"
                                                             >
-                                                                <img src="/product-icon.png" alt="Product" />
+                                                                <img src={`https://demo-expense.geomaticxevs.in/ET-api/${detail.expense_product_photo_path}`} alt="Product" />
                                                             </button>
                                                         )}
                                                         {detail.expense_product_bill_photo_path && (
                                                             <button
                                                                 className="view-button bill"
-                                                                onClick={() => window.open(detail.expense_product_bill_photo_path, '_blank')}
+                                                                onClick={() => window.open(`https://demo-expense.geomaticxevs.in/ET-api/${detail.expense_product_bill_photo_path}`, '_blank')}
                                                                 title="View Bill Image"
                                                             >
-                                                                <img src="/bill-icon.png" alt="Bill" />
+                                                                <img src={`https://demo-expense.geomaticxevs.in/ET-api/${detail.expense_product_bill_photo_path}`} alt="Bill" />
                                                             </button>
                                                         )}
                                                     </td>
