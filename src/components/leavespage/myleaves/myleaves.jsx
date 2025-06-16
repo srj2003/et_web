@@ -29,27 +29,31 @@ const MyLeaves = () => {
 
   useEffect(() => {
     const fetchLeaves = async () => {
-      const userId = localStorage.getItem("userid");
-      if (!userId) {
-        console.error("User ID not found");
-        setLoading(false);
-        return;
-      }
-
       try {
+        const token = localStorage.getItem("authToken");
+        const userId = localStorage.getItem("userid");
+
+        if (!token || !userId) {
+          window.location.href = "/";
+          return;
+        }
+
         const response = await fetch(
-          `https://demo-expense.geomaticxevs.in/ET-api/my-leaves.php?userId=${userId}`,
+          "https://demo-expense.geomaticxevs.in/ET-api/my-leaves.php",
           {
-            method: "GET",
+            method: "POST",
             headers: {
-              Accept: "application/json",
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
             },
+            body: JSON.stringify({ userId }),
           }
         );
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = "/";
+          return;
         }
 
         const data = await response.json();
@@ -97,7 +101,10 @@ const MyLeaves = () => {
         }
       } catch (error) {
         console.error("Error fetching leaves:", error);
-        setNoRecords(true);
+        if (error.message.includes("401")) {
+          window.location.href = "/";
+          return;
+        }
       } finally {
         setLoading(false);
       }
@@ -251,7 +258,9 @@ const MyLeaves = () => {
                 <h3 className="leave-title">{leave.title}</h3>
                 <p className="leave-subtitle">{leave.leave_type}</p>
               </div>
-              <span className={`status-badge ${getStatusClass(leave.leave_status)}`}>
+              <span
+                className={`status-badge ${getStatusClass(leave.leave_status)}`}
+              >
                 {getStatusIcon(leave.leave_status)}
                 {leave.leave_status}
               </span>

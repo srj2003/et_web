@@ -28,22 +28,45 @@ const MyProjects = () => {
     completed: 0
   });
 
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userid");
+
+    if (!token || !userId) {
+      window.location.href = "/";
+      return;
+    }
+  }, []);
+
   const fetchProjects = async () => {
     try {
       const userId = localStorage.getItem("userid");
-      if (!userId) {
-        alert("Error: User ID not found.");
-        setLoading(false);
+      const token = localStorage.getItem("authToken");
+
+      if (!userId || !token) {
+        alert("Session expired. Please login again.");
+        window.location.href = '/';
         return;
       }
+
       const res = await fetch(
-        `https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php`,
+        "https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
           body: JSON.stringify({ user_id: userId }),
         }
       );
+
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       const data = await res.json();
       if (data.status === "success" && Array.isArray(data.projects)) {
         setProjects(data.projects);
@@ -88,20 +111,37 @@ const MyProjects = () => {
   );
 
   const fetchProjectDetails = async (projectId) => {
+    const token = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userid");
+
+    if (!token || !userId) {
+      alert("Session expired. Please login again.");
+      window.location.href = '/';
+      return;
+    }
+
     setLoadingDetails(true);
     try {
-      const userId = localStorage.getItem("userid");
       const response = await fetch(
-        `https://demo-expense.geomaticxevs.in/ET-api/get_project_details.php`,
+        "https://demo-expense.geomaticxevs.in/ET-api/get_project_details.php",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
           body: JSON.stringify({ 
             user_id: userId,
             project_id: projectId 
           }),
         }
       );
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
       
       const data = await response.json();
       console.log('Project details response:', data);
@@ -316,4 +356,4 @@ const MyProjects = () => {
   );
 };
 
-export default MyProjects; 
+export default MyProjects;

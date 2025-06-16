@@ -71,9 +71,32 @@ export default function AllRequisitions() {
     const fetchRequisitions = async () => {
       try {
         setLoading(true);
+        const token = localStorage.getItem("authToken");
+        const userId = localStorage.getItem("userid");
+
+        if (!token || !userId) {
+          window.location.href = "/";
+          return;
+        }
+
         const response = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/all-requisition.php"
+          "https://demo-expense.geomaticxevs.in/ET-api/all-requisition.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userId }),
+          }
         );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = "/";
+          return;
+        }
+
         const data = await response.json();
         console.log(data);
         const transformedData = data.map((item) => ({

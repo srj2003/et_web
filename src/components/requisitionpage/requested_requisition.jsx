@@ -38,16 +38,33 @@ const RequisitionsWeb = () => {
   useEffect(() => {
     const fetchRequisitions = async () => {
       try {
-        setLoading(true);
         const userId = localStorage.getItem("userid");
-        if (!userId) {
-          console.error("User ID not found");
+        const token = localStorage.getItem("authToken");
+
+        if (!userId || !token) {
+          window.location.href = "/";
           return;
         }
 
+        setLoading(true);
         const response = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/all-requisition.php"
+          "https://demo-expense.geomaticxevs.in/ET-api/all-requisition.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userId }),
+          }
         );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = "/";
+          return;
+        }
+
         const data = await response.json();
         if (Array.isArray(data)) {
           const userRequisitions = data.filter(

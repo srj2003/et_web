@@ -125,49 +125,83 @@ const ProjectManagementDashboard = () => {
 
   // API Fetching
   const fetchProjectsData = useCallback(async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        window.location.href = "/";
+        return;
+    }
+
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/expense_types.php");
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      if (data && Array.isArray(data)) {
-        const transformedData = data.map(item => ({
-          id: parseInt(item.expense_type_id),
-          name: item.expense_type_name || 'Unnamed Project',
-          createdAt: item.expense_type_created_at,
-          createdBy: item.created_by || 'Unknown',
-          isActive: parseInt(item.expense_type_is_active),
-          status: parseInt(item.expense_type_is_active) === 1 ? "Active" : "Completed",
-          // Mocking some data for timeline/Gantt display
-          startDate: item.expense_type_created_at, // Use created_at as start_date
-          endDate: new Date(new Date(item.expense_type_created_at).getTime() + (Math.random() * 30 + 7) * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Mock end date (7-37 days after start)
-          progress: Math.floor(Math.random() * 100), // Mock progress
-          tasks: [ // Mock tasks
-            { id: 1, name: "Initial Planning", status: "Completed" },
-            { id: 2, name: "Development", status: "In Progress" },
-            { id: 3, name: "Testing", status: "Pending" },
-          ]
-        }));
-        setProjects(transformedData);
-      } else {
-        setProjects([]);
-        console.warn("API response is not an array or is empty:", data);
-      }
+        // Change to GET method for fetching projects list
+        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/expense_types.php?action=get_all", {
+            method: "GET", // Changed from POST to GET
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = '/';
+            return;
+        }
+
+        const data = await response.json();
+        
+        // Check for error response
+        if (data.status === 'error') {
+            console.error("API Error:", data.message);
+            setErrorMessage(data.message);
+            setProjects([]);
+            return;
+        }
+
+        // Check if data.data exists and is an array
+        const projectsData = data.data || [];
+        if (Array.isArray(projectsData)) {
+            const transformedData = projectsData.map(item => ({
+                id: parseInt(item.expense_type_id),
+                name: item.expense_type_name || 'Unnamed Project',
+                createdAt: item.expense_type_created_at,
+                createdBy: item.created_by || 'Unknown',
+                isActive: parseInt(item.expense_type_is_active),
+                status: parseInt(item.expense_type_is_active) === 1 ? "Active" : "Completed",
+                startDate: item.expense_type_created_at,
+                endDate: new Date(new Date(item.expense_type_created_at).getTime() + (Math.random() * 30 + 7) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                progress: Math.floor(Math.random() * 100),
+                tasks: [
+                    { id: 1, name: "Initial Planning", status: "Completed" },
+                    { id: 2, name: "Development", status: "In Progress" },
+                    { id: 3, name: "Testing", status: "Pending" },
+                ]
+            }));
+            setProjects(transformedData);
+        } else {
+            setProjects([]);
+            console.warn("API response data is not an array:", data);
+        }
     } catch (error) {
-      console.error("Error fetching projects:", error);
-      setErrorMessage("Failed to fetch projects. Please try again.");
+        console.error("Error fetching projects:", error);
+        setErrorMessage("Failed to fetch projects. Please try again.");
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  }, []);
+}, []);
 
   const fetchCurrentUserData = useCallback(async () => {
     try {
       const userId = localStorage.getItem("userid");
       if (!userId) return;
       const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/dashboard.php", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId }),
+        method: "POST", 
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+        }, 
+        body: JSON.stringify({ userId }),
       });
       const data = await response.json();
       if (data.status === "success" && data.data) {
@@ -184,33 +218,65 @@ const ProjectManagementDashboard = () => {
   }, []);
 
   const fetchEmployeesList = useCallback(async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
     try {
-      const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/get_employees.php");
+      const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/get_employees.php", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       const data = await response.json();
       if (data && data.status === "success" && Array.isArray(data.employees)) {
         setEmployeeList(data.employees);
-      } else { console.error("Invalid employee data format:", data); }
-    } catch (error) { console.error("Error fetching employees:", error); }
+      }
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
   }, []);
 
   // New function to fetch user projects
   const fetchUserProjects = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
     setIsLoadingUserProjects(true);
     try {
       const userId = localStorage.getItem("userid");
-      
-      const response = await fetch("/api/get_user_projects.php", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ user_id: userId }),
-});
+      const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       const data = await response.json();
-      console.log("User Projects Response:", data);
       if (data.status === "success" && Array.isArray(data.projects)) {
         setUserProjects(data.projects);
-      } else {
-        setUserProjects([]);
-        console.error("Invalid response format:", data);
       }
     } catch (error) {
       console.error("Error fetching user projects:", error);
@@ -258,31 +324,19 @@ const ProjectManagementDashboard = () => {
   };
 
   const handleFormSubmit = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
     if (!currentProjectName.trim()) {
       alert("Please enter project name.");
       return;
     }
 
-    const assignments = [];
-    if (projectManager) assignments.push({ u_id: projectManager, role: "Project Manager" });
-    if (teamLead) assignments.push({ u_id: teamLead, role: "Team Lead" });
-    if (supervisor) assignments.push({ u_id: supervisor, role: "Supervisor" });
-    generalEmployees.forEach(u_id => assignments.push({ u_id, role: "Employee" }));
-
-    const payload = {
-      project_name: currentProjectName,
-      created_by: loggedInUserCreatedBy, // Use fetched logged-in user's name
-      created_by_id: localStorage.getItem("userid"),
-      assigned_employees: assignments,
-      ...(editingProjectId && { expense_type_id: editingProjectId }) // Include ID if editing
-    };
-    
-    // The API endpoint `add_project.php` seems to be for a different data structure
-    // than `expense_types.php`. For this demo, we'll simulate by calling the
-    // `expense_types.php` for PUT if editing, or POST if adding a new one.
-    // This might need adjustment based on actual backend capabilities.
+    const apiUrl = "https://demo-expense.geomaticxevs.in/ET-api/expense_types.php";
     const isEditing = !!editingProjectId;
-    const apiUrl = "https://demo-expense.geomaticxevs.in/ET-api/expense_types.php"; // Assuming this for add/edit too
     
     // Constructing a payload that might work with expense_types.php for add/edit
     // This is an assumption as the original code used add_project.php
@@ -296,15 +350,24 @@ const ProjectManagementDashboard = () => {
         expense_type_is_active: 1, // Default to active
     };
 
-
     try {
       const response = await fetch(apiUrl, {
-        method: isEditing ? "PUT" : "POST", // Adjust method based on actual API
-        headers: { "Content-Type": "application/json" },
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(apiPayload),
       });
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       const result = await response.json();
-      if (result.success || response.ok) { // Check response.ok for broader success cases
+      if (result.success || response.ok) {
         alert(`Project ${isEditing ? "updated" : "added"} successfully!`);
         fetchProjectsData();
         setShowFormModal(false);
@@ -319,19 +382,37 @@ const ProjectManagementDashboard = () => {
   };
 
   const handleMarkProjectAsCompleted = async (projectId) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
     if (!window.confirm("Are you sure you want to mark this project as completed?")) return;
+
     try {
       const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/expense_types.php", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ expense_type_id: projectId, expense_type_is_active: 0 }),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          expense_type_id: projectId,
+          expense_type_is_active: 0
+        }),
       });
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       const result = await response.json();
       if (result.success) {
         alert("Project marked as completed.");
         fetchProjectsData();
-      } else {
-        alert(result.error || "Failed to mark project as completed.");
       }
     } catch (error) {
       console.error("Error marking as completed:", error);
@@ -391,16 +472,19 @@ const ProjectManagementDashboard = () => {
   }
 
   // Mock timeline days for display
-  const timelineDays = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - 15 + i); // Center around today
-      return {
-          day: String(date.getDate()).padStart(2, '0'),
-          month: date.toLocaleString('default', { month: 'short'}),
-          isWeekend: date.getDay() === 0 || date.getDay() === 6,
-          fullDate: date.toISOString().split('T')[0]
-      };
-  });
+  const timelineDays = useMemo(() => {
+    return Array.from({ length: 30 }, (_, index) => {
+        const date = new Date();
+        date.setDate(date.getDate() - 15 + index); // Center around today
+        return {
+            id: `timeline-day-${date.toISOString()}`, // Add unique id
+            day: String(date.getDate()).padStart(2, '0'),
+            month: date.toLocaleString('default', { month: 'short'}),
+            isWeekend: date.getDay() === 0 || date.getDay() === 6,
+            fullDate: date.toISOString().split('T')[0]
+        };
+    });
+  }, []); // Empty dependency array since this doesn't depend on any props/state
 
 
   if (isLoading) {
@@ -524,7 +608,10 @@ const ProjectManagementDashboard = () => {
                         <div className="timeline-project-name-header">All Projects</div>
                         <div className="timeline-days-header">
                             {timelineDays.map(d => (
-                                <div key={d.fullDate} className={`timeline-day-label ${d.isWeekend ? 'weekend-day' : ''}`}>
+                                <div 
+                                    key={d.id} // Use the unique id instead of fullDate
+                                    className={`timeline-day-label ${d.isWeekend ? 'weekend-day' : ''}`}
+                                >
                                     <span>{d.day}</span>
                                     <span className="timeline-day-month">{d.month}</span>
                                 </div>
@@ -532,7 +619,10 @@ const ProjectManagementDashboard = () => {
                         </div>
                     </div>
                     {filteredAndSortedProjects.length > 0 ? filteredAndSortedProjects.map(project => (
-                        <div key={project.id} className="timeline-project-row">
+                        <div 
+                            key={`project-timeline-${project.id}`} // Ensure unique key for project rows
+                            className="timeline-project-row"
+                        >
                             <div className="timeline-project-name">{project.name}</div>
                             <div className="timeline-project-bar-container">
                                 {/* This is a simplified bar. A real Gantt would calculate position and width based on dates. */}

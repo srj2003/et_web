@@ -31,13 +31,15 @@ const Navbar = () => {
     const fetchUserData = async () => {
       try {
         const userId = localStorage.getItem("userid");
+        const token = localStorage.getItem("authToken");
         const storedRoleId = localStorage.getItem("roleId");
-        setRoleId(parseInt(storedRoleId));
 
-        if (!userId) {
-          setLoading(false);
+        if (!userId || !token) {
+          window.location.href = "/";
           return;
         }
+
+        setRoleId(parseInt(storedRoleId));
 
         const response = await fetch(
           "https://demo-expense.geomaticxevs.in/ET-api/dashboard.php",
@@ -45,10 +47,17 @@ const Navbar = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({ userId }),
           }
         );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = '/';
+          return;
+        }
 
         const result = await response.json();
         if (result.status === "success") {
@@ -58,13 +67,19 @@ const Navbar = () => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
               },
               body: JSON.stringify({ user_id: parseInt(userId, 10) }),
             }
           );
 
-          const roleResult = await roleResponse.json();
+          if (roleResponse.status === 401) {
+            localStorage.clear();
+            window.location.href = '/';
+            return;
+          }
 
+          const roleResult = await roleResponse.json();
           setUserData({
             ...result.data,
             userid: userId,

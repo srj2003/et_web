@@ -1,133 +1,103 @@
 <?php
-session_start();
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Content-Type: application/json");
 date_default_timezone_set('Asia/Kolkata');
-require_once 'config.php'; // Include your database configuration file
+require_once 'config.php';
 
-// Handle preflight requests (OPTIONS method)
+$response = [
+    'status' => 'error',
+    'message' => 'Invalid request',
+    'data' => null,
+    'token' => null
+];
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Continue with the rest of your PHP code...
-?>
-<?php
-// api.php
+$con = new mysqli($servername, $username, $password, $dbname);
 
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Set response header to JSON
-header('Content-Type: application/json');
-
-// Initialize response array
-$response = [
-    'status' => 'error',
-    'message' => 'Invalid request',
-    'data' => []
-];
-
-// Function to validate request method
-function handleRequest($method)
-{
-    if ($_SERVER['REQUEST_METHOD'] !== $method) {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
-        exit();
-    }
+if ($con->connect_error) {
+    $response['message'] = 'Database connection failed: ' . $con->connect_error;
+    echo json_encode($response);
+    exit;
 }
 
-handleRequest('POST');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $jsonInput = file_get_contents('php://input');
+    $data = json_decode($jsonInput, true);
 
-// Get JSON input
-$jsonInput = file_get_contents('php://input');
-$data = json_decode($jsonInput, true);
+    if (json_last_error() === JSON_ERROR_NONE && isset($data['u_identify']) && isset($data['u_pass'])) {
+        $u_identify = trim($data['u_identify']);
+        $u_pass = md5(trim($data['u_pass']));
 
-if (json_last_error() === JSON_ERROR_NONE && isset($data['u_identify']) && isset($data['u_pass'])) {
-    $u_identify = trim($data['u_identify']);
-    $u_pass = md5(trim($data['u_pass']));
+        $query = "SELECT ud.*, ar.role_id 
+                  FROM user_details ud 
+                  LEFT JOIN assigned_role ar 
+                  ON ud.u_id = ar.u_id AND ar.ass_role_del = 0 
+                  WHERE (ud.u_email = ? OR ud.u_mob = ?) AND ud.u_pass = ?
+                  ORDER BY ar.ass_role_created_at DESC
+                  LIMIT 1";
 
-    // Database connection
-    $con = new mysqli($servername, $username, $password, $dbname);
+        $stmt = $con->prepare($query);
 
-    if ($con->connect_error) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Database connection failed'
-        ]);
-        exit();
-    }
+        if ($stmt) {
+            $stmt->bind_param("sss", $u_identify, $u_identify, $u_pass);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-    // Updated query to join with assigned_role table
-    $query = "SELECT ud.*, ar.role_id 
-             FROM user_details ud 
-             LEFT JOIN assigned_role ar 
-             ON ud.u_id = ar.u_id 
-             AND ar.ass_role_del = 0 
-             WHERE (ud.u_email = ? OR ud.u_mob = ?) 
-             AND ud.u_pass = ?
-             ORDER BY ar.ass_role_created_at DESC
-             LIMIT 1";
+            if ($result->num_rows > 0) {
+                $user = $result->fetch_assoc();
 
-    $stmt = $con->prepare($query);
+                if ($user['u_active'] == 0) {
+                    $response['message'] = 'You are deactivated! Contact admin.';
+                } else {
+                    $token = bin2hex(random_bytes(32));
 
-    if ($stmt) {
-        $stmt->bind_param('sss', $u_identify, $u_identify, $u_pass);
-        $stmt->execute();
-        $result = $stmt->get_result();
+                    $tokenStmt = $con->prepare("INSERT INTO tokens (user_id, token, created_at, expires_at)
+                                                VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 DAY))");
+                    if ($tokenStmt) {
+                        $tokenStmt->bind_param("is", $user['u_id'], $token);
+                        $tokenStmt->execute();
+                        $tokenStmt->close();
 
-        if ($result->num_rows > 0) {
-            $user = $result->fetch_assoc();
-
-            // Validate login
-            if ($user['u_active'] == 0) {
-                $response['message'] = 'Account deactivated';
-            } else {
-                // Set session variables
-                $_SESSION['userid'] = $user['u_id'];
-                $_SESSION['useremail'] = $user['u_email'];
-                $_SESSION['role_id'] = $user['role_id'];
-                $_SESSION['last_activity'] = time();
-
-                // Store session information in user_sessions table
-                $session_id = session_id();
-                $insert_session = "INSERT INTO user_sessions (session_id, u_id) VALUES (?, ?)";
-                $stmt_session = $con->prepare($insert_session);
-                if ($stmt_session) {
-                    $stmt_session->bind_param('si', $session_id, $user['u_id']);
-                    $stmt_session->execute();
-                    $stmt_session->close();
+                        $response['status'] = 'success';
+                        $response['message'] = 'Login successful';
+                        $response['data'] = [
+                            'userid' => $user['u_id'],
+                            'useremail' => $user['u_email'],
+                            'usermob' => $user['u_mob'],
+                            'userfullname' => $user['u_fname'] . " " . $user['u_mname'] . " " . $user['u_lname'],
+                            'user_city' => $user['u_city'],
+                            'user_state' => $user['u_state'],
+                            'user_country' => $user['u_country'],
+                            'user_zip_code' => $user['u_zip_code'],
+                            'user_street_address' => $user['u_street_addr'],
+                            'role_id' => $user['role_id']
+                        ];
+                        $response['token'] = $token;
+                    } else {
+                        $response['message'] = 'Token generation failed';
+                    }
                 }
-
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Login successful',
-                    'data' => [
-                        'userid' => $user['u_id'],
-                        'useremail' => $user['u_email'],
-                        'role_id' => $user['role_id']
-                    ],
-                    'session' => [
-                        'id' => session_id(),
-                        'name' => SESSION_NAME
-                    ]
-                ];
+            } else {
+                $response['message'] = 'Invalid login credentials';
             }
-        } else {
-            $response['message'] = 'Invalid login credentials';
-        }
 
-        $stmt->close();
+            $stmt->close();
+        } else {
+            $response['message'] = 'Query preparation failed';
+        }
     } else {
-        $response['message'] = 'Database query preparation failed';
+        $response['message'] = 'Invalid input format';
     }
 } else {
-    $response['message'] = 'Invalid JSON input';
+    $response['message'] = 'Only POST requests allowed';
 }
 
-// Send JSON response
+$con->close();
 echo json_encode($response);
 ?>

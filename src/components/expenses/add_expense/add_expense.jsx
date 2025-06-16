@@ -51,8 +51,10 @@ const ExpenseFormWeb = () => {
       setIsLoadingUser(true);
       try {
         const userId = localStorage.getItem("userid");
-        if (!userId) {
-          throw new Error("User ID not found");
+        const token = localStorage.getItem("authToken");
+
+        if (!userId || !token) {
+          throw new Error("User ID or token not found");
         }
 
         const roleResponse = await fetch(
@@ -61,6 +63,7 @@ const ExpenseFormWeb = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({ user_id: userId }),
           }
@@ -77,6 +80,7 @@ const ExpenseFormWeb = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({ userId }),
           }
@@ -95,6 +99,11 @@ const ExpenseFormWeb = () => {
           lastName: userData.data.u_lname || "",
         });
       } catch (error) {
+        if (error.message === "User ID or token not found") {
+          alert("You have been logged out. Please login again.");
+          window.location.href = '/';
+          return;
+        }
         console.error("Failed to load user data:", error);
         alert("Failed to load user information");
       } finally {
@@ -107,8 +116,15 @@ const ExpenseFormWeb = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
+        const token = localStorage.getItem("authToken");
         const res = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_roles=true"
+          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_roles=true",
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
         );
         const data = await res.json();
         if (data.status === "success") {
@@ -131,8 +147,15 @@ const ExpenseFormWeb = () => {
     if (selectedRole) {
       const fetchUsers = async () => {
         try {
+          const token = localStorage.getItem("authToken");
           const res = await fetch(
-            `https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?role_id=${selectedRole}`
+            `https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?role_id=${selectedRole}`,
+            {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${token}`
+              }
+            }
           );
           const data = await res.json();
           if (data.status === "success") {
@@ -180,8 +203,16 @@ const ExpenseFormWeb = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
+        const token = localStorage.getItem("authToken");
+        
         const typesResponse = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_types=true"
+          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_types=true",
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
         );
         const typesData = await typesResponse.json();
         if (typesData.status === "success") {
@@ -189,7 +220,13 @@ const ExpenseFormWeb = () => {
         }
 
         const headsResponse = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_heads=true"
+          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_heads=true",
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
         );
         const headsData = await headsResponse.json();
         if (headsData.status === "success") {
@@ -317,6 +354,7 @@ const ExpenseFormWeb = () => {
     setIsSubmitting(true);
 
     try {
+      const token = localStorage.getItem("authToken");
       const formData = new FormData();
 
       // Add basic expense data
@@ -384,9 +422,18 @@ const ExpenseFormWeb = () => {
         "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php",
         {
           method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
           body: formData,
         }
       );
+
+      if (response.status === 401) {
+        alert("You have been logged out. Please login again.");
+        window.location.href = '/';
+        return;
+      }
 
       const result = await response.json();
       console.log("Server response:", result);

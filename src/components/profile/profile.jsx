@@ -24,8 +24,11 @@ const ProfileScreen = () => {
         const fetchUserData = async () => {
             try {
                 const userId = localStorage.getItem('userid');
-                if (!userId) {
-                    setError('No user ID found');
+                const token = localStorage.getItem('authToken');
+
+                if (!userId || !token) {
+                    alert("You have been logged out. Please login again.");
+                    window.location.href = '/';
                     return;
                 }
 
@@ -33,9 +36,16 @@ const ProfileScreen = () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ userId }),
                 });
+
+                if (response.status === 401) {
+                    localStorage.clear();
+                    window.location.href = '/';
+                    return;
+                }
 
                 const result = await response.json();
 
@@ -45,7 +55,7 @@ const ProfileScreen = () => {
                     setPhone(result.data.u_mob || '');
                     setLocation(result.data.u_street_addr || '');
                     setProfileImage(result.data.u_pro_img || null);
-                    fetchUserRole(userId);
+                    fetchUserRole(userId, token);
                 } else {
                     setError(result.message || 'Failed to fetch user data');
                 }
@@ -57,22 +67,25 @@ const ProfileScreen = () => {
             }
         };
 
-        const fetchUserRole = async (userId) => {
+        const fetchUserRole = async (userId, token) => {
             try {
                 const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/user_role_fetcher.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ user_id: parseInt(userId, 10) }),
                 });
 
-                const result = await response.json();
-                if (result.role_name) {
-                    setUserRole(result.role_name);
-                } else {
-                    setUserRole('Not assigned');
+                if (response.status === 401) {
+                    localStorage.clear();
+                    window.location.href = '/';
+                    return;
                 }
+
+                const result = await response.json();
+                setUserRole(result.role_name || 'Not assigned');
             } catch (error) {
                 console.error('Error fetching user role:', error);
                 setUserRole('Failed to fetch role');
@@ -113,8 +126,12 @@ const ProfileScreen = () => {
     const handleSave = async () => {
         try {
             const userId = localStorage.getItem('userid');
-            if (!userId) {
-                throw new Error('User ID not found');
+            const token = localStorage.getItem('authToken');
+
+            if (!userId || !token) {
+                alert("You have been logged out. Please login again.");
+                window.location.href = '/';
+                return;
             }
 
             const updateData = {
@@ -151,10 +168,17 @@ const ProfileScreen = () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(updateData),
                 }
             );
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
 
             const result = await response.json();
 

@@ -49,10 +49,10 @@ const ROLE_ACCESS = {
     all_work_report: [1, 2, 3, 4, 6, 8],
   },
   requisition: {
-    add_requisition: [1, 2, 3, 4, 5, 6], // Available to everyone
-    my_requisitions: [1, 2, 3, 4, 5, 6], // Available to everyone
-    all_requisitions: [1, 2, 3, 4, 5, 6],
-    manage_requisitions: [1, 2, 3, 4, 5, 6],
+    add_requisition: "all", // Available to everyone
+    my_requisitions: "all", // Available to everyone
+    all_requisitions: "all",
+    manage_requisitions: [1, 2, 3, 4, 5, 6, 8], // Assuming these roles can manage requisitions
   },
   accounts: {
     requisition_report: [1, 8],
@@ -74,7 +74,7 @@ const menuItemsData = [
     subItems: [
       { id: "my_attendance", 
         title: "My Attendance", 
-        path: "/attendance/myattendance" },
+        path: "/attendance/my" },
       {
         id: "user_attendance",
         title: "User Attendance",
@@ -268,7 +268,8 @@ const Sidebar = () => {
   const handleLogout = () => {
     // Remove all items including session data
     localStorage.removeItem("userid");
-    localStorage.removeItem("userToken");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userName");
     localStorage.removeItem("roleId");
     localStorage.removeItem("currentLoginTime");
     alert("You have been logged out. Please login again.");

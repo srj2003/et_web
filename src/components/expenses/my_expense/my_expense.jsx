@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './my_expense.css';
 import { DollarSign, CheckCircle, XCircle, Clock, Search, Filter } from 'lucide-react';
 
@@ -15,55 +15,70 @@ const ExpenseDetailsWeb = () => {
         rejected: 0
     });
 
-    useEffect(() => {
-        const fetchExpenses = async () => {
-            const userId = localStorage.getItem('userid');
-            if (!userId) {
-                console.error('User ID not found');
-                setLoading(false);
+    const fetchExpenses = useCallback(async () => {
+        const userId = localStorage.getItem('userid');
+        const token = localStorage.getItem('authToken');
+
+        if (!userId || !token) {
+            alert('You have been logged out. Please login again.');
+            window.location.href = '/';
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await fetch(
+                'https://demo-expense.geomaticxevs.in/ET-api/my-expenses.php',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ userId })
+                }
+            );
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
                 return;
             }
 
-            try {
-                const response = await fetch(`https://demo-expense.geomaticxevs.in/ET-api/my-expenses.php?userId=${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                if (data.status === 'error') {
-                    console.error('API Error:', data.message);
-                    setExpenses([]);
-                    setNoRecords(true);
-                } else if (Array.isArray(data)) {
-                    setExpenses(data);
-                    setNoRecords(false);
-                    // Calculate stats
-                    setStats({
-                        total: data.length,
-                        approved: data.filter(exp => exp.expense_status === 'Approved').length,
-                        pending: data.filter(exp => exp.expense_status === 'Pending').length,
-                        rejected: data.filter(exp => exp.expense_status === 'Rejected').length
-                    });
-                } else {
-                    console.error('Unexpected response format:', data);
-                }
-            } catch (error) {
-                console.error('Error fetching expenses:', error);
-            } finally {
-                setLoading(false);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        };
 
-        fetchExpenses();
+            const data = await response.json();
+            
+            if (data.status === 'error') {
+                console.error('API Error:', data.message);
+                setExpenses([]);
+                setNoRecords(true);
+            } else if (Array.isArray(data)) {
+                setExpenses(data);
+                setNoRecords(false);
+                // Calculate stats
+                setStats({
+                    total: data.length,
+                    approved: data.filter(exp => exp.expense_status === 'Approved').length,
+                    pending: data.filter(exp => exp.expense_status === 'Pending').length,
+                    rejected: data.filter(exp => exp.expense_status === 'Rejected').length
+                });
+            } else {
+                console.error('Unexpected response format:', data);
+            }
+        } catch (error) {
+            console.error('Error fetching expenses:', error);
+            setNoRecords(true);
+        } finally {
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchExpenses();
+    }, [fetchExpenses]);
 
     const getStatusIcon = (status) => {
         switch (status) {

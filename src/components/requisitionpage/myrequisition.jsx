@@ -70,30 +70,35 @@ export default function MyRequisitions() {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    // Get user ID from localStorage
-    const storedUserId = localStorage.getItem("userid");
-    console.log("Stored User ID:", storedUserId);
-
-    if (!storedUserId) {
-      setError("User not authenticated");
-      setLoading(false);
-      return;
-    }
-    setUserId(storedUserId);
-
     const fetchRequisitions = async () => {
       try {
+        const userId = localStorage.getItem("userid");
+        const token = localStorage.getItem("authToken");
+
+        if (!userId || !token) {
+          window.location.href = "/";
+          return;
+        }
+
         setLoading(true);
         const response = await fetch(
-          `https://demo-expense.geomaticxevs.in/ET-api/my-requisitions.php`,
+          "https://demo-expense.geomaticxevs.in/ET-api/my-requisitions.php",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ user_id: storedUserId }),
+            body: JSON.stringify({ user_id: userId }),
           }
         );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = "/";
+          return;
+        }
+
         const data = await response.json();
         console.log("Fetched Requisitions:", data);
 

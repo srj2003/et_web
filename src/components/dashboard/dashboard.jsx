@@ -377,6 +377,7 @@ export default function DashboardWeb() {
   };
 
   const checkTodaysAttendance = async (userId) => {
+    const token = localStorage.getItem('authToken');
     try {
       setCheckingAttendance(true);
       const response = await fetch(
@@ -385,6 +386,7 @@ export default function DashboardWeb() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ user_id: userId }),
         }
@@ -414,18 +416,22 @@ export default function DashboardWeb() {
         return;
       }
 
+      const token = localStorage.getItem("authToken");
+
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/dashboard.php",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify({ userId }),
         }
       );
 
       const result = await response.json();
+      console.log("Dashboard result:", result); 
 
       if (result.status === "success") {
         const roleResponse = await fetch(
@@ -434,6 +440,7 @@ export default function DashboardWeb() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
             },
             body: JSON.stringify({ user_id: parseInt(userId, 10) }),
           }
@@ -552,6 +559,16 @@ export default function DashboardWeb() {
   ]);
 
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userid");
+
+    if (!token || !userId) {
+      // Not logged in → redirect to login
+      window.location.href = "/";
+      return;
+    }
+
+    // Proceed with data load
     if (!initialLoadDone.current) {
       loadDashboardData();
       initialLoadDone.current = true;

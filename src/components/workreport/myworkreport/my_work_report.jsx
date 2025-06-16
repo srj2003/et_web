@@ -14,12 +14,21 @@ const MyWorkReport = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userid");
+
+    if (!token || !userId) {
+      window.location.href = "/";
+      return;
+    }
+
     const fetchMyReports = async () => {
       try {
+        const token = localStorage.getItem("authToken");
         const userId = localStorage.getItem("userid");
-        if (!userId) {
-          alert("User ID not found.");
-          return;
+
+        if (!userId || !token) {
+          throw new Error("Authentication failed");
         }
 
         const response = await fetch(
@@ -28,10 +37,18 @@ const MyWorkReport = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
             },
             body: JSON.stringify({ user_id: userId }),
           }
         );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = '/';
+          return;
+        }
+
         const data = await response.json();
 
         if (data.status === "success") {
@@ -48,7 +65,10 @@ const MyWorkReport = () => {
         }
       } catch (error) {
         console.error("Error fetching my work reports:", error);
-        alert("An error occurred while fetching your work reports.");
+        if (error.message.includes('401')) {
+          window.location.href = '/';
+          return;
+        }
       } finally {
         setLoading(false);
       }
@@ -269,4 +289,4 @@ const MyWorkReport = () => {
   );
 };
 
-export default MyWorkReport; 
+export default MyWorkReport;

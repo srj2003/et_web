@@ -42,8 +42,11 @@ const RequisitionFormWeb = () => {
       setIsLoadingUser(true);
       try {
         const userId = localStorage.getItem("userid");
-        if (!userId) {
-          throw new Error("User ID not found");
+        const token = localStorage.getItem("authToken");
+
+        if (!userId || !token) {
+          window.location.href = "/";
+          return;
         }
 
         const roleResponse = await fetch(
@@ -52,8 +55,22 @@ const RequisitionFormWeb = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({ user_id: userId }),
+          }
+        );
+
+        // Add token to dashboard API call
+        const userResponse = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/dashboard.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ userId }),
           }
         );
 
@@ -61,17 +78,6 @@ const RequisitionFormWeb = () => {
         if (!roleData.role_name) {
           throw new Error("Role not found");
         }
-
-        const userResponse = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/dashboard.php",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ userId }),
-          }
-        );
 
         const userData = await userResponse.json();
         if (userData.status !== "success" || !userData.data) {
@@ -86,8 +92,11 @@ const RequisitionFormWeb = () => {
           lastName: userData.data.u_lname || "",
         });
       } catch (error) {
+        if (error.message.includes('401')) {
+          window.location.href = '/';
+          return;
+        }
         console.error("Failed to load user data:", error);
-        alert("Failed to load user information");
       } finally {
         setIsLoadingUser(false);
       }
@@ -96,10 +105,19 @@ const RequisitionFormWeb = () => {
   }, []);
 
   useEffect(() => {
+    // Update fetchRoles to include token
     const fetchRoles = async () => {
       try {
+        const token = localStorage.getItem("authToken");
         const res = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_roles=true"
+          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_roles=true",
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
         );
         const data = await res.json();
         if (data.status === "success") {
@@ -111,6 +129,10 @@ const RequisitionFormWeb = () => {
           );
         }
       } catch (error) {
+        if (error.message.includes('401')) {
+          window.location.href = '/';
+          return;
+        }
         console.error("Error fetching roles", error);
       }
     };
@@ -120,10 +142,19 @@ const RequisitionFormWeb = () => {
 
   useEffect(() => {
     if (selectedRole) {
+      // Update fetchUsers to include token
       const fetchUsers = async () => {
         try {
+          const token = localStorage.getItem("authToken");
           const res = await fetch(
-            `https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?role_id=${selectedRole}`
+            `https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?role_id=${selectedRole}`,
+            {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+              }
+            }
           );
           const data = await res.json();
           if (data.status === "success") {
@@ -135,6 +166,10 @@ const RequisitionFormWeb = () => {
             );
           }
         } catch (error) {
+          if (error.message.includes('401')) {
+            window.location.href = '/';
+            return;
+          }
           console.error("Error fetching users", error);
         }
       };
@@ -189,6 +224,12 @@ const RequisitionFormWeb = () => {
       return;
     }
 
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -202,35 +243,24 @@ const RequisitionFormWeb = () => {
         requisition_longitude: currentLocation.longitude,
         requisition_date: currentRequisition.billDate,
       };
-      const formData = new FormData();
-      formData.append("requisition_title", requisitionTitle || "");
-      formData.append("requisition_req_amount", currentRequisition.amount || 0);
-      formData.append("requisition_latitude", currentLocation.latitude || "0");
-      formData.append(
-        "requisition_longitude",
-        currentLocation.longitude || "0"
-      );
-      formData.append("requisition_created_by", String(userData.userId || ""));
-      formData.append("requisition_submitted_to", String(selectedUser || ""));
-      formData.append("requisition_date", currentDate || "");
-      formData.append(
-        "requisition_bill_date",
-        currentRequisition.billDate || ""
-      );
-      formData.append(
-        "requisition_description",
-        currentRequisition.description || ""
-      );
-      for (let pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
-      }
+
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/add_requisition.php",
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
           body: JSON.stringify(requisitionData),
         }
       );
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
 
       const result = await response.json();
 
@@ -246,6 +276,10 @@ const RequisitionFormWeb = () => {
         throw new Error(result.message || "Failed to submit requisitions");
       }
     } catch (error) {
+      if (error.message.includes('401')) {
+        window.location.href = '/';
+        return;
+      }
       console.error("Submission error:", error);
       alert("Failed to submit requisitions. Please try again.");
     } finally {

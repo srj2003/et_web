@@ -13,26 +13,43 @@ const AddWorkReport = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const storedUserId = localStorage.getItem("userid");
+    const storedRole = localStorage.getItem("roleId");
+
+    // Set current date immediately, don't wait for API
+    const today = new Date();
+    const formattedDate = today.toISOString().split("T")[0];
+    setCurrentDate(formattedDate);
+
+    if (!token || !storedUserId) {
+        window.location.href = "/";
+        return;
+    }
+
+    // Set userId and role from localStorage
+    setUserId(storedUserId);
+    setRole(storedRole);
+
     const fetchUserData = async () => {
       try {
-        setIsLoading(true);
-        const storedUserId = localStorage.getItem("userid");
-        const storedRole = localStorage.getItem("roleId");
-
-        if (storedUserId) setUserId(storedUserId);
-        if (storedRole) setRole(storedRole);
-
-        // Fetch user name from API
         const response = await fetch(
           "https://demo-expense.geomaticxevs.in/ET-api/dashboard.php",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
             },
             body: JSON.stringify({ userId: storedUserId }),
           }
         );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = "/";
+          return;
+        }
 
         const data = await response.json();
         if (data && data.status === "success" && data.data) {
@@ -47,11 +64,6 @@ const AddWorkReport = () => {
 
           setName(fullName);
         }
-
-        // Set current date
-        const today = new Date();
-        const formattedDate = today.toISOString().split("T")[0];
-        setCurrentDate(formattedDate);
       } catch (error) {
         console.error("Error fetching user data:", error);
         alert("Failed to load user data.");
@@ -64,54 +76,85 @@ const AddWorkReport = () => {
   }, []);
 
   const handleAddWorkReport = async () => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+        alert("Authentication failed. Please login again.");
+        window.location.href = "/";
+        return;
+    }
+
+    // Validate all required fields
     if (!projectName.trim()) {
-      alert("Please enter the project name.");
-      return;
+        alert("Please enter the project name.");
+        return;
     }
 
     if (!workDetails.trim()) {
-      alert("Please enter your work details.");
-      return;
+        alert("Please enter your work details.");
+        return;
     }
 
-    if (!userId) {
-      alert("User ID is required. Please try reloading the page.");
-      return;
+    if (!userId || !currentDate) {
+        alert("Missing required data. Please refresh the page.");
+        return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        "https://demo-expense.geomaticxevs.in/ET-api/add_work_report.php",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_id: userId,
+        // Log the request payload for debugging
+        const payload = {
+            user_id: parseInt(userId), // Ensure userId is a number
             date: currentDate,
             project_name: projectName.trim(),
             work_details: workDetails.trim(),
-          }),
+        };
+        console.log('Submitting payload:', payload);
+
+        const response = await fetch(
+            "https://demo-expense.geomaticxevs.in/ET-api/add_work_report.php",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            }
+        );
+
+        // Log the raw response for debugging
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+
+        // Parse the response as JSON
+        const result = responseText ? JSON.parse(responseText) : {};
+
+        if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = "/";
+            return;
         }
-      );
 
-      const result = await response.json();
-
-      if (result.status === "success") {
-        alert("Work report added successfully.");
-        setProjectName("");
-        setWorkDetails("");
-      } else {
-        alert(result.message || "Failed to add work report.");
-      }
+        if (result.status === "success") {
+            alert("Work report added successfully!");
+            // Reset form
+            setProjectName("");
+            setWorkDetails("");
+        } else {
+            throw new Error(result.message || "Failed to add work report");
+        }
     } catch (error) {
-      console.error("Error adding work report:", error);
-      alert("An error occurred while adding the work report.");
+        console.error("Error submitting work report:", error);
+        alert(`Failed to submit work report: ${error.message}`);
+        if (error.message.includes("401")) {
+            window.location.href = "/";
+            return;
+        }
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
   };
 
@@ -200,4 +243,4 @@ const AddWorkReport = () => {
   );
 };
 
-export default AddWorkReport; 
+export default AddWorkReport;

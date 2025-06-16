@@ -38,27 +38,40 @@ const UserAttendance = () => {
 
 
     const fetchAttendanceData = useCallback(async (userId, start, end) => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            alert("You have been logged out. Please login again.");
+            window.location.href = '/';
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
             const requestBody = userId ? { user_id: userId, start_date: start, end_date: end } : {};
             const response = await fetch(`${API_BASE_URL}/user_attendance.php`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify(requestBody),
             });
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const data = await response.json();
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
 
+            const data = await response.json();
             if (!data.summary) throw new Error("Summary data is not in the expected format");
             
             if (userId) {
                 setUserAttendance(data.attendance || []);
-                setShowAttendanceDetailModal(true); // Show details after fetching for a specific user
+                setShowAttendanceDetailModal(true);
             } else {
                 setSummaryData(data.summary || []);
-                // Attendance data for all users is also available in data.attendance if needed globally
             }
         } catch (err) {
             console.error("Fetch error:", err);
@@ -70,16 +83,31 @@ const UserAttendance = () => {
     }, []);
 
     const fetchTrackingData = useCallback(async (userId, attnId) => {
-        // Do not set loading here, map has its own visual cues
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            alert("You have been logged out. Please login again.");
+            window.location.href = '/';
+            return;
+        }
+
         setError(null);
         setTrackingData([]); 
         try {
             const response = await fetch(`${API_BASE_URL}/get_location.php`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ u_id: userId, attn_id: attnId }),
             });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
+
             const data = await response.json();
             if (!Array.isArray(data)) throw new Error("Tracking data is not in the expected array format");
             setTrackingData(data);

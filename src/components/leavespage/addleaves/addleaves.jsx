@@ -44,24 +44,32 @@ const AddLeaves = () => {
     const loadUserData = async () => {
       try {
         const userId = localStorage.getItem("userid");
-        if (!userId) {
-          throw new Error("User ID not found");
+        const token = localStorage.getItem("authToken");
+
+        if (!userId || !token) {
+          window.location.href = "/";
+          return;
         }
 
         const response = await fetch(
           "https://demo-expense.geomaticxevs.in/ET-api/dashboard.php",
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
             body: JSON.stringify({ userId }),
           }
         );
+
         const roleResponse = await fetch(
           "https://demo-expense.geomaticxevs.in/ET-api/user_role_fetcher.php",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
             },
             body: JSON.stringify({ user_id: userId }),
           }
@@ -83,6 +91,10 @@ const AddLeaves = () => {
           console.log("User data loaded successfully:", data.data);
         }
       } catch (error) {
+        if (error.message.includes("401")) {
+          window.location.href = "/";
+          return;
+        }
         console.error("Failed to load user data:", error);
       } finally {
         setIsLoadingUser(false);
@@ -96,7 +108,13 @@ const AddLeaves = () => {
     const fetchRoles = async () => {
       try {
         const response = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/add-leaves1.php?fetch_roles=true"
+          "https://demo-expense.geomaticxevs.in/ET-api/add-leaves1.php?fetch_roles=true",
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
         );
         const data = await response.json();
         console.log("Fetched roles:", data);
@@ -120,7 +138,13 @@ const AddLeaves = () => {
   const fetchUsersByRole = async (roleId) => {
     try {
       const response = await fetch(
-        `https://demo-expense.geomaticxevs.in/ET-api/add-leaves1.php?role_id=${roleId}`
+        `https://demo-expense.geomaticxevs.in/ET-api/add-leaves1.php?role_id=${roleId}`,
+        {
+              method: "GET",
+              headers: {
+               "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              }
+            }
       );
       const data = await response.json();
       if (data.status === "success" && data.users) {
@@ -164,7 +188,11 @@ const AddLeaves = () => {
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/add-leaves1.php",
         {
-          method: "POST",
+          
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              },
           body: formData,
         }
       );

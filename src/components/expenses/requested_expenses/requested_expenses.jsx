@@ -95,13 +95,29 @@ const ManageExpenseWeb = () => {
             setError(null);
 
             const userId = localStorage.getItem("userid");
-            if (!userId) {
-                throw new Error("User ID not found");
+            const token = localStorage.getItem("authToken");
+
+            if (!userId || !token) {
+                throw new Error("Authentication failed");
             }
 
             const response = await fetch(
-                "https://demo-expense.geomaticxevs.in/ET-api/manage_expense.php"
+                "https://demo-expense.geomaticxevs.in/ET-api/manage_expense.php",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ userId })
+                }
             );
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -123,6 +139,9 @@ const ManageExpenseWeb = () => {
             });
         } catch (err) {
             console.error("Error fetching expenses:", err);
+            if (err.message === "Authentication failed") {
+                window.location.href = '/';
+            }
             setError(err instanceof Error ? err.message : "Failed to fetch expenses");
         } finally {
             setLoading(false);
@@ -136,11 +155,24 @@ const ManageExpenseWeb = () => {
         setRoleId(storedRoleId ? parseInt(storedRoleId, 10) : null);
     }, [fetchExpenses]);
 
+    useEffect(() => {
+        const token = localStorage.getItem("authToken");
+        const userId = localStorage.getItem("userid");
+
+        if (!token || !userId) {
+            // Not logged in → redirect to login
+            window.location.href = "/";
+            return;
+        }
+    }, []);
+
     const handleAction = async (expense_id, action) => {
         try {
             const userId = localStorage.getItem("userid");
-            if (!userId) {
-                throw new Error("User ID not found");
+            const token = localStorage.getItem("authToken");
+
+            if (!userId || !token) {
+                throw new Error("Authentication failed");
             }
 
             const response = await fetch(
@@ -149,6 +181,7 @@ const ManageExpenseWeb = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         expense_track_id: expense_id,
@@ -157,6 +190,12 @@ const ManageExpenseWeb = () => {
                     }),
                 }
             );
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
 
             const data = await response.json();
             if (data.status === "success") {
@@ -188,6 +227,10 @@ const ManageExpenseWeb = () => {
             }
         } catch (error) {
             console.error("Error handling action:", error);
+            if (error.message === "Authentication failed") {
+                window.location.href = '/';
+                return;
+            }
             alert("Failed to process the action. Please try again.");
         }
     };

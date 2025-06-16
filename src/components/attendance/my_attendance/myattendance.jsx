@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 import "./myattendance.css";
 import { TextField, Button, CircularProgress, IconButton } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import { LocalizationProvider, DatePicker, DateCalendar } from "@mui/x-date-pickers";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import Badge from '@mui/material/Badge';
-import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 
 const API_URL = "https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php";
 
@@ -39,7 +39,16 @@ export default function MyAttendance() {
   const [filterStatus, setFilterStatus] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Add auth token check in useEffect
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userid");
+
+    if (!token || !userId) {
+      window.location.href = "/";
+      return;
+    }
+
     const fetchUserId = async () => {
       try {
         const storedUserId = localStorage.getItem("userid");
@@ -78,6 +87,7 @@ export default function MyAttendance() {
     }
   };
 
+  // Modify fetchAttendanceData function
   const fetchAttendanceData = async () => {
     if (!userId) {
       alert("Error: User ID not available");
@@ -89,12 +99,20 @@ export default function MyAttendance() {
       return;
     }
 
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("Authentication failed. Please login again.");
+      window.location.href = "/";
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           user_id: userId,
@@ -102,6 +120,12 @@ export default function MyAttendance() {
           end_date: endDate,
         }),
       });
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -117,8 +141,13 @@ export default function MyAttendance() {
         alert(data?.message || "Failed to fetch attendance data");
       }
     } catch (error) {
-      alert("Failed to connect to server. Please try again later.");
       console.error("Fetch error:", error);
+      if (error.message.includes('401')) {
+        alert("Session expired. Please login again.");
+        window.location.href = '/';
+      } else {
+        alert("Failed to connect to server. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -209,7 +238,7 @@ export default function MyAttendance() {
         <div className="scroll-container">
           <div className="form-container">
             <div className="title-container">
-              <h2 className="myattendance-title"><u>Attendance Tracker :-</u></h2>
+              <h2 className="myattendance-title">Attendance Tracker</h2>
               <IconButton onClick={onRefresh} color="primary" aria-label="refresh" >
                 <RefreshIcon />
               </IconButton>
@@ -217,7 +246,7 @@ export default function MyAttendance() {
             <div className="date-range-container">
               <div className="date-pickers">
                 <div className="date-picker-wrapper">
-                  <DatePicker sx={{ fontSize: '30px' }}
+                  <DatePicker sx={{ fontSize: '22px' }}
                     label="Start Date"
                     value={startDate ? new Date(startDate) : null}
                     onChange={(date) => handleDateSelect(date, "START_DATE")}
@@ -238,7 +267,7 @@ export default function MyAttendance() {
                 </div>
                 <span className="date-picker-separator">to</span>
                 <div className="date-picker-wrapper">
-                  <DatePicker sx={{ fontSize: '30px' }}
+                  <DatePicker sx={{ fontSize: '24px' }}
                     label="End Date"
                     value={endDate ? new Date(endDate) : null}
                     onChange={(date) => handleDateSelect(date, "END_DATE")}
@@ -263,8 +292,8 @@ export default function MyAttendance() {
               
               {(startDate || endDate) && (
                 <div className="date-range-display">
-                  Selected Range:  
-                  <span className="date-range"> {startDate && format(new Date(startDate), "MMM dd, yyyy")}</span>
+                  Selected Range: 
+                  <span>{startDate && format(new Date(startDate), "MMM dd, yyyy")}</span>
                   {endDate && <span> to {format(new Date(endDate), "MMM dd, yyyy")}</span>}
                 </div>
               )}
@@ -275,7 +304,7 @@ export default function MyAttendance() {
                 onClick={fetchAttendanceData}
                 disabled={!startDate || !endDate}
                 className="submit-button"
-                startIcon={loading ? <CircularProgress size={30} color="inherit" /> : null}
+                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
               >
                 {loading ? "Loading..." : "View Attendance"}
               </Button>
@@ -333,106 +362,36 @@ export default function MyAttendance() {
             {attendanceDetails.length > 0 && (
               <div className="calendar-view">
                 <div className="left-section">
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DateCalendar
+                    <Calendar
                       value={new Date(currentMonth || startDate)}
-                      onChange={(newDate) => setCurrentMonth(format(newDate, "yyyy-MM-dd"))}
-                      slots={{
-                        day: (props) => {
-                          const attendance = attendanceDetails.find(
-                            (a) => a.date === format(props.day, "yyyy-MM-dd")
-                          );
+                      tileClassName={({ date, view }) => {
+                        if (view !== 'month') return null;
+                        
+                        const attendance = attendanceDetails.find(
+                          (a) => a.date === format(date, "yyyy-MM-dd")
+                        );
+                        
+                        if (!attendance) return null;
 
-                          if (!attendance) return <PickersDay {...props} />;
-
-                          // If filter is active and doesn't match, show with reduced opacity
-                          if (filterStatus && attendance.status !== filterStatus) {
-                            return (
-                              <Badge
-                                overlap="circular"
-                                badgeContent=" "
-                                variant="dot"
-                                sx={{
-                                  opacity: 0.3,
-                                  '& .MuiBadge-badge': {
-                                    backgroundColor: 'transparent'
-                                  }
-                                }}
-                              >
-                                <PickersDay {...props} />
-                              </Badge>
-                            );
-                          }
-
-                          let badgeColor = '#64748b'; // default color
-                          switch (attendance.status) {
-                            case 'Present':
-                              badgeColor = '#10b981';
-                              break;
-                            case 'Absent':
-                              badgeColor = '#ef4444';
-                              break;
-                            case 'Not Logged Out':
-                              badgeColor = '#f59e0b';
-                              break;
-                            case 'Holiday':
-                              badgeColor = '#6b7280';
-                              break;
-                          }
-
-                          return (
-                            <Badge
-                              overlap="circular"
-                              badgeContent=" "
-                              variant="dot"
-                              sx={{
-                                '& .MuiBadge-badge': {
-                                  backgroundColor: badgeColor,
-                                  width: '100%',
-                                  height: '100%',
-                                  borderRadius: '50%',
-                                  transform: 'none',
-                                  top: 0,
-                                  right: 0
-                                }
-                              }}
-                            >
-                              <PickersDay {...props} />
-                            </Badge>
-                          );
+                        // If filter is active, add hidden class for non-matching dates
+                        if (filterStatus && attendance.status !== filterStatus) {
+                          return 'tile-hidden';
                         }
+                        
+                        // Return appropriate class based on status
+                        if (attendance.status === "Present") return "tile-present";
+                        if (attendance.status === "Absent") return "tile-absent";
+                        if (attendance.status === "Not Logged Out") return "tile-not-logged-out";
+                        if (attendance.status === "Holiday") return "tile-holiday";
+                        if (attendance.status === "Sunday") return "tile-sunday";
+                        
+                        return null;
                       }}
-                      sx={{
-                        width: '100%',
-                        maxWidth: '400px',
-                        backgroundColor: 'white',
-                        borderRadius: '12px',
-                        padding: '16px',
-                        '& .MuiPickersDay-root': {
-                          fontSize: '0.875rem',
-                          margin: '2px',
-                          width: '36px',
-                          height: '36px',
-                        },
-                        '& .MuiDayCalendar-header': {
-                          '& .MuiTypography-root': {
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            color: '#64748b'
-                          }
-                        },
-                        '& .MuiPickersDay-today': {
-                          border: '1px solid #6366f1',
-                          color: '#6366f1',
-                          backgroundColor: 'transparent',
-                          '&:hover': {
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)'
-                          }
-                        }
+                      onActiveStartDateChange={({ activeStartDate }) => {
+                        setCurrentMonth(activeStartDate);
                       }}
                     />
-                  </LocalizationProvider>
-                </div>
+                  </div>
          
                 <div className="middle-section">
                   <div className="count-container">
@@ -454,6 +413,56 @@ export default function MyAttendance() {
                     </div>
                   </div>
                 </div>
+
+{/* <div className="left-section">
+  <Calendar
+    value={new Date(currentMonth || startDate)}
+    tileClassName={({ date, view }) => {
+      if (view !== 'month') return null;
+      
+      const attendance = attendanceDetails.find(
+        (a) => a.date === format(date, "yyyy-MM-dd")
+      );
+      
+      if (!attendance) return null;
+      
+      // Return appropriate class based on status
+      if (attendance.status === "Present") return "tile-present";
+      if (attendance.status === "Absent") return "tile-absent";
+      if (attendance.status === "Not Logged Out") return "tile-not-logged-out";
+      if (attendance.status === "Holiday") return "tile-holiday";
+      if (attendance.status === "Sunday") return "tile-sunday";
+      
+      return null;
+    }}
+    onActiveStartDateChange={({ activeStartDate }) => {
+      setCurrentMonth(activeStartDate);
+    }}
+  />
+  
+  <div className="status-legend">
+    <div className="status-legend-item">
+      <div className="status-legend-color present-color"></div>
+      <span>Present</span>
+    </div>
+    <div className="status-legend-item">
+      <div className="status-legend-color absent-color"></div>
+      <span>Absent</span>
+    </div>
+    <div className="status-legend-item">
+      <div className="status-legend-color not-logged-out-color"></div>
+      <span>Not Logged Out</span>
+    </div>
+    <div className="status-legend-item">
+      <div className="status-legend-color holiday-color"></div>
+      <span>Holiday</span>
+    </div>
+    <div className="status-legend-item">
+      <div className="status-legend-color sunday-color"></div>
+      <span>Sunday</span>
+    </div>
+  </div>
+</div> */}
 
                 <div className="right-section">
                   <div className="detailed-note-container">
@@ -501,8 +510,8 @@ export default function MyAttendance() {
                   If there are 3 "Not Logged Out" days, it will be counted as:
                 </p>
                 <ul className="note-list">
-                  <li className="note-text">2 days Present</li>
-                  <li className="note-text">1 day Absent</li>
+                  <li style={{ fontSize: '20px', marginLeft: '10px' }}>2 days Present</li>
+                  <li style={{ fontSize: '20px', marginLeft: '10px' }}>1 day Absent</li>
                 </ul>
               </div>
             </div>

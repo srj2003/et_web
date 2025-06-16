@@ -47,11 +47,43 @@ const AdminAnalytics = () => {
         totalExpenses: 0,
     });
 
+    // Add token check in useEffect
+    useEffect(() => {
+        const token = localStorage.getItem("authToken");
+        const userId = localStorage.getItem("userid");
+
+        if (!token || !userId) {
+            window.location.href = "/";
+            return;
+        }
+    }, []);
+
+    // Modify fetchAnalyticsData
     const fetchAnalyticsData = useCallback(async (dataType, dateRange) => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            window.location.href = "/";
+            return;
+        }
+
         try {
             const response = await fetch(
-                `https://demo-expense.geomaticxevs.in/ET-api/admin_analytics.php?dataType=${dataType}&range=${dateRange}`
+                `https://demo-expense.geomaticxevs.in/ET-api/admin_analytics.php?dataType=${dataType}&range=${dateRange}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
             );
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
+
             const data = await response.json();
             if (dataType === "users") {
                 setUserData(data);

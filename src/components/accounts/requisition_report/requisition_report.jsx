@@ -154,9 +154,28 @@ const RequisitionReport = () => {
     const fetchRoles = async () => {
         setLoadingRoles(true);
         try {
+            const token = localStorage.getItem("authToken");
+            if (!token) {
+                window.location.href = "/";
+                return;
+            }
+
             const response = await fetch(
-                "https://demo-expense.geomaticxevs.in/ET-api/requisition_report.php?fetch_roles=true"
+                "https://demo-expense.geomaticxevs.in/ET-api/requisition_report.php?fetch_roles=true",
+                {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
             );
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
+
             const data = await response.json();
 
             if (response.ok && data.status === "success" && data.roles) {
@@ -182,7 +201,13 @@ const RequisitionReport = () => {
 
         try {
             const response = await fetch(
-                `https://demo-expense.geomaticxevs.in/ET-api/requisition_report.php?role_id=${roleId}`
+                `https://demo-expense.geomaticxevs.in/ET-api/requisition_report.php?role_id=${roleId}`,
+        {
+              method: "GET",
+              headers: {
+               "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              }
+            }
             );
             const result = await response.json();
 
@@ -205,25 +230,22 @@ const RequisitionReport = () => {
     };
 
     const fetchData = async () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            window.location.href = "/";
+            return;
+        }
+
         setLoading(true);
         setData([]);
         setTotalApprovedAmount(0);
 
         try {
-            const payload = {};
-
-            // Only add user_id if it's selected
-            if (selectedUserId) {
-                payload.user_id = parseInt(selectedUserId);
-            }
-
-            if (startDate) {
-                payload.start_date = startDate.toISOString().split("T")[0];
-            }
-
-            if (endDate) {
-                payload.end_date = endDate.toISOString().split("T")[0];
-            }
+            const payload = {
+                user_id: selectedUserId ? parseInt(selectedUserId) : undefined,
+                start_date: startDate?.toISOString().split("T")[0],
+                end_date: endDate?.toISOString().split("T")[0]
+            };
 
             const response = await fetch(
                 "https://demo-expense.geomaticxevs.in/ET-api/requisition_report.php",
@@ -231,10 +253,17 @@ const RequisitionReport = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(payload),
                 }
             );
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
 
             const result = await response.json();
 

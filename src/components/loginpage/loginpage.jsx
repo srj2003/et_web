@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './loginpage.css';
 import logo from '../../assets/GM-Logo.png';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-// import { useState } from 'react';
 
-export default function LoginWeb() {
+const LoginWeb = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +15,16 @@ export default function LoginWeb() {
 
   const navigate = useNavigate();
 
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const userId = localStorage.getItem('userid');
+    if (token && userId) {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
+  // Validation Functions
   const validateEmailOrPhone = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^[0-9]{10}$/;
@@ -31,12 +40,12 @@ export default function LoginWeb() {
     return true;
   };
 
-  const validatePassword = (password) => {
-    if (!password) {
+  const validatePassword = (value) => {
+    if (!value) {
       setPasswordError('Password is required');
       return false;
     }
-    if (password.length < 5) {
+    if (value.length < 5) {
       setPasswordError('Password must be at least 5 characters');
       return false;
     }
@@ -51,59 +60,57 @@ export default function LoginWeb() {
     const isEmailValid = validateEmailOrPhone(email);
     const isPasswordValid = validatePassword(password);
 
-    if (isEmailValid && isPasswordValid) {
-      setLoading(true);
-      try {
-        const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/login.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            u_identify: email.trim(),
-            u_pass: password.trim()
-          }),
-        });
+    if (!isEmailValid || !isPasswordValid) return;
 
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Server returned non-JSON response');
-        }
+    setLoading(true);
+    try {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/login.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          u_identify: email.trim(),
+          u_pass: password.trim(),
+        }),
+      });
 
-        const data = await response.json();
-        console.log('Login response:', data); // Debug log
-
-        if (data.status === 'success' && data.data) {
-          setLoginError('');
-          // Store user data in localStorage with null checks
-          localStorage.setItem('userid', data.data.userid?.toString() || '');
-          localStorage.setItem('roleId', data.data.role_id?.toString() || '');
-          localStorage.setItem('currentLoginTime', Date.now().toString());
-          navigate('/dashboard');
-        } else {
-          setLoginError(data.message || 'Invalid login credentials');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        setLoginError('Server error. Please try again later.');
-      } finally {
-        setLoading(false);
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid server response format');
       }
+
+      const result = await response.json();
+      console.log('Login Response:', result);
+
+      if (result.status === 'success' && result.data) {
+        // Store user info and token
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('userid', result.data.userid?.toString() || '');
+        localStorage.setItem('roleId', result.data.role_id?.toString() || '');
+        localStorage.setItem('userName', result.data.userfullname || '');
+        localStorage.setItem('currentLoginTime', Date.now().toString());
+
+        setLoginError('');
+        navigate('/dashboard');
+      } else {
+        setLoginError(result.message || 'Invalid login credentials');
+      }
+    } catch (error) {
+      console.error('Login Error:', error);
+      setLoginError('Server error. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-gradient-bg">
       <div className="login-bg-shapes">
-        <div className="login-shape"></div>
-        <div className="login-shape"></div>
-        <div className="login-shape"></div>
-        <div className="login-shape"></div>
-        <div className="login-shape"></div>
-        <div className="login-shape"></div>
-        <div className="login-shape"></div>
-        <div className="login-shape"></div>
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="login-shape"></div>
+        ))}
       </div>
       <div className="login-overlay" />
       <div className="login-scroll">
@@ -117,7 +124,7 @@ export default function LoginWeb() {
               placeholder="E-mail or Telephone Number"
               type="text"
               value={email}
-              onChange={e => {
+              onChange={(e) => {
                 setEmail(e.target.value);
                 validateEmailOrPhone(e.target.value);
               }}
@@ -125,13 +132,14 @@ export default function LoginWeb() {
               autoComplete="username"
             />
             {emailError && <div className="login-error-text">{emailError}</div>}
+
             <div className={`login-password-container${passwordError ? ' login-input-error' : ''}`}>
               <input
                 className="login-password-input"
                 placeholder="Password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={e => {
+                onChange={(e) => {
                   setPassword(e.target.value);
                   validatePassword(e.target.value);
                 }}
@@ -149,6 +157,7 @@ export default function LoginWeb() {
               </button>
             </div>
             {passwordError && <div className="login-error-text">{passwordError}</div>}
+
             <button
               className={`login-button${loading ? ' login-button-loading' : ''}`}
               type="submit"
@@ -161,4 +170,6 @@ export default function LoginWeb() {
       </div>
     </div>
   );
-}
+};
+
+export default LoginWeb;

@@ -59,13 +59,33 @@ export default function RequestedLeaves() {
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
+        const token = localStorage.getItem("authToken");
+        const userId = localStorage.getItem("userid");
+
+        if (!token || !userId) {
+          window.location.href = "/";
+          return;
+        }
+
         setLoading(true);
         const response = await fetch(
           "https://demo-expense.geomaticxevs.in/ET-api/manage_leaves.php",
           {
-            method: "GET",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userId }),
           }
         );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = "/";
+          return;
+        }
+
         const data = await response.json();
         console.log("API Response:", data);
         if (Array.isArray(data)) {
@@ -96,7 +116,7 @@ export default function RequestedLeaves() {
 
   useEffect(() => {
     const filteredData = leaves
-      .filter(leave => leave.leave_id) // Ensure leave exists
+      .filter((leave) => leave.leave_id) // Ensure leave exists
       .filter((leave) => {
         const matchesSearch =
           leave.user_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -124,11 +144,9 @@ export default function RequestedLeaves() {
         return;
       }
 
-      // Find the card element
       const cardElement = document.querySelector(`[data-leave-id="${leaveId}"]`);
       if (!cardElement) return;
 
-      // Add the disappearing animation class
       cardElement.classList.add(
         action === "approve" ? "disappearing-approve" : "disappearing-reject"
       );
@@ -139,6 +157,7 @@ export default function RequestedLeaves() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
           },
           body: JSON.stringify({
             leave_id: leaveId,
@@ -151,32 +170,40 @@ export default function RequestedLeaves() {
 
       const data = await response.json();
       if (data.status === "success") {
-        // Wait for the disappearing animation
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
-        // Update leaves state to remove the card
-        const updatedLeaves = leaves.filter(leave => leave.leave_id !== leaveId);
-        
-        // Add appearing class to cards that will move
-        const remainingCards = document.querySelectorAll('.leave-card:not(.disappearing-approve):not(.disappearing-reject)');
-        remainingCards.forEach(card => {
-          card.classList.add('appearing');
+        // Update leaves state and stats
+        setLeaves(prevLeaves => {
+          const updatedLeaves = prevLeaves.filter(leave => leave.leave_id !== leaveId);
+          
+          // Update stats
+          setStats(prevStats => ({
+            total: prevStats.total,
+            unattended: prevStats.unattended - .5,
+            approved: action === "approve" ? prevStats.approved +.5  : prevStats.approved,
+            rejected: action === "reject" ? prevStats.rejected +.5 : prevStats.rejected
+          }));
+
+          return updatedLeaves;
         });
 
-        // Update state to trigger re-render
-        setLeaves(updatedLeaves);
+        const remainingCards = document.querySelectorAll(
+          '.leave-card:not(.disappearing-approve):not(.disappearing-reject)'
+        );
+        remainingCards.forEach(card => {
+          card.classList.add("appearing");
+        });
+
         setSelectedLeave(null);
 
-        // Remove appearing class after animation
         setTimeout(() => {
           remainingCards.forEach(card => {
-            card.classList.remove('appearing');
+            card.classList.remove("appearing");
           });
         }, 300);
 
       } else {
         alert(data.message || "Failed to process action");
-        // Remove animation class if action failed
         cardElement.classList.remove(
           "disappearing-approve",
           "disappearing-reject"

@@ -46,10 +46,33 @@ export default function AllLeaves() {
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
+        const token = localStorage.getItem("authToken");
+        const userId = localStorage.getItem("userid");
+
+        if (!token || !userId) {
+          window.location.href = "/";
+          return;
+        }
+
         setLoading(true);
         const response = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/all-leaves.php"
+          "https://demo-expense.geomaticxevs.in/ET-api/all-leaves.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userId }),
+          }
         );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = "/";
+          return;
+        }
+
         const data = await response.json();
         console.log("API Response:", data);
         setLeaves(data);

@@ -88,21 +88,22 @@ const Users = () => {
 
   const fetchData = async () => {
     try {
+      const token = localStorage.getItem("authToken");
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/user_roles.php",
         {
           method: "POST",
           headers: {
-            Accept: "application/json",
             "Content-Type": "application/json",
-            Origin: window.location.origin,
-          },
-          credentials: "same-origin",
+            "Authorization": `Bearer ${token}`
+          }
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`https error! status: ${response.status}`);
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
       }
 
       const jsonData = await response.json();
@@ -128,20 +129,22 @@ const Users = () => {
 
   const fetchData1 = async () => {
     try {
+      const token = localStorage.getItem("authToken");
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/user_details.php",
         {
           method: "POST",
           headers: {
-            Accept: "application/json",
             "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}),
+            "Authorization": `Bearer ${token}`
+          }
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`https error! status: ${response.status}`);
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
       }
 
       const jsonData = await response.json();
@@ -197,6 +200,14 @@ const Users = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userid");
+
+    if (!token || !userId) {
+      window.location.href = "/";
+      return;
+    }
+    
     fetchData();
     fetchData1();
   }, []);

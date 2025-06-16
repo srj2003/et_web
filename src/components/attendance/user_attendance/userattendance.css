@@ -79,7 +79,7 @@
 .table-header, .data-row {
     display: flex;
     align-items: center;
-    padding: 0.65rem .1rem; /* 14px 16px */
+    padding: 0.875rem 1rem; /* 14px 16px */
     border-bottom: 1px solid #e2e8f0; /* Lighter border */
 }
 
@@ -87,7 +87,7 @@
     background-color: #f8fafc; /* Light header background */
     font-weight: 600;
     color: #475569; /* Header text color */
-    font-size: 0.99rem; /* 14px */
+    font-size: 0.875rem; /* 14px */
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -96,8 +96,6 @@
     background-color: #fff;
     transition: background-color 0.2s ease;
     cursor: pointer; /* Indicate rows are clickable */
-    font-size: 0.9375rem; /* 15px */
-    color: #334155; /* Default text color */
 }
 
 .data-row:nth-child(even) {
@@ -192,7 +190,7 @@
 }
 
 .pagination-info {
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     color: #475569;
 }
 
@@ -242,8 +240,6 @@
     animation: modalFadeIn 0.3s ease;
 }
 
-
-
 @keyframes modalFadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -254,7 +250,6 @@
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     width: 100%;
-    max-width: 1200px; /* Match the new max-width */
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -348,9 +343,7 @@
 
 /* Attendance Detail Modal Specifics */
 .attendance-detail-modal {
-    max-width: 1200px; /* Increased from 900px */
-    width: 95vw;       /* Allow modal to use more of the viewport width */
-    min-width: 320px;
+    max-width: 900px; /* Wider for table */
 }
 .summary-cards-container {
     display: flex;
@@ -578,16 +571,4 @@
     }
     .search-input { font-size: 0.9rem; }
     .button { font-size: 0.875rem; padding: 0.5rem 1rem; }
-
-    .user-attendance-container{
-        padding: 0.5rem;
-        min-height: calc(100vh - 2rem); /* Adjust for smaller padding */
-        margin-left: 0; /* Reset margin for mobile */
-
-        
-    }
-
-    
 }
-
-

@@ -91,15 +91,32 @@ const AllExpensesWeb = () => {
             setLoading(true);
             setError(null);
 
+            const token = localStorage.getItem('authToken');
+            const userId = localStorage.getItem('userid');
+
+            if (!token || !userId) {
+                alert('You have been logged out. Please login again.');
+                window.location.href = '/';
+                return;
+            }
+
             const response = await fetch(
                 "https://demo-expense.geomaticxevs.in/ET-api/all-expense.php",
                 {
+                    method: 'POST',
                     headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
                     },
+                    body: JSON.stringify({ userId })
                 }
             );
+
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

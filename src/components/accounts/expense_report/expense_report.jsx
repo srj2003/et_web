@@ -83,18 +83,35 @@ export default function ExpenseReport() {
     const fetchRoles = async () => {
       try {
         setLoadingRoles(true);
-        const response = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/expense_report.php?fetch_roles=true"
-        );
-        const data = await response.json();
+        const token = localStorage.getItem("authToken");
+        
+        if (!token) {
+          window.location.href = "/";
+          return;
+        }
 
-        if (response.ok && data.status === "success" && data.roles) {
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/expense_report.php?fetch_roles=true",
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
+        );
+
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = '/';
+          return;
+        }
+
+        const data = await response.json();
+        if (data.status === "success" && data.roles) {
           setRoles(data.roles);
-        } else {
-          alert("Failed to load roles.");
         }
       } catch (error) {
-        alert("Network error. Please try again.");
+        alert("Failed to load roles.");
       } finally {
         setLoadingRoles(false);
       }
@@ -117,7 +134,13 @@ export default function ExpenseReport() {
       setSelectedUserId("");
 
       const response = await fetch(
-        `https://demo-expense.geomaticxevs.in/ET-api/expense_report.php?role_id=${roleId}`
+        `https://demo-expense.geomaticxevs.in/ET-api/expense_report.php?role_id=${roleId}`,
+        {
+              method: "GET",
+              headers: {
+               "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              }
+            }
       );
       const result = await response.json();
 
@@ -144,7 +167,13 @@ export default function ExpenseReport() {
       try {
         setLoadingExpenseTypes(true);
         const response = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/expense_types_fetcher.php"
+          "https://demo-expense.geomaticxevs.in/ET-api/expense_types_fetcher.php",
+        {
+              method: "GET",
+              headers: {
+               "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              }
+            }
         );
         const data = await response.json();
         setExpenseTypes(data);
@@ -178,23 +207,40 @@ export default function ExpenseReport() {
       alert("Please select an Expense Head.");
       return;
     }
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
     setLoading(true);
     try {
       const body = {
         expense_type: parseInt(selectedHead),
-        ...(selectedRoleId && selectedUserId && { creator_id: parseInt(selectedUserId) }),
-        ...(startDate && { start_date: startDate }),
-        ...(endDate && { end_date: endDate }),
+        creator_id: selectedUserId ? parseInt(selectedUserId) : undefined,
+        start_date: startDate,
+        end_date: endDate
       };
 
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/expense_report.php",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
           body: JSON.stringify(body),
         }
       );
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       const result = await response.json();
       if (Array.isArray(result)) {
         setData(result);
