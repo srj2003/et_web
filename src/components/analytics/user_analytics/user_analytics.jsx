@@ -259,6 +259,7 @@ const AnalyticsScreen = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [roleId, setRoleId] = useState(null);
     const [stats, setStats] = useState({
         totalDays: 0,
         presentDays: 0,
@@ -274,8 +275,12 @@ const AnalyticsScreen = () => {
         const fetchUserId = async () => {
             try {
                 const storedUserId = localStorage.getItem('userid');
+                const storedRoleId = localStorage.getItem('roleId');
                 if (storedUserId) {
                     setUserId(parseInt(storedUserId, 10));
+                }
+                if (storedRoleId) {
+                    setRoleId(parseInt(storedRoleId, 10));
                 }
             } catch (error) {
                 console.error('Error fetching user ID:', error);
@@ -393,15 +398,17 @@ const AnalyticsScreen = () => {
             <div className="header-container">
                 <h1 className="title">Analytics Overview</h1>
                 <div className="header-buttons">
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        component={Link}
-                        to="/analytics/adminanalytics"
-                        className="admin-button"
-                    >
-                        Go to Admin Analytics
-                    </Button>
+                    {[1, 2, 3, 4, 8].includes(roleId) && (
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            component={Link}
+                            to="/analytics/adminanalytics"
+                            className="admin-button"
+                        >
+                            Go to Admin Analytics
+                        </Button>
+                    )}
                     <Button
                         variant="outlined"
                         color="primary"
