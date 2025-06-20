@@ -8,6 +8,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import attendanceNote from "../../../assets/Attendance_note.jpeg"
 
 const API_URL = "https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php";
 
@@ -238,7 +239,13 @@ export default function MyAttendance() {
         <div className="scroll-container">
           <div className="form-container">
             <div className="title-container">
-              <h2 className="myattendance-title">Attendance Tracker</h2>
+              <h2 className="myattendance-title">Attendance Tracker <button
+                  className="help-button"
+                  onClick={() => window.open(attendanceNote, '_blank')}
+                >
+                  Help Note*
+              </button></h2>
+              
               <IconButton onClick={onRefresh} color="primary" aria-label="refresh" >
                 <RefreshIcon />
               </IconButton>

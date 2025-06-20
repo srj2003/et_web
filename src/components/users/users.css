@@ -38,6 +38,7 @@ body {
 
 /* Decorative Background Elements */
 .users-container::before,
+
 .users-container::after {
     content: '';
     position: absolute;
