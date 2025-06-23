@@ -3,6 +3,8 @@ import './loginpage.css';
 import logo from '../../assets/GM-Logo.png';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Modal from '@mui/material/Modal'; // Or use your preferred modal/dialog
+import Box from '@mui/material/Box';     // For modal content styling
 
 const LoginWeb = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +14,17 @@ const LoginWeb = () => {
   const [passwordError, setPasswordError] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotInput, setForgotInput] = useState('');
+  const [forgotError, setForgotError] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [otpConfirmed, setOtpConfirmed] = useState(false);
 
   const navigate = useNavigate();
 
@@ -105,6 +118,107 @@ const LoginWeb = () => {
     }
   };
 
+  // Forgot Password Handlers
+  const handleSendOtp = async () => {
+    setForgotError('');
+    if (!forgotInput) {
+      setForgotError('Please enter your registered email.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(forgotInput.trim())) {
+      setForgotError('Please enter a valid email address.');
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/forgot_password.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ u_email: forgotInput.trim() }),
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setOtpSent(true);
+        setForgotError('');
+      } else {
+        setForgotError(data.message || 'Failed to send OTP. Try again.');
+      }
+    } catch (err) {
+      setForgotError('Network error. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setForgotError('');
+    if (!otpInput) {
+      setForgotError('Please enter the OTP sent to your email.');
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/verify_otp.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ u_email: forgotInput.trim(), otp: otpInput.trim() }),
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setOtpConfirmed(true);
+        setForgotError('');
+      } else {
+        setForgotError(data.message || 'Invalid OTP. Please try again.');
+      }
+    } catch (err) {
+      setForgotError('Network error. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!otpInput || !newPassword || !confirmPassword) {
+      setForgotError('All fields are required.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setForgotError('Passwords do not match.');
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/reset_password.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          u_email: forgotInput.trim(),
+          otp: otpInput.trim(),
+          new_password: newPassword,
+        }),
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setForgotError('');
+        setOtpSent(false);
+        setShowForgotModal(false);
+        setForgotInput('');
+        setOtpInput('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setOtpConfirmed(false);
+        alert('Password reset successful! Please login with your new password.');
+      } else {
+        setForgotError(data.message || 'Failed to reset password.');
+      }
+    } catch (err) {
+      setForgotError('Network error. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <div className="login-gradient-bg">
       <div className="login-bg-shapes">
@@ -165,9 +279,161 @@ const LoginWeb = () => {
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </button>
+            {/* Forgot Password Link */}
+            <div style={{ textAlign: 'right', marginTop: '-16px', marginBottom: '8px' }}>
+              <button
+                type="button"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#1976d2',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+                onClick={() => setShowForgotModal(true)}
+              >
+                Forgot Password?
+              </button>
+            </div>
           </form>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <Modal
+        open={showForgotModal}
+        onClose={() => {
+          setShowForgotModal(false);
+          setForgotInput('');
+          setForgotError('');
+          setOtpSent(false);
+          setOtpInput('');
+          setNewPassword('');
+          setConfirmPassword('');
+          setOtpConfirmed(false);
+        }}
+        aria-labelledby="forgot-password-modal"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 350,
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <h2 style={{ color: '#1976d2', marginBottom: 16 }}>Forgot Password</h2>
+          {!otpSent && (
+            <>
+              <input
+                className="login-input"
+                placeholder="Enter your registered email"
+                value={forgotInput}
+                onChange={e => setForgotInput(e.target.value)}
+                type="email"
+                autoComplete="username"
+                style={{ marginBottom: 12 }}
+              />
+              {forgotError && <div className="login-error-text">{forgotError}</div>}
+              <button
+                className="login-button"
+                style={{ marginBottom: 0 }}
+                onClick={handleSendOtp}
+                disabled={otpLoading}
+                type="button"
+              >
+                {otpLoading ? 'Sending OTP...' : 'Send OTP'}
+              </button>
+            </>
+          )}
+          {otpSent && !otpConfirmed && (
+            <>
+              <input
+                className="login-input"
+                placeholder="Enter OTP"
+                value={otpInput}
+                onChange={e => setOtpInput(e.target.value)}
+                type="text"
+                autoComplete="one-time-code"
+                style={{ marginBottom: 12 }}
+              />
+              {forgotError && <div className="login-error-text">{forgotError}</div>}
+              <button
+                className="login-button"
+                style={{ marginBottom: 0 }}
+                onClick={handleVerifyOtp}
+                disabled={resetLoading}
+                type="button"
+              >
+                {resetLoading ? 'Verifying...' : 'Confirm OTP'}
+              </button>
+            </>
+          )}
+          {otpSent && otpConfirmed && (
+            <>
+              <input
+                className="login-input"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                type="password"
+                style={{ marginBottom: 12 }}
+              />
+              <input
+                className="login-input"
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                type="password"
+                style={{ marginBottom: 12 }}
+              />
+              {forgotError && <div className="login-error-text">{forgotError}</div>}
+              <button
+                className="login-button"
+                style={{ marginBottom: 0 }}
+                onClick={handleResetPassword}
+                disabled={resetLoading}
+                type="button"
+              >
+                {resetLoading ? 'Resetting...' : 'Reset Password'}
+              </button>
+            </>
+          )}
+          <button
+            className="login-button"
+            style={{
+              background: '#fff',
+              color: '#1976d2',
+              marginTop: 10,
+              border: '1px solid #1976d2',
+            }}
+            onClick={() => {
+              setShowForgotModal(false);
+              setForgotInput('');
+              setForgotError('');
+              setOtpSent(false);
+              setOtpInput('');
+              setNewPassword('');
+              setConfirmPassword('');
+              setOtpConfirmed(false);
+            }}
+            type="button"
+          >
+            Close
+          </button>
+        </Box>
+      </Modal>
     </div>
   );
 };
