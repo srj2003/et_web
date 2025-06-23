@@ -45,6 +45,8 @@ const Users = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [formErrors, setFormErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
+  const [showUserRoleModal, setShowUserRoleModal] = useState(false);
+  const [userRoleSearch, setUserRoleSearch] = useState("");
 
   const [formData, setFormData] = useState({
     userId: "",
@@ -212,6 +214,26 @@ const Users = () => {
     fetchData1();
   }, []);
 
+  // Calculate last role ID when data is loaded
+  useEffect(() => {
+    if (data.length > 0) {
+      const maxRoleId = Math.max(...data.map((role) => role.role_id));
+      setLastRoleId(maxRoleId + 1);
+    }
+  }, [data]);
+
+  // Update form role data when showAddUserRole changes
+  useEffect(() => {
+    if (showAddUserRole) {
+      const currentTimestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+      setFormRoleData((prev) => ({ 
+        ...prev, 
+        role_id: lastRoleId,
+        created_at: currentTimestamp 
+      }));
+    }
+  }, [showAddUserRole, lastRoleId]);
+
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -368,32 +390,56 @@ const Users = () => {
   };
 
   const handleSubmitUserRole = async () => {
-    if (!formRoleData.role_name.trim()) {
-      toast.error("Role Name is mandatory. Please enter a role name.");
-      return;
-    }
-
-    const roleDataToSend = {
-      ...formRoleData,
-      created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
-      role_active: 1,
-      role_is_del: 0,
-    };
-
     try {
+      const token = localStorage.getItem("authToken");
+      
+      if (!token) {
+        toast.error("Authentication required");
+        window.location.href = '/';
+        return;
+      }
+
+      if (!formRoleData.role_name.trim()) {
+        toast.error("Role Name is mandatory. Please enter a role name.");
+        return;
+      }
+
+      const roleDataToSend = {
+        role_id: lastRoleId, // Use the auto-generated ID
+        role_name: formRoleData.role_name,
+        role_parent: formRoleData.role_parent || 0, // Default to 0 if no parent
+        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+        updated_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+        role_active: 1, // Set as active by default
+        role_is_del: 0, // Set as not deleted by default
+      };
+
+      console.log("Role Data to Send:", roleDataToSend);
+
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/role_form.php",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
           body: JSON.stringify(roleDataToSend),
         }
       );
 
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       const result = await response.json();
+      console.log("Server Response:", result);
+      
       if (result.success) {
         toast.success(result.message);
-        fetchData();
+        fetchData(); // Refresh role list
         setShowAddUserRole(false);
         setSelectedRole(null);
       } else {
@@ -454,6 +500,9 @@ const Users = () => {
 
   const handleSave = async (userId) => {
     try {
+      // Find the role ID from data array
+      const currentRole = data.find(role => role.role_name === editedUser?.role_name);
+      
       const userData = {
         user_id: editedUser?.u_id,
         first_name: editedUser?.u_fname,
@@ -467,6 +516,7 @@ const Users = () => {
         organization: editedUser?.u_organization,
         profile_image: editedUser?.u_pro_img || null,
         cv: editedUser?.u_cv,
+        role_id: currentRole ? currentRole.role_id : null
       };
 
       const response = await fetch(
@@ -546,8 +596,8 @@ const Users = () => {
       role_parent: 0,
       created_at: "",
       updated_at: "",
-      role_active: false,
-      role_is_del: false,
+      role_active: 1,
+      role_is_del: 0,
     });
   };
 
@@ -597,6 +647,41 @@ const Users = () => {
     setIsEditing(false);
   };
 
+  const handleRoleChange = async (roleId) => {
+    try {
+      if (!editedUser?.u_id || !roleId) {
+        throw new Error('Missing user ID or role ID');
+      }
+
+      // Find the role from data array
+      const selectedRole = data.find(role => 
+        role.role_id.toString() === roleId || role.role_name === roleId
+      );
+      
+      if (!selectedRole) {
+        console.log('Available roles:', data);
+        console.log('Attempted role ID:', roleId);
+        throw new Error('Invalid role selected');
+      }
+
+      // Update the local state with the new role
+      setEditedUser(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          role_name: selectedRole.role_name
+        };
+      });
+      
+      toast.success('User role updated successfully!');
+      setShowUserRoleModal(false);
+
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      toast.error(error.message || 'An unknown error occurred');
+    }
+  };
+
   const formatFileSize = (bytes) => {
     if (!bytes || bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -609,9 +694,12 @@ const Users = () => {
     <div className="users-container">
       <div className="header">
         <h1 className="title">Users</h1>
-        <button className="add-button" onClick={() => setShowAddUser(true)}>
+        <button 
+          className="add-button" 
+          onClick={() => activeTab === "categories" ? setShowAddUserRole(true) : setShowAddUser(true)}
+        >
           <Plus size={20} />
-          <span>Add User</span>
+          <span>{activeTab === "categories" ? "Add Role" : "Add User"}</span>
         </button>
       </div>
 
@@ -1391,13 +1479,15 @@ const Users = () => {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Role Id</label>
+                  <label>Role Id</label>
                     <input
                       type="text"
                       value={formRoleData.role_id || lastRoleId}
                       readOnly
                       className="readonly-input"
+                      placeholder="Auto-Generated ID"
                     />
+                    
                   </div>
 
                   <div className="form-group">
@@ -1424,10 +1514,12 @@ const Users = () => {
                       value={formRoleData.created_at}
                       readOnly
                       className="readonly-input"
+                      placeholder="Created At"
                     />
                   </div>
 
                   <div className="form-group">
+                  
                     <label>Parent Role</label>
                     <Select
                       options={data.map((role) => ({
@@ -1457,6 +1549,13 @@ const Users = () => {
               </div>
 
               <div className="button-container">
+                
+                <button
+                  className="submit-button"
+                  onClick={handleSubmitUserRole}
+                >
+                  Add User Role
+                </button>
                 <button
                   className="cancel-button"
                   onClick={() => {
@@ -1466,12 +1565,6 @@ const Users = () => {
                   }}
                 >
                   Cancel
-                </button>
-                <button
-                  className="submit-button"
-                  onClick={handleSubmitUserRole}
-                >
-                  Add User Role
                 </button>
               </div>
             </div>
@@ -1675,7 +1768,17 @@ const Users = () => {
 
                   <div className="detail-group">
                     <label>Role</label>
-                    <span>{editedUser.role_name}</span>
+                    {isEditing ? (
+                      <div 
+                        className="role-select-input"
+                        onClick={() => setShowUserRoleModal(true)}
+                      >
+                        <span>{editedUser.role_name}</span>
+                        <Edit2 size={16} />
+                      </div>
+                    ) : (
+                      <span>{editedUser.role_name}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1797,6 +1900,71 @@ const Users = () => {
                     </span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Role Selection Modal */}
+      {showUserRoleModal && (
+        <div className="modal-overlay">
+          <div className="modal role-selection-modal">
+            <div className="modal-header">
+              <h2 className="modal-title">Select Role</h2>
+              <button
+                className="close-button"
+                onClick={() => setShowUserRoleModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-content">
+              {/* Search Bar */}
+              <div className="search-container">
+                <Search size={20} />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search roles..."
+                  value={userRoleSearch}
+                  onChange={(e) => setUserRoleSearch(e.target.value)}
+                />
+                {userRoleSearch.length > 0 && (
+                  <button
+                    className="clear-search-button"
+                    onClick={() => setUserRoleSearch("")}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Role List */}
+              <div className="role-list">
+                {data
+                  .filter((role) =>
+                    role.role_name.toLowerCase().includes(userRoleSearch.toLowerCase())
+                  )
+                  .map((role) => (
+                    <div
+                      key={role.role_id}
+                      className={`role-item ${
+                        editedUser?.role_name === role.role_name ? "selected" : ""
+                      }`}
+                      onClick={() => {
+                        if (editedUser && editedUser.u_id) {
+                          handleRoleChange(role.role_id.toString());
+                        }
+                      }}
+                    >
+                      <span className="role-text">{role.role_name}</span>
+                      {editedUser?.role_name === role.role_name && (
+                        <Check size={16} className="check-icon" />
+                      )}
+                    </div>
+                  ))}
               </div>
             </div>
           </div>

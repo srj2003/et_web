@@ -219,8 +219,16 @@ const RequisitionFormWeb = () => {
   };
 
   const handleSubmitrequisitions = async () => {
-    if (!selectedUser || !selectedRole) {
-      alert("Please select who to submit to");
+    // Validation for all required fields
+    if (
+      !requisitionTitle ||
+      !currentRequisition.amount ||
+      !currentRequisition.description ||
+      !currentRequisition.billDate ||
+      !selectedUser ||
+      !selectedRole
+    ) {
+      alert("Fill all the fields");
       return;
     }
 
@@ -281,7 +289,7 @@ const RequisitionFormWeb = () => {
         return;
       }
       console.error("Submission error:", error);
-      alert("Failed to submit requisitions. Please try again.");
+      alert("Fill all the fields or check your internet connection");
     } finally {
       setIsSubmitting(false);
     }

@@ -538,8 +538,8 @@ body {
     backdrop-filter: blur(10px);
     border-radius: 24px;
     width: 100%;
-    max-width: 48rem;
-    max-height: 90vh;
+    max-width: 60rem;
+    max-height: 95vh;
     overflow-y: auto;
     position: relative;
     margin: 2rem;
@@ -547,6 +547,7 @@ body {
         0 10px 10px -5px rgba(0, 0, 0, 0.04);
     animation: modalFadeIn 0.3s ease-out;
     border: 1px solid rgba(255, 255, 255, 0.8);
+    z-index: 1001;
 }
 
 @keyframes modalFadeIn {
@@ -584,18 +585,20 @@ body {
 /* Keep existing modal content styles but update colors and shadows */
 .form-container,
 .profile-content {
-    padding: 1.5rem;
+    padding: 2rem;
+    max-width: 100%;
 }
 
 .form-section,
 .profile-section {
     background: rgba(255, 255, 255, 0.9);
     border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
         0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.8);
+    min-height: 200px;
 }
 
 .section-title {
@@ -751,30 +754,30 @@ body {
 
   /* Modal adjustments */
   .modal-header {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
   .modal-title {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
   }
 
   .section-title {
-    font-size: 1rem;
-    margin-bottom: 1rem;
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
   }
 
   .form-group {
-    margin-bottom: 0.875rem;
+    margin-bottom: 1.25rem;
   }
 
   .form-group label {
-    font-size: 0.875rem;
-    margin-bottom: 0.375rem;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .form-group input {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
   }
 }
 
@@ -830,24 +833,30 @@ body {
   }
 
   .modal-header {
-    padding: 0.75rem;
+    padding: 1.5rem;
   }
 
   .modal-title {
-    font-size: 1rem;
+    font-size: 1.25rem;
   }
 
   .section-title {
-    font-size: 0.95rem;
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
   }
 
   .form-group label {
-    font-size: 0.8125rem;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .form-group input {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8125rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
   }
 }
 
@@ -892,6 +901,94 @@ body {
 
 .form-group {
     margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.form-group:has(.select__control) {
+    z-index: 10;
+}
+
+/* Select component styles to ensure dropdown appears above modal */
+.form-group .select__control {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 12px;
+    min-height: 48px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.form-group .select__control:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.form-group .select__control--is-focused {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+}
+
+.form-group .select__menu {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 4px 6px -1px rgba(0, 0, 0, 0.06);
+    z-index: 9999 !important;
+    position: absolute;
+    margin-top: 4px;
+}
+
+.form-group .select__option {
+    background: transparent;
+    color: #1e293b;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-group .select__option:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+}
+
+.form-group .select__option--is-focused {
+    background: rgba(99, 102, 241, 0.1) !important;
+    color: #6366f1 !important;
+}
+
+.form-group .select__option--is-selected {
+    background: rgba(99, 102, 241, 0.2) !important;
+    color: #6366f1 !important;
+    font-weight: 600;
+}
+
+.form-group .select__placeholder {
+    color: #94a3b8;
+}
+
+.form-group .select__single-value {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.form-group .select__indicator-separator {
+    background-color: rgba(99, 102, 241, 0.2);
+}
+
+.form-group .select__indicator {
+    color: #6366f1;
+    transition: all 0.2s ease;
+}
+
+.form-group .select__indicator:hover {
+    color: #4f46e5;
+}
+
+/* Specific z-index for the parent role form group */
+.form-group:has(.select__control) .select__menu {
+    z-index: 9999 !important;
 }
 
 .form-group label {
@@ -899,12 +996,12 @@ body {
     font-size: 1.1rem;
     font-weight: 500;
     color: #1e293b;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .form-group input {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1.25rem;
     border: 2px solid rgba(99, 102, 241, 0.2);
     border-radius: 12px;
     font-size: 1.1rem;
@@ -1423,4 +1520,316 @@ body {
 .upload-button span {
     font-size: 0.875rem;
     font-weight: 500;
+}
+
+/* Form Layout Styles */
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.readonly-input {
+    background-color: #f9fafb !important;
+    color: #6b7280 !important;
+    cursor: not-allowed;
+    border-color: #e5e7eb !important;
+}
+
+.readonly-input:focus {
+    outline: none !important;
+    border-color: #e5e7eb !important;
+    box-shadow: none !important;
+}
+
+/* Parent Role Dropdown Positioning */
+.parent-role-dropdown-container {
+    position: absolute;
+    top: -80px;
+    left: 0;
+    right: 0;
+    z-index: 1002;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 4px 6px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    margin-bottom: 1rem;
+}
+
+.parent-role-dropdown-container .form-group {
+    margin-bottom: 0;
+}
+
+.parent-role-dropdown-container label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+/* Ensure the parent role dropdown appears above the modal */
+.parent-role-dropdown-container .select__menu {
+    z-index: 9999 !important;
+    position: absolute;
+    margin-top: 4px;
+}
+
+/* Button Container Styles */
+.button-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.submit-button {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2),
+        0 2px 4px -1px rgba(239, 68, 68, 0.1);
+    font-size: 1rem;
+
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -1px rgba(99, 102, 241, 0.3),
+        0 4px 6px -1px rgba(99, 102, 241, 0.2);
+}
+
+.cancel-button {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2),
+        0 2px 4px -1px rgba(239, 68, 68, 0.1);
+    font-size: 1rem;
+}
+
+.cancel-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -1px rgba(239, 68, 68, 0.3),
+        0 4px 6px -1px rgba(239, 68, 68, 0.2);
+}
+
+/* Role Selection Styles */
+.role-select-input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    color: #374151;
+}
+
+.role-select-input:hover {
+    border-color: #6366f1;
+    background-color: #f8fafc;
+}
+
+.role-select-input svg {
+    color: #6366f1;
+    transition: transform 0.3s ease;
+}
+
+.role-select-input:hover svg {
+    transform: scale(1.1);
+}
+
+/* Role Selection Modal */
+.role-selection-modal {
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+.role-selection-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.role-selection-modal .modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    color: #6b7280;
+    transition: all 0.3s ease;
+}
+
+.close-button:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.modal-content {
+    padding: 1.5rem 2rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.role-selection-modal .search-container {
+    margin-bottom: 1.5rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    position: relative;
+}
+
+.role-selection-modal .search-container:focus-within {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.clear-search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    color: #6b7280;
+    transition: all 0.3s ease;
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.clear-search-button:hover {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.role-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.role-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.role-item:hover {
+    border-color: #6366f1;
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.role-item.selected {
+    border-color: #6366f1;
+    background-color: #f0f4ff;
+}
+
+.role-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.role-item.selected .role-text {
+    color: #6366f1;
+    font-weight: 600;
+}
+
+.check-icon {
+    color: #6366f1;
+    font-weight: bold;
+}
+
+/* Responsive styles for role selection */
+@media (max-width: 768px) {
+    .role-selection-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .role-selection-modal .modal-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .modal-content {
+        padding: 1rem 1.5rem;
+    }
+    
+    .role-item {
+        padding: 0.875rem 1rem;
+    }
+    
+    .role-text {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .role-selection-modal {
+        width: 98%;
+        max-height: 95vh;
+    }
+    
+    .role-selection-modal .modal-header {
+        padding: 0.875rem 1rem;
+    }
+    
+    .modal-content {
+        padding: 0.875rem 1rem;
+    }
+    
+    .role-item {
+        padding: 0.75rem 0.875rem;
+    }
+    
+    .role-text {
+        font-size: 0.9rem;
+    }
 }

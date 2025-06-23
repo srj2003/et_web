@@ -970,7 +970,7 @@ export default function DashboardWeb() {
           </div>
         </div> */}
 
-        <QuoteSection quote={quote} loading={loadingQuote} />
+        
 
         {/* {attendanceStats && (
           <div className="dashboard-analytics-graph">
