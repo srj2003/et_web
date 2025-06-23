@@ -5,6 +5,28 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 require_once 'config.php';
+require_once 'auth.php';
+
+// Authenticate user using PDO (for token check only)
+try {
+    $pdo = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $auth = verifyTokenPDO($pdo);
+    if (!$auth['status']) {
+        echo json_encode([
+            'success' => false,
+            'message' => $auth['message']
+        ]);
+        exit;
+    }
+    $authenticated_user_id = $auth['user_id'];
+} catch (Exception $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Authentication server error: ' . $e->getMessage()
+    ]);
+    exit;
+}
 
 // Database connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -19,12 +41,8 @@ if ($conn->connect_error) {
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($data['userId']) || !$data['userId']) {
-    die(json_encode([
-        'success' => false,
-        'message' => 'User ID is required'
-    ]));
-}
+// Use authenticated user id for update
+$userId = $authenticated_user_id;
 
 // Prepare update fields
 $updateFields = [];
@@ -63,7 +81,7 @@ if (isset($data['u_pro_img']) && $data['u_pro_img']) {
 $updateFields[] = "u_updated_at = NOW()";
 
 // Add userId to params array
-$params[] = $data['userId'];
+$params[] = $userId;
 $types .= 's';
 
 if (empty($updateFields)) {

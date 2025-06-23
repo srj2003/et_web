@@ -38,6 +38,28 @@
   font-weight: 600;
   color: #1e293b;
   margin: 0;
+  display:flex;
+  align-items: gap-between;
+  gap:30px;
+
+}
+
+.help-button {
+  background-color: #dee3ffdd;
+  border: none;
+  padding:15px;
+  border-radius: 20%;
+  font-size: 24px;
+  color: #000000e3;
+  cursor: pointer;
+
+}
+
+.help-button:hover {
+  color: #4f46e5;
+  background-color: #c7d2fe;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
 }
 
 .refresh-button {
@@ -449,7 +471,7 @@ span {
 }
 
 /* New Calendar Styles - Focused Update */
-.left-section .react-calendar {
+ .react-calendar {
   width: 100%;
   max-width: 400px;
   background: #ffffff;
@@ -750,6 +772,10 @@ span {
 
 .left-section .react-calendar__month-view__days__day--neighboringMonth {
   color: #cbd5e1 !important;
+}
+.react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
 }
 
 /* Enhanced Calendar Navigation */

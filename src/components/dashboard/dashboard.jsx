@@ -559,6 +559,13 @@ export default function DashboardWeb() {
   ]);
 
   useEffect(() => {
+    // Check token expiry in localStorage before any API call
+    const expiry = localStorage.getItem('tokenExpiry');
+    if (expiry && Date.now() > parseInt(expiry, 10)) {
+      localStorage.clear();
+      window.location.href = '/';
+      return;
+    }
     const token = localStorage.getItem("authToken");
     const userId = localStorage.getItem("userid");
 

@@ -179,8 +179,9 @@ const Users = () => {
           u_created_at: user.u_created_at,
           role_name: user.role_name,
           is_logged_out: user.is_logged_out,
+          u_active: user.u_active,
           user_status:
-            loginDate === today && user.is_logged_out === 1
+            loginDate === today && user.u_active === 1
               ? "ACTIVE"
               : "NOT ACTIVE",
         };
@@ -454,12 +455,17 @@ const Users = () => {
 
   const toggleUserStatus = async (user) => {
     try {
-      const newStatus = user.is_logged_out === 0 ? 0 : 1;
-      const confirmationMessage =
-        newStatus === 0
-          ? "Are you sure you want to deactivate this account? The user will no longer be able to log in."
-          : "Are you sure you want to activate this account?";
-
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        toast.error("Authentication required");
+        window.location.href = '/';
+        return;
+      }
+      // Toggle between 1 (active) and 0 (inactive)
+      const newStatus = user.u_active === 1 ? 0 : 1;
+      const confirmationMessage = newStatus === 0
+        ? "Are you sure you want to deactivate this account? The user will no longer be able to log in."
+        : "Are you sure you want to activate this account?";
       if (window.confirm(confirmationMessage)) {
         const response = await fetch(
           "https://demo-expense.geomaticxevs.in/ET-api/toggle_user_status.php",
@@ -468,6 +474,7 @@ const Users = () => {
             headers: {
               Accept: "application/json",
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               user_id: user.u_id,
@@ -475,11 +482,14 @@ const Users = () => {
             }),
           }
         );
-
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = '/';
+          return;
+        }
         if (!response.ok) {
           throw new Error("Failed to update user status");
         }
-
         const result = await response.json();
         if (result.success) {
           toast.success(
@@ -487,7 +497,7 @@ const Users = () => {
               ? "User account has been deactivated."
               : "User account has been activated."
           );
-          fetchData1();
+          fetchData1(); // Refresh user list
         } else {
           toast.error("Error updating user status: " + result.message);
         }
@@ -763,8 +773,7 @@ const Users = () => {
                     <td>
                       <div
                         className={`status-badge1 ${
-                          user.is_logged_out === 0 ? "active" : "inactive"
-                        }`}
+                          user.u_active === 1 ? "active" : "inactive"}`}
                       />
                     </td>
                     <td>
@@ -787,9 +796,7 @@ const Users = () => {
                         >
                           <Lock
                             size={16}
-                            color={
-                              user.is_logged_out === 0 ? "#22c55e" : "#ef4444"
-                            }
+                            color={user.u_active === 1 ? "#22c55e" : "#ef4444"}
                           />
                         </button>
                       </div>
@@ -875,9 +882,7 @@ const Users = () => {
                         <td>{user.u_mob}</td>
                         <td>
                           <div
-                            className={`status-badge1 ${
-                              user.is_logged_out === 0 ? "active" : "inactive"
-                            }`}
+                            className={`status-badge1 ${user.u_active === 1 ? "active" : "inactive"}`}
                           />
                         </td>
                         <td>
@@ -901,7 +906,7 @@ const Users = () => {
                               <Lock
                                 size={16}
                                 color={
-                                  user.is_logged_out === 0
+                                  user.u_active === 1
                                     ? "#22c55e"
                                     : "#ef4444"
                                 }
