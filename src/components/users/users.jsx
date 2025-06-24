@@ -333,7 +333,16 @@ const Users = () => {
         const cvBlob = await fetch(formData.cv).then((r) => r.blob());
         formDataObj.append("cv", cvBlob, formData.cvName || "document.pdf");
       }
-
+      console.log("Submitting user data:", {
+        userId: formData.userId,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        mobile: formData.mobile,
+        role_name: selectedRole,
+        profileImage: formData.profileImage,
+        cv: formData.cv,
+      });
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/add_users.php",
         {
@@ -406,51 +415,71 @@ const Users = () => {
     resetFormRole();
   };
 
-  const toggleUserStatus = async (user) => {
-    try {
-      const newStatus = user.is_logged_out === 0 ? 0 : 1;
-      const confirmationMessage =
-        newStatus === 0
-          ? "Are you sure you want to deactivate this account? The user will no longer be able to log in."
-          : "Are you sure you want to activate this account?";
+const toggleUserStatus = async (user, fetchData1) => {
+  try {
+    // Use localStorage instead of AsyncStorage for web
+    const token = localStorage.getItem("authToken");
 
-      if (window.confirm(confirmationMessage)) {
-        const response = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/toggle_user_status.php",
-          {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              user_id: user.u_id,
-              u_active: newStatus,
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to update user status");
-        }
-
-        const result = await response.json();
-        if (result.success) {
-          toast.success(
-            newStatus === 0
-              ? "User account has been deactivated."
-              : "User account has been activated."
-          );
-          fetchData1();
-        } else {
-          toast.error("Error updating user status: " + result.message);
-        }
-      }
-    } catch (error) {
-      console.error("Error toggling user status:", error);
-      toast.error("Something went wrong while updating the user status.");
+    if (!token) {
+      alert("Error: Authentication required");
+      window.location.href = '/'; // or useRouter().push('/')
+      return;
     }
-  };
+
+    // Toggle between 1 (active) and 0 (inactive)
+    const newStatus = user.u_active === 1 ? 0 : 1;
+    const confirmationMessage = newStatus === 0
+      ? "Are you sure you want to deactivate this account? The user will no longer be able to log in."
+      : "Are you sure you want to activate this account?";
+
+    // Use window.confirm for simple confirmation dialog
+    if (!window.confirm(confirmationMessage)) {
+      return; // User cancelled
+    }
+
+    const response = await fetch(
+      "https://demo-expense.geomaticxevs.in/ET-api/toggle_user_status.php",
+      {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.u_id,
+          u_active: newStatus,
+        }),
+      }
+    );
+
+    if (response.status === 401) {
+      localStorage.clear();
+      window.location.href = '/';
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to update user status");
+    }
+
+    const result = await response.json();
+    
+    if (result.success) {
+      alert(
+        newStatus === 0
+          ? "User account has been deactivated."
+          : "User account has been activated."
+      );
+      fetchData1(); // Refresh user list
+    } else {
+      alert(`Error: ${result.message || "Failed to update user status"}`);
+    }
+  } catch (error) {
+    console.error("Error in toggleUserStatus:", error);
+    alert("Error: Something went wrong while updating the user status.");
+  }
+};
 
   const handleSave = async (userId) => {
     try {

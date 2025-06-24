@@ -32,6 +32,8 @@ import MyWorkReport from "./components/workreport/myworkreport/my_work_report";
 import AllWorkReport from "./components/workreport/allworkreport/all_work_report";
 import HolidayList from "./components/holiday/holiday";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import Project_wise_attendance from "./components/attendance/project_wise_attendance/project_wise_attendance"
+
 function App() {
   return (
     <BrowserRouter>
@@ -70,12 +72,16 @@ function App() {
           <Route path="/workreport/my" element={<MyWorkReport />} />
           <Route path="/workreport/all" element={<AllWorkReport />} />
           <Route path="/holiday" element={<HolidayList />} />
+          <Route path="/attendance/projectwiseattendance" element={<Project_wise_attendance />} />
+          
         </Route>
-
+       
       </Routes>
+      {/* <Project_wise_attendance/> */}
     </BrowserRouter>
 
     // <UserAnalytics/>
+    
   );
 }
 

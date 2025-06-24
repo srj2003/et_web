@@ -80,6 +80,11 @@ const menuItemsData = [
         title: "User Attendance",
         path: "/attendance/userattendance",
       },
+      {
+        id: "project_wise_attendance",
+        title: "User Attendance",
+        path: "/attendance/projectwiseattendance",
+      },
     ],
   },
   {
@@ -210,16 +215,26 @@ const Sidebar = () => {
   const [roleId, setRoleId] = useState(null);
   const [filteredMenuItems, setFilteredMenuItems] = useState([]);
   const [activeItem, setActiveItem] = useState("");
+  const [showProjectWiseAttendance, setShowProjectWiseAttendance] = useState(false);
+  const [showUserAttendance, setshowUserAttendance] = useState(false);
+
+  const storedRoleId = parseInt(localStorage.getItem("roleId"));
 
   useEffect(() => {
-    const storedRoleId = parseInt(localStorage.getItem("roleId"));
     setRoleId(storedRoleId);
 
     // Filter menu items based on role
     const filtered = menuItemsData
       .map((item) => {
         if (item.subItems) {
-          const filteredSubItems = item.subItems.filter((subItem) => {
+          let filteredSubItems = item.subItems.filter((subItem) => {
+            // Only filter project_wise_attendance based on API
+            if (subItem.id === "project_wise_attendance") {
+              return showProjectWiseAttendance;
+            }
+            if (subItem.id === "user_attendance") {
+              return showUserAttendance;
+            }
             const access = ROLE_ACCESS[item.id]?.[subItem.id];
             return (
               access === "all" ||
@@ -236,7 +251,7 @@ const Sidebar = () => {
       .filter(Boolean);
 
     setFilteredMenuItems(filtered);
-  }, []);
+  }, [showProjectWiseAttendance, storedRoleId]);
 
   // Add effect to handle active menu based on current path
   useEffect(() => {
@@ -257,6 +272,36 @@ const Sidebar = () => {
       }
     });
   }, [location.pathname, filteredMenuItems]);
+
+  useEffect(() => {
+    const fetchProjectRoles = async () => {
+      const userId = localStorage.getItem("userid");
+      if (!userId) return;
+      try {
+        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/project_role_fetcher.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+        const data = await response.json();
+        if (
+          data.status === "success" &&
+          Array.isArray(data.data) &&
+          data.data.some((item) => item.proj_role_id === 1 || item.proj_role_id === 3)
+        ) {
+          setShowProjectWiseAttendance(true);
+          setshowUserAttendance(false);
+        } else {
+          setShowProjectWiseAttendance(false);
+          setshowUserAttendance(true);
+        }
+      } catch (err) {
+        setShowProjectWiseAttendance(false);
+        setshowUserAttendance(true);
+      }
+    };
+    fetchProjectRoles();
+  }, []);
 
   const toggleMenu = (id) => {
     setOpenMenus((prevOpenMenus) => ({
