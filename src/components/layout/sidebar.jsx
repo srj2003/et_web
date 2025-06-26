@@ -216,9 +216,9 @@ const Sidebar = () => {
   const [filteredMenuItems, setFilteredMenuItems] = useState([]);
   const [activeItem, setActiveItem] = useState("");
   const [showProjectWiseAttendance, setShowProjectWiseAttendance] = useState(false);
-  const [showUserAttendance, setshowUserAttendance] = useState(false);
+  const [showUserAttendance, setshowUserAttendance] = useState(true);
 
-  const storedRoleId = parseInt(localStorage.getItem("roleId"));
+  const storedRoleId = parseInt(localStorage.getItem("roleId"), 10);
 
   useEffect(() => {
     setRoleId(storedRoleId);
@@ -228,12 +228,14 @@ const Sidebar = () => {
       .map((item) => {
         if (item.subItems) {
           let filteredSubItems = item.subItems.filter((subItem) => {
-            // Only filter project_wise_attendance based on API
+            // Only filter project_wise_attendance based on API and role
             if (subItem.id === "project_wise_attendance") {
-              return showProjectWiseAttendance;
+              const allowed = ROLE_ACCESS.attendance.user_attendance.includes(storedRoleId);
+              return showProjectWiseAttendance && allowed;
             }
             if (subItem.id === "user_attendance") {
-              return showUserAttendance;
+              const allowed = ROLE_ACCESS.attendance.user_attendance.includes(storedRoleId);
+              return showUserAttendance && allowed;
             }
             const access = ROLE_ACCESS[item.id]?.[subItem.id];
             return (
@@ -273,6 +275,11 @@ const Sidebar = () => {
     });
   }, [location.pathname, filteredMenuItems]);
 
+  // Debug: Log state on every render
+  useEffect(() => {
+    console.log("[Render] showUserAttendance:", showUserAttendance);
+  }, [showUserAttendance]);
+
   useEffect(() => {
     const fetchProjectRoles = async () => {
       const userId = localStorage.getItem("userid");
@@ -284,20 +291,37 @@ const Sidebar = () => {
           body: JSON.stringify({ userId }),
         });
         const data = await response.json();
+        console.log("[API Response]", data);
         if (
           data.status === "success" &&
-          Array.isArray(data.data) &&
-          data.data.some((item) => item.proj_role_id === 1 || item.proj_role_id === 3)
+          Array.isArray(data.data)
         ) {
-          setShowProjectWiseAttendance(true);
-          setshowUserAttendance(false);
+          if (data.data.length === 0) {
+            // Empty array: show User Attendance as per user_attendance roles
+            setShowProjectWiseAttendance(false);
+            setshowUserAttendance(true);
+            console.log("[Debug] API returned empty array, setshowUserAttendance(true)");
+          } else if (data.data.some((item) => item.proj_role_id === 1 || item.proj_role_id === 3)) {
+            // Has project roles 1 or 3: show Project Wise Attendance
+            setShowProjectWiseAttendance(true);
+            setshowUserAttendance(false);
+            console.log("[Debug] API returned proj_role_id 1 or 3, setShowProjectWiseAttendance(true), setshowUserAttendance(false)");
+          } else {
+            // Has other roles: show User Attendance
+            setShowProjectWiseAttendance(false);
+            setshowUserAttendance(true);
+            console.log("[Debug] API returned other roles, setshowUserAttendance(true)");
+          }
         } else {
+          // API did not return success: show User Attendance
           setShowProjectWiseAttendance(false);
           setshowUserAttendance(true);
+          console.log("[Debug] API did not return success, setshowUserAttendance(true)");
         }
       } catch (err) {
         setShowProjectWiseAttendance(false);
         setshowUserAttendance(true);
+        console.log("[Debug] API call failed, setshowUserAttendance(true)", err);
       }
     };
     fetchProjectRoles();
