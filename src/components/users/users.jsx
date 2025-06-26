@@ -781,8 +781,7 @@ const Users = () => {
                     <td>{user.u_mob}</td>
                     <td>
                       <div
-                        className={`status-badge1 ${
-                          user.u_active === 1 ? "active" : "inactive"}`}
+                        className={`status-badge1 ${user.is_logged_out === 0 ? "active" : "inactive"}`}
                       />
                     </td>
                     <td>
@@ -891,7 +890,7 @@ const Users = () => {
                         <td>{user.u_mob}</td>
                         <td>
                           <div
-                            className={`status-badge1 ${user.u_active === 1 ? "active" : "inactive"}`}
+                            className={`status-badge1 ${user.is_logged_out === 0 ? "active" : "inactive"}`}
                           />
                         </td>
                         <td>
@@ -914,11 +913,7 @@ const Users = () => {
                             >
                               <Lock
                                 size={16}
-                                color={
-                                  user.u_active === 1
-                                    ? "#22c55e"
-                                    : "#ef4444"
-                                }
+                                color={user.u_active === 1 ? "#22c55e" : "#ef4444"}
                               />
                             </button>
                           </div>

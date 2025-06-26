@@ -105,19 +105,21 @@ try {
 
             LEFT JOIN (
 
-            SELECT user_id, is_logged_out
+            SELECT a1.user_id, a1.is_logged_out
 
-            FROM attendance_details
+            FROM attendance_details a1
 
-            WHERE attn_id IN (
+            INNER JOIN (
 
-                SELECT MAX(attn_id)
+                SELECT user_id, MAX(login_timestamp) AS max_login
 
                 FROM attendance_details
 
+                WHERE DATE(login_timestamp) = :today
+
                 GROUP BY user_id
 
-            )
+            ) a2 ON a1.user_id = a2.user_id AND a1.login_timestamp = a2.max_login
 
         ) ad ON ud.u_id = ad.user_id
 
