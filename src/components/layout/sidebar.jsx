@@ -334,7 +334,18 @@ const Sidebar = () => {
     }));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const userId = localStorage.getItem("userid");
+    const authToken = localStorage.getItem("authToken");
+    try {
+      await fetch("https://demo-expense.geomaticxevs.in/ET-api/logout.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, authToken })
+      });
+    } catch (err) {
+      alert("Can not logout.");
+    }
     // Remove all items including session data
     localStorage.removeItem("userid");
     localStorage.removeItem("authToken");
