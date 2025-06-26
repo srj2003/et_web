@@ -428,7 +428,7 @@ const RequisitionReport = () => {
                 <div className="date-pickers-grid">
                     <div className="date-picker-group">
                         <label htmlFor="start-date">Date Range</label>
-                        <div className="date-picker-input-wrapper">
+                        <div className="date-picker-input-wrapper">         
                             <DatePicker
                                 id="start-date"
                                 selected={startDate}

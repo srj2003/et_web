@@ -241,18 +241,17 @@ const ExpenseFormWeb = () => {
   }, []);
 
   const handleAddExpense = () => {
-    if (!expenseType) {
-      alert("Please select an expense type");
-      return;
-    }
-
+    // Validation for all required fields
     if (
-      !currentExpense.amount ||
+      !expenseHeadValue ||
       !expenseTitle ||
       !expenseType ||
-      !currentExpense.billDate
+      !currentExpense.description ||
+      !currentExpense.amount ||
+      !currentExpense.billDate ||
+      !currentExpense.billFile
     ) {
-      alert("Please fill all required fields");
+      alert("Fill all the fields");
       return;
     }
 
@@ -327,6 +326,8 @@ const ExpenseFormWeb = () => {
       billDate: "",
     });
     setExpenseType(null);
+    setExpenseHeadValue(null);
+    setExpenseTitle("");
     setSelectedRole(null);
     setSelectedUser(null);
     setUsers([]);

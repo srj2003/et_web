@@ -45,6 +45,8 @@ const Users = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [formErrors, setFormErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
+  const [showUserRoleModal, setShowUserRoleModal] = useState(false);
+  const [userRoleSearch, setUserRoleSearch] = useState("");
 
   const [formData, setFormData] = useState({
     userId: "",
@@ -177,8 +179,9 @@ const Users = () => {
           u_created_at: user.u_created_at,
           role_name: user.role_name,
           is_logged_out: user.is_logged_out,
+          u_active: user.u_active,
           user_status:
-            loginDate === today && user.is_logged_out === 1
+            loginDate === today && user.u_active === 1
               ? "ACTIVE"
               : "NOT ACTIVE",
         };
@@ -211,6 +214,26 @@ const Users = () => {
     fetchData();
     fetchData1();
   }, []);
+
+  // Calculate last role ID when data is loaded
+  useEffect(() => {
+    if (data.length > 0) {
+      const maxRoleId = Math.max(...data.map((role) => role.role_id));
+      setLastRoleId(maxRoleId + 1);
+    }
+  }, [data]);
+
+  // Update form role data when showAddUserRole changes
+  useEffect(() => {
+    if (showAddUserRole) {
+      const currentTimestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+      setFormRoleData((prev) => ({ 
+        ...prev, 
+        role_id: lastRoleId,
+        created_at: currentTimestamp 
+      }));
+    }
+  }, [showAddUserRole, lastRoleId]);
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
@@ -377,32 +400,56 @@ const Users = () => {
   };
 
   const handleSubmitUserRole = async () => {
-    if (!formRoleData.role_name.trim()) {
-      toast.error("Role Name is mandatory. Please enter a role name.");
-      return;
-    }
-
-    const roleDataToSend = {
-      ...formRoleData,
-      created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
-      role_active: 1,
-      role_is_del: 0,
-    };
-
     try {
+      const token = localStorage.getItem("authToken");
+      
+      if (!token) {
+        toast.error("Authentication required");
+        window.location.href = '/';
+        return;
+      }
+
+      if (!formRoleData.role_name.trim()) {
+        toast.error("Role Name is mandatory. Please enter a role name.");
+        return;
+      }
+
+      const roleDataToSend = {
+        role_id: lastRoleId, // Use the auto-generated ID
+        role_name: formRoleData.role_name,
+        role_parent: formRoleData.role_parent || 0, // Default to 0 if no parent
+        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+        updated_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+        role_active: 1, // Set as active by default
+        role_is_del: 0, // Set as not deleted by default
+      };
+
+      console.log("Role Data to Send:", roleDataToSend);
+
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/role_form.php",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
           body: JSON.stringify(roleDataToSend),
         }
       );
 
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       const result = await response.json();
+      console.log("Server Response:", result);
+      
       if (result.success) {
         toast.success(result.message);
-        fetchData();
+        fetchData(); // Refresh role list
         setShowAddUserRole(false);
         setSelectedRole(null);
       } else {
@@ -415,74 +462,66 @@ const Users = () => {
     resetFormRole();
   };
 
-const toggleUserStatus = async (user, fetchData1) => {
-  try {
-    // Use localStorage instead of AsyncStorage for web
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      alert("Error: Authentication required");
-      window.location.href = '/'; // or useRouter().push('/')
-      return;
-    }
-
-    // Toggle between 1 (active) and 0 (inactive)
-    const newStatus = user.u_active === 1 ? 0 : 1;
-    const confirmationMessage = newStatus === 0
-      ? "Are you sure you want to deactivate this account? The user will no longer be able to log in."
-      : "Are you sure you want to activate this account?";
-
-    // Use window.confirm for simple confirmation dialog
-    if (!window.confirm(confirmationMessage)) {
-      return; // User cancelled
-    }
-
-    const response = await fetch(
-      "https://demo-expense.geomaticxevs.in/ET-api/toggle_user_status.php",
-      {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user_id: user.u_id,
-          u_active: newStatus,
-        }),
+  const toggleUserStatus = async (user) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        toast.error("Authentication required");
+        window.location.href = '/';
+        return;
       }
-    );
-
-    if (response.status === 401) {
-      localStorage.clear();
-      window.location.href = '/';
-      return;
+      // Toggle between 1 (active) and 0 (inactive)
+      const newStatus = user.u_active === 1 ? 0 : 1;
+      const confirmationMessage = newStatus === 0
+        ? "Are you sure you want to deactivate this account? The user will no longer be able to log in."
+        : "Are you sure you want to activate this account?";
+      if (window.confirm(confirmationMessage)) {
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/toggle_user_status.php",
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              user_id: user.u_id,
+              u_active: newStatus,
+            }),
+          }
+        );
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = '/';
+          return;
+        }
+        if (!response.ok) {
+          throw new Error("Failed to update user status");
+        }
+        const result = await response.json();
+        if (result.success) {
+          toast.success(
+            newStatus === 0
+              ? "User account has been deactivated."
+              : "User account has been activated."
+          );
+          fetchData1(); // Refresh user list
+        } else {
+          toast.error("Error updating user status: " + result.message);
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      toast.error("Something went wrong while updating the user status.");
     }
-
-    if (!response.ok) {
-      throw new Error("Failed to update user status");
-    }
-
-    const result = await response.json();
-    
-    if (result.success) {
-      alert(
-        newStatus === 0
-          ? "User account has been deactivated."
-          : "User account has been activated."
-      );
-      fetchData1(); // Refresh user list
-    } else {
-      alert(`Error: ${result.message || "Failed to update user status"}`);
-    }
-  } catch (error) {
-    console.error("Error in toggleUserStatus:", error);
-    alert("Error: Something went wrong while updating the user status.");
-  }
-};
+  };
 
   const handleSave = async (userId) => {
     try {
+      // Find the role ID from data array
+      const currentRole = data.find(role => role.role_name === editedUser?.role_name);
+      
       const userData = {
         user_id: editedUser?.u_id,
         first_name: editedUser?.u_fname,
@@ -496,6 +535,7 @@ const toggleUserStatus = async (user, fetchData1) => {
         organization: editedUser?.u_organization,
         profile_image: editedUser?.u_pro_img || null,
         cv: editedUser?.u_cv,
+        role_id: currentRole ? currentRole.role_id : null
       };
 
       const response = await fetch(
@@ -575,8 +615,8 @@ const toggleUserStatus = async (user, fetchData1) => {
       role_parent: 0,
       created_at: "",
       updated_at: "",
-      role_active: false,
-      role_is_del: false,
+      role_active: 1,
+      role_is_del: 0,
     });
   };
 
@@ -626,6 +666,41 @@ const toggleUserStatus = async (user, fetchData1) => {
     setIsEditing(false);
   };
 
+  const handleRoleChange = async (roleId) => {
+    try {
+      if (!editedUser?.u_id || !roleId) {
+        throw new Error('Missing user ID or role ID');
+      }
+
+      // Find the role from data array
+      const selectedRole = data.find(role => 
+        role.role_id.toString() === roleId || role.role_name === roleId
+      );
+      
+      if (!selectedRole) {
+        console.log('Available roles:', data);
+        console.log('Attempted role ID:', roleId);
+        throw new Error('Invalid role selected');
+      }
+
+      // Update the local state with the new role
+      setEditedUser(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          role_name: selectedRole.role_name
+        };
+      });
+      
+      toast.success('User role updated successfully!');
+      setShowUserRoleModal(false);
+
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      toast.error(error.message || 'An unknown error occurred');
+    }
+  };
+
   const formatFileSize = (bytes) => {
     if (!bytes || bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -638,9 +713,12 @@ const toggleUserStatus = async (user, fetchData1) => {
     <div className="users-container">
       <div className="header">
         <h1 className="title">Users</h1>
-        <button className="add-button" onClick={() => setShowAddUser(true)}>
+        <button 
+          className="add-button" 
+          onClick={() => activeTab === "categories" ? setShowAddUserRole(true) : setShowAddUser(true)}
+        >
           <Plus size={20} />
-          <span>Add User</span>
+          <span>{activeTab === "categories" ? "Add Role" : "Add User"}</span>
         </button>
       </div>
 
@@ -704,8 +782,7 @@ const toggleUserStatus = async (user, fetchData1) => {
                     <td>
                       <div
                         className={`status-badge1 ${
-                          user.is_logged_out === 0 ? "active" : "inactive"
-                        }`}
+                          user.u_active === 1 ? "active" : "inactive"}`}
                       />
                     </td>
                     <td>
@@ -728,9 +805,7 @@ const toggleUserStatus = async (user, fetchData1) => {
                         >
                           <Lock
                             size={16}
-                            color={
-                              user.is_logged_out === 0 ? "#22c55e" : "#ef4444"
-                            }
+                            color={user.u_active === 1 ? "#22c55e" : "#ef4444"}
                           />
                         </button>
                       </div>
@@ -816,9 +891,7 @@ const toggleUserStatus = async (user, fetchData1) => {
                         <td>{user.u_mob}</td>
                         <td>
                           <div
-                            className={`status-badge1 ${
-                              user.is_logged_out === 0 ? "active" : "inactive"
-                            }`}
+                            className={`status-badge1 ${user.u_active === 1 ? "active" : "inactive"}`}
                           />
                         </td>
                         <td>
@@ -842,7 +915,7 @@ const toggleUserStatus = async (user, fetchData1) => {
                               <Lock
                                 size={16}
                                 color={
-                                  user.is_logged_out === 0
+                                  user.u_active === 1
                                     ? "#22c55e"
                                     : "#ef4444"
                                 }
@@ -1420,13 +1493,15 @@ const toggleUserStatus = async (user, fetchData1) => {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Role Id</label>
+                  <label>Role Id</label>
                     <input
                       type="text"
                       value={formRoleData.role_id || lastRoleId}
                       readOnly
                       className="readonly-input"
+                      placeholder="Auto-Generated ID"
                     />
+                    
                   </div>
 
                   <div className="form-group">
@@ -1453,10 +1528,12 @@ const toggleUserStatus = async (user, fetchData1) => {
                       value={formRoleData.created_at}
                       readOnly
                       className="readonly-input"
+                      placeholder="Created At"
                     />
                   </div>
 
                   <div className="form-group">
+                  
                     <label>Parent Role</label>
                     <Select
                       options={data.map((role) => ({
@@ -1486,6 +1563,13 @@ const toggleUserStatus = async (user, fetchData1) => {
               </div>
 
               <div className="button-container">
+                
+                <button
+                  className="submit-button"
+                  onClick={handleSubmitUserRole}
+                >
+                  Add User Role
+                </button>
                 <button
                   className="cancel-button"
                   onClick={() => {
@@ -1495,12 +1579,6 @@ const toggleUserStatus = async (user, fetchData1) => {
                   }}
                 >
                   Cancel
-                </button>
-                <button
-                  className="submit-button"
-                  onClick={handleSubmitUserRole}
-                >
-                  Add User Role
                 </button>
               </div>
             </div>
@@ -1704,7 +1782,17 @@ const toggleUserStatus = async (user, fetchData1) => {
 
                   <div className="detail-group">
                     <label>Role</label>
-                    <span>{editedUser.role_name}</span>
+                    {isEditing ? (
+                      <div 
+                        className="role-select-input"
+                        onClick={() => setShowUserRoleModal(true)}
+                      >
+                        <span>{editedUser.role_name}</span>
+                        <Edit2 size={16} />
+                      </div>
+                    ) : (
+                      <span>{editedUser.role_name}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1826,6 +1914,71 @@ const toggleUserStatus = async (user, fetchData1) => {
                     </span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Role Selection Modal */}
+      {showUserRoleModal && (
+        <div className="modal-overlay">
+          <div className="modal role-selection-modal">
+            <div className="modal-header">
+              <h2 className="modal-title">Select Role</h2>
+              <button
+                className="close-button"
+                onClick={() => setShowUserRoleModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-content">
+              {/* Search Bar */}
+              <div className="search-container">
+                <Search size={20} />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search roles..."
+                  value={userRoleSearch}
+                  onChange={(e) => setUserRoleSearch(e.target.value)}
+                />
+                {userRoleSearch.length > 0 && (
+                  <button
+                    className="clear-search-button"
+                    onClick={() => setUserRoleSearch("")}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Role List */}
+              <div className="role-list">
+                {data
+                  .filter((role) =>
+                    role.role_name.toLowerCase().includes(userRoleSearch.toLowerCase())
+                  )
+                  .map((role) => (
+                    <div
+                      key={role.role_id}
+                      className={`role-item ${
+                        editedUser?.role_name === role.role_name ? "selected" : ""
+                      }`}
+                      onClick={() => {
+                        if (editedUser && editedUser.u_id) {
+                          handleRoleChange(role.role_id.toString());
+                        }
+                      }}
+                    >
+                      <span className="role-text">{role.role_name}</span>
+                      {editedUser?.role_name === role.role_name && (
+                        <Check size={16} className="check-icon" />
+                      )}
+                    </div>
+                  ))}
               </div>
             </div>
           </div>

@@ -41,7 +41,7 @@ const ROLE_ACCESS = {
   },
   project: {
     manage_project_expense: [1, 3, 8],
-    my_projects: [1, 3, 8],
+    my_projects: 'all',
   },
   workreport: {
     add_workreport: "all",
