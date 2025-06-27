@@ -186,6 +186,22 @@ const Attendance = () => {
         <h1 className="title">User Attendance</h1>
       </div>
 
+      {/* Stats Section */}
+      <div className="stats-section">
+        <div className="stat-card present">
+          <div className="stat-label">Present</div>
+          <div className="stat-value">{filteredAttendance.filter(item => item.is_logged_out === 0).length}/{filteredAttendance.length}</div>
+        </div>
+        <div className="stat-card absent">
+          <div className="stat-label">Absent</div>
+          <div className="stat-value">{filteredAttendance.filter(item => item.is_logged_out !== 0).length}/{filteredAttendance.length}</div>
+        </div>
+        <div className="stat-card approved-leaves">
+          <div className="stat-label">Approved Leaves</div>
+          <div className="stat-value">{filteredAttendance.filter(item => item.leave_track_status === 1).length}/{filteredAttendance.length}</div>
+        </div>
+      </div>
+
       <div className="search-container">
         <input
           type="text"
