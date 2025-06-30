@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./project_wise_attendance.css";
+import { FaMapMarkerAlt } from 'react-icons/fa';
 // import "../../users/users.css";
 
 const Attendance = () => {
@@ -21,6 +22,10 @@ const Attendance = () => {
   const [modalProjects, setModalProjects] = useState([]);
   const [loadingModalProjects, setLoadingModalProjects] = useState(false);
   const [modalProjectsError, setModalProjectsError] = useState("");
+  const [mapModalOpen, setMapModalOpen] = useState(false);
+  const [mapModalCoords, setMapModalCoords] = useState(null);
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
 
   const handleRowClick = async (item) => {
     setSelectedUser(item);
@@ -180,6 +185,48 @@ const Attendance = () => {
       );
     });
 
+  // Map modal effect (initialize Google Map)
+  useEffect(() => {
+    if (mapModalOpen && mapRef.current) {
+      if (!window.google || !window.google.maps) {
+        // Google Maps API not loaded
+        if (mapRef.current) {
+          mapRef.current.innerHTML = `<div class='map-error'>Google Maps API not loaded.</div>`;
+        }
+        return;
+      }
+      try {
+        let lat = 28.6119, lng = 77.2070; // Default: India Gate, Delhi
+        if (mapModalCoords && mapModalCoords.lat && mapModalCoords.lng) {
+          lat = parseFloat(mapModalCoords.lat);
+          lng = parseFloat(mapModalCoords.lng);
+        }
+        const mapCenter = { lat, lng };
+        const map = new window.google.maps.Map(mapRef.current, {
+          zoom: 15,
+          center: mapCenter,
+          mapTypeId: 'terrain',
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true
+        });
+        mapInstanceRef.current = map;
+        if (mapModalCoords && mapModalCoords.lat && mapModalCoords.lng) {
+          new window.google.maps.Marker({
+            position: mapCenter,
+            map: map,
+            title: 'User Location',
+            animation: window.google.maps.Animation.DROP
+          });
+        }
+      } catch (e) {
+        if (mapRef.current) {
+          mapRef.current.innerHTML = `<div class='map-error'>Error loading map: ${e.message}</div>`;
+        }
+      }
+    }
+  }, [mapModalOpen, mapModalCoords]);
+
   return (
     <div className="users-container">
       <div className="header">
@@ -188,29 +235,25 @@ const Attendance = () => {
 
       {/* Stats Section */}
       <div className="stats-section">
+      <div className="stat-card total">
+          <div className="stat-label">Total</div>
+          <div className="stat-value">{filteredAttendance.length}</div>
+        </div>
         <div className="stat-card present">
           <div className="stat-label">Present</div>
-          <div className="stat-value">{filteredAttendance.filter(item => item.is_logged_out === 0).length}/{filteredAttendance.length}</div>
+          <div className="stat-value">{filteredAttendance.filter(item => item.is_logged_out === 0).length}</div>
         </div>
         <div className="stat-card absent">
           <div className="stat-label">Absent</div>
-          <div className="stat-value">{filteredAttendance.filter(item => item.is_logged_out !== 0).length}/{filteredAttendance.length}</div>
+          <div className="stat-value">{filteredAttendance.filter(item => item.is_logged_out !== 0).length}</div>
         </div>
         <div className="stat-card approved-leaves">
           <div className="stat-label">Approved Leaves</div>
-          <div className="stat-value">{filteredAttendance.filter(item => item.leave_track_status === 1).length}/{filteredAttendance.length}</div>
+          <div className="stat-value">{filteredAttendance.filter(item => item.leave_track_status === 1).length}</div>
         </div>
       </div>
 
-      <div className="search-container">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search attendance..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+      
 
       <div className="tabs-container">
         <button
@@ -227,6 +270,16 @@ const Attendance = () => {
         </button>
       </div>
 
+      <div className="search-container">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search attendance..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
       {activeTab === "all" ? (
         <div className="table-container">
           <table className="users-table">
@@ -234,8 +287,8 @@ const Attendance = () => {
               <tr className="user-th">
                 <th>ID</th>
                 <th>NAME</th>
-                {/* <th>PROJECT</th> */}
                 <th>STATUS</th>
+                <th>TRACK</th>
               </tr>
             </thead>
             <tbody>
@@ -252,11 +305,32 @@ const Attendance = () => {
                     <tr key={idx} className="user-row" onClick={() => handleRowClick(item)}>
                       <td>{item.u_id}</td>
                       <td>{fullName}</td>
-                      {/* <td>{item.expense_type_name}</td> */}
                       <td>
                         <span className={item.is_logged_out === 0 ? 'status-present-text' : 'status-absent-text'}>
                           {item.is_logged_out === 0 ? 'Present' : 'Absent'}
                         </span>
+                      </td>
+                      <td>
+                        <FaMapMarkerAlt
+                          className="location-icon"
+                          style={{ color: '#6552f7' }}
+                          title="Location"
+                          onClick={e => {
+                            e.stopPropagation();
+                            if (item.latitude && item.longitude) {
+                              setMapModalCoords({ lat: item.latitude, lng: item.longitude });
+                            } else if (item.u_latitude && item.u_longitude) {
+                              setMapModalCoords({ lat: item.u_latitude, lng: item.u_longitude });
+                            } else if (item.login_lat_long) {
+                              // Parse 'lat,long' string
+                              const [lat, lng] = item.login_lat_long.split(',').map(Number);
+                              setMapModalCoords({ lat, lng });
+                            } else {
+                              setMapModalCoords(null);
+                            }
+                            setMapModalOpen(true);
+                          }}
+                        />
                       </td>
                     </tr>
                   );
@@ -402,6 +476,22 @@ const Attendance = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mapModalOpen && (
+        <div className="modal-overlay" onClick={() => setMapModalOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">User Location</h2>
+              <button className="close-button" onClick={() => setMapModalOpen(false)}>×</button>
+            </div>
+            <div className="modal-content" style={{ minHeight: 300, minWidth: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div ref={mapRef} className="map-canvas" style={{ width: '100%', height: 300, borderRadius: 12, minHeight: 300, minWidth: 300 }}>
+                {/* Map will be rendered here */}
+              </div>
             </div>
           </div>
         </div>
