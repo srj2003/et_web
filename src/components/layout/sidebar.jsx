@@ -206,6 +206,26 @@ const menuItemsData = [
       },
     ],
   },
+  {
+    id: "accounts",
+    title: "Accounts",
+    icon: UsersRound, // Generic icon for accounts or user-related settings
+    subItems: [
+      // Add sub-items here if/when they are defined.
+      // Example:
+      {
+        id: "requisition_report",
+        title: "Requisition Report",
+        path: "/accounts/requisitionreport",
+      },
+      {
+        id: "expense_report",
+        title: "Expense Report",
+        path: "/accounts/expensereport",
+      },
+    ],
+  }
+  
 ];
 
 const Sidebar = () => {

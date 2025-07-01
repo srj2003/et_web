@@ -33,6 +33,7 @@ import AllWorkReport from "./components/workreport/allworkreport/all_work_report
 import HolidayList from "./components/holiday/holiday";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Project_wise_attendance from "./components/attendance/project_wise_attendance/project_wise_attendance"
+import Reports from "./components/reports/reports"
 
 function App() {
   return (
@@ -77,7 +78,7 @@ function App() {
         </Route>
        
       </Routes>
-      {/* <Project_wise_attendance/> */}
+      {/* <Reports/> */}
     </BrowserRouter>
 
     // <UserAnalytics/>
