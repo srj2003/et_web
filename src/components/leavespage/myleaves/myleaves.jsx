@@ -44,7 +44,7 @@ const MyLeaves = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ userId }),
           }
@@ -62,8 +62,8 @@ const MyLeaves = () => {
           console.error("API Error:", data.message);
           setLeaves([]);
           setNoRecords(true);
-        } else if (Array.isArray(data)) {
-          const formattedLeaves = data.map((leave) => ({
+        } else if (Array.isArray(data.data)) {
+          const formattedLeaves = data.data.map((leave) => ({
             leave_id: leave.leave_id,
             leave_type: leave.leave_ground_text,
             leave_status: leave.leave_track_status_text,
