@@ -74,7 +74,7 @@ function App() {
           <Route path="/workreport/all" element={<AllWorkReport />} />
           <Route path="/holiday" element={<HolidayList />} />
           <Route path="/attendance/projectwiseattendance" element={<Project_wise_attendance />} />
-          
+          <Route path="/reports" element={<Reports />} />
         </Route>
        
       </Routes>

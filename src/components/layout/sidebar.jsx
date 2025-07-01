@@ -207,23 +207,10 @@ const menuItemsData = [
     ],
   },
   {
-    id: "accounts",
-    title: "Accounts",
-    icon: UsersRound, // Generic icon for accounts or user-related settings
-    subItems: [
-      // Add sub-items here if/when they are defined.
-      // Example:
-      {
-        id: "requisition_report",
-        title: "Requisition Report",
-        path: "/accounts/requisitionreport",
-      },
-      {
-        id: "expense_report",
-        title: "Expense Report",
-        path: "/accounts/expensereport",
-      },
-    ],
+    id: "reports",
+    title: "Reports",
+    icon: FileText, 
+    path: "/reports",
   }
   
 ];
@@ -456,8 +443,10 @@ const Sidebar = () => {
                       item.path === activeItem ? "active" : ""
                     }`}
                   >
-                    <IconComponent size={20} className="menu-icon" />
-                    <span className="menu-title">{item.title}</span>
+                    <div className="menu-content">
+                      <IconComponent size={20} className="menu-icon" />
+                      <span className="menu-title">{item.title}</span>
+                    </div>
                   </Link>
                 )}
               </li>
