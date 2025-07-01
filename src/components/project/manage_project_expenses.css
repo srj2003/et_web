@@ -248,85 +248,6 @@
   font-size: 0.85rem;
 }
 
-/* Project Timeline Section */
-.project-timeline-section {
-  background-color: var(--bg-white);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  flex-grow: 1; /* Allow it to take space */
-  display: flex;
-  flex-direction: column;
-}
-
-.timeline-view-container {
-  overflow-x: auto; /* Allow horizontal scroll for days */
-  flex-grow: 1;
-}
-.timeline-header-row, .timeline-project-row {
-  display: flex;
-  min-width: 1200px; /* Ensure enough width for days */
-}
-.timeline-project-name-header, .timeline-project-name {
-  flex: 0 0 200px; /* Fixed width for project names */
-  padding: 0.75rem;
-  font-weight: 500;
-  border-right: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.timeline-project-name-header {
-  font-weight: 600;
-  background-color: var(--bg-light);
-}
-.timeline-days-header, .timeline-project-bar-container {
-  flex-grow: 1;
-  display: flex;
-  border-bottom: 1px solid var(--border-color);
-}
-.timeline-day-label {
-  flex: 1 0 calc(100% / 30); /* Approx 30 days visible */
-  min-width: 40px; /* Min width for a day cell */
-  padding: 0.5rem 0.25rem;
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.timeline-day-label:last-child { border-right: none; }
-.timeline-day-label.weekend-day { background-color: #f8fafc; }
-.timeline-day-month { font-size: 0.65rem; color: var(--text-light); }
-
-.timeline-project-bar-container {
-  position: relative; /* For absolute positioning of bars if needed */
-  padding: 0.5rem 0; /* Vertical padding for bars */
-}
-.timeline-project-bar {
-  height: 24px;
-  border-radius: var(--radius-sm);
-  margin-top: auto;
-  margin-bottom: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  color: var(--bg-white);
-  overflow: hidden;
-  /* Actual positioning/width would be JS driven for a real Gantt */
-  /* Example static styling */
-  background-color: var(--primary-color);
-}
-.timeline-project-bar.status-completed { background-color: var(--success-color); }
-.timeline-project-bar.status-active { background-color: var(--primary-color); }
-
-
 /* Grid View */
 .projects-grid-view {
     display: grid;
@@ -892,11 +813,6 @@
   .stat-card { padding: 1rem; }
   .stat-value { font-size: 1.5rem; }
 
-  .project-timeline-section, .sidebar-section { padding: 1rem; }
-  .section-header h2 { font-size: 1.1rem; }
-  .timeline-project-name-header, .timeline-project-name { flex: 0 0 150px; padding: 0.5rem; font-size: 0.8rem;}
-  .timeline-day-label { min-width: 35px; font-size: 0.7rem;}
-
   .project-form-modal { max-width: 95%; }
   .modal-header h2 {font-size: 1.1rem;}
   .modal-content, .modal-actions {padding: 1rem;}
@@ -1087,5 +1003,82 @@
 .sidebar-project-card {
   animation: slideIn 0.3s ease;
   margin-bottom: 0.5rem;
+}
+
+/* Expense Progress Tracker Styles */
+.expense-progress-tracker {
+  background: #f4f7ff;
+  border-radius: 8px;
+  padding: 0.7rem 1rem 0.9rem 1rem;
+  margin: 0.5rem 0 1rem 0;
+  box-shadow: 0 1px 4px 0 rgba(99,102,241,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.expense-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #3730a3;
+}
+.expense-icon {
+  background: #e0e7ff;
+  border-radius: 50%;
+  padding: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.expense-label {
+  color: #6366f1;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+.expense-amounts {
+  margin-left: auto;
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.98rem;
+}
+.expense-divider {
+  color: #a5b4fc;
+  margin: 0 0.2rem;
+}
+.expense-progress-bar-container {
+  width: 100%;
+  height: 7px;
+  background: #e0e7ff;
+  border-radius: 4px;
+  margin-top: 0.4rem;
+  overflow: hidden;
+}
+.expense-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1 60%, #818cf8 100%);
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(.4,2,.6,1);
+}
+
+.clickable-project-card {
+  cursor: pointer;
+  transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+}
+.clickable-project-card:hover, .clickable-project-card:focus {
+  box-shadow: 0 6px 20px 0 rgba(99,102,241,0.18);
+  border-color: #6366f1;
+  transform: translateY(-3px) scale(1.025);
+  outline: none;
+}
+.clickable-project-card:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* Remove conflicting hover effect from .project-card-item:hover */
+.project-card-item:hover:not(.clickable-project-card) {
+  box-shadow: var(--shadow-md);
 }
 

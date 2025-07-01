@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './manage_project_expenses.css';
 import {
+  Shield, 
+  CalendarPlus, 
+  CalendarCheck,
   Search,
   ChevronDown,
   Edit,
@@ -12,16 +15,10 @@ import {
   FileText,
   CheckSquare,
   Clock,
-  Filter,
-  List,
-  LayoutGrid,
-  MoreVertical,
-  CalendarDays,
   Users,
-  Briefcase,
-  Bell, // For header
   UserCircle, // For header
-  Loader2
+  Loader2,
+  CreditCard
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'; // Added for charts
 
@@ -95,7 +92,7 @@ const ProjectManagementDashboard = () => {
   const [currentProjectName, setCurrentProjectName] = useState('');
   const [editingProjectId, setEditingProjectId] = useState(null);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
-  const [currentViewMode, setCurrentViewMode] = useState('timeline'); // 'timeline', 'grid', 'list'
+  const [currentViewMode, setCurrentViewMode] = useState('grid'); // 'timeline', 'grid', 'list'
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc', 'desc'
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -471,22 +468,6 @@ const ProjectManagementDashboard = () => {
     return String(date.getDate()).padStart(2, '0');
   }
 
-  // Mock timeline days for display
-  const timelineDays = useMemo(() => {
-    return Array.from({ length: 30 }, (_, index) => {
-        const date = new Date();
-        date.setDate(date.getDate() - 15 + index); // Center around today
-        return {
-            id: `timeline-day-${date.toISOString()}`, // Add unique id
-            day: String(date.getDate()).padStart(2, '0'),
-            month: date.toLocaleString('default', { month: 'short'}),
-            isWeekend: date.getDay() === 0 || date.getDay() === 6,
-            fullDate: date.toISOString().split('T')[0]
-        };
-    });
-  }, []); // Empty dependency array since this doesn't depend on any props/state
-
-
   if (isLoading) {
     return (
       <div className="dashboard-loading-state">
@@ -571,144 +552,49 @@ const ProjectManagementDashboard = () => {
           {/* Project Timeline Section */}
           <section className="project-timeline-section">
             <div className="section-header">
-              <h2>Project Timeline</h2>
-              <div className="timeline-controls">
-                {/* <select className="month-selector">
-                  <option>May</option> <option>June</option> <option>July</option>
-                </select> */}
-                 <div className="view-mode-toggle">
-                    <button 
-                        className={`icon-btn ${currentViewMode === 'timeline' ? 'active' : ''}`} 
-                        onClick={() => setCurrentViewMode('timeline')}
-                        title="Timeline View"
-                    >
-                        <CalendarDays size={18} />
-                    </button>
-                    <button 
-                        className={`icon-btn ${currentViewMode === 'grid' ? 'active' : ''}`} 
-                        onClick={() => setCurrentViewMode('grid')}
-                        title="Grid View"
-                    >
-                        <LayoutGrid size={18} />
-                    </button>
-                    <button 
-                        className={`icon-btn ${currentViewMode === 'list' ? 'active' : ''}`} 
-                        onClick={() => setCurrentViewMode('list')}
-                        title="List View"
-                    >
-                        <List size={18} />
-                    </button>
-                 </div>
-              </div>
+              <h2>Projects</h2>
             </div>
-
-            {currentViewMode === 'timeline' && (
-                <div className="timeline-view-container">
-                    <div className="timeline-header-row">
-                        <div className="timeline-project-name-header">All Projects</div>
-                        <div className="timeline-days-header">
-                            {timelineDays.map(d => (
-                                <div 
-                                    key={d.id} // Use the unique id instead of fullDate
-                                    className={`timeline-day-label ${d.isWeekend ? 'weekend-day' : ''}`}
-                                >
-                                    <span>{d.day}</span>
-                                    <span className="timeline-day-month">{d.month}</span>
-                                </div>
-                            ))}
-                        </div>
+            <div className="projects-grid-view">
+              {filteredAndSortedProjects.length > 0 ? filteredAndSortedProjects.map(project => (
+                <div
+                  key={project.id}
+                  className={`project-card-item status-border-${project.status.toLowerCase()} clickable-project-card`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => console.log('Project clicked:', project.id, project.name)}
+                  onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') console.log('Project clicked:', project.id, project.name); }}
+                >
+                  <div className="project-card-header">
+                    <h3>{project.name}</h3>
+                  </div>
+                  <p className="project-card-detail"><Shield size={14} className="mr-1" /> Team Leader: Dipanwita</p>
+                  <p className="project-card-detail"><Users size={14} className="mr-1" /> Total Members: 25</p>
+                  <p className="project-card-detail"><CalendarPlus size={14} className="mr-1" /> Created At: 02.10.2025</p>
+                  <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: 01.01.2026</p>
+                  {/* Expense Progress Tracker - Consistent UI */}
+                  <p className="project-card-detail">
+                    <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
+                    Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹1,500</span>
+                    <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
+                  </p>
+                  <div className="project-card-progress">
+                    <div className="progress-bar-container">
+                      <div className="progress-bar-fill" style={{width: `${project.progress}%`, backgroundColor: project.status === 'Active' ? '#6366f1' : '#22c55e'}}></div>
                     </div>
-                    {filteredAndSortedProjects.length > 0 ? filteredAndSortedProjects.map(project => (
-                        <div 
-                            key={`project-timeline-${project.id}`} // Ensure unique key for project rows
-                            className="timeline-project-row"
-                        >
-                            <div className="timeline-project-name">{project.name}</div>
-                            <div className="timeline-project-bar-container">
-                                {/* This is a simplified bar. A real Gantt would calculate position and width based on dates. */}
-                                <div 
-                                    className={`timeline-project-bar status-${project.status.toLowerCase()}`}
-                                    style={{ 
-                                        width: `${project.progress || 50}%`, // Use mock progress
-                                        // In a real Gantt, marginLeft and width would be calculated based on project.startDate, project.endDate relative to timelineDays
-                                        // marginLeft: `calc(${timelineDays.findIndex(d => d.fullDate === project.startDate) / timelineDays.length * 100}%)`,
-                                        // width: `calc(${(new Date(project.endDate) - new Date(project.startDate)) / (24*60*60*1000) / timelineDays.length * 100}%)`
-                                    }}
-                                    title={`${project.name} - ${project.progress}%`}
-                                >
-                                    {/* You could display task names here if available and space permits */}
-                                </div>
-                            </div>
-                        </div>
-                    )) : <p className="no-projects-message">No projects match your current filters.</p>}
+                    <span className="progress-text">{project.progress}%</span>
+                  </div>
+                  <div className="project-card-footer">
+                    <span className={`status-badge status-${project.status.toLowerCase()}`}>{project.status}</span>
+                    {userHasEditPermission && project.isActive === 1 && (
+                      <div className="card-actions">
+                        <button className="icon-btn" onClick={() => handleOpenEditModal(project)} title="Edit"><Edit size={16}/></button>
+                        <button className="icon-btn" onClick={() => handleMarkProjectAsCompleted(project.id)} title="Mark Complete"><CheckSquare size={16}/></button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-            )}
-
-            {currentViewMode === 'grid' && (
-                 <div className="projects-grid-view">
-                    {filteredAndSortedProjects.length > 0 ? filteredAndSortedProjects.map(project => (
-                        <div key={project.id} className={`project-card-item status-border-${project.status.toLowerCase()}`}>
-                            <div className="project-card-header">
-                                <h3>{project.name}</h3>
-                                {/* <button className="icon-btn project-card-actions-btn"><MoreVertical size={18}/></button> */}
-                            </div>
-                            <p className="project-card-detail"><Users size={14}/> Team: Placeholder</p>
-                            <p className="project-card-detail"><Briefcase size={14}/> Created by: {project.createdBy}</p>
-                            <div className="project-card-progress">
-                                <div className="progress-bar-container">
-                                    <div className="progress-bar-fill" style={{width: `${project.progress}%`, backgroundColor: project.status === 'Active' ? '#6366f1' : '#22c55e'}}></div>
-                                </div>
-                                <span className="progress-text">{project.progress}%</span>
-                            </div>
-                            <div className="project-card-footer">
-                                <span className={`status-badge status-${project.status.toLowerCase()}`}>{project.status}</span>
-                                {userHasEditPermission && project.isActive === 1 && (
-                                    <div className="card-actions">
-                                        <button className="icon-btn" onClick={() => handleOpenEditModal(project)} title="Edit"><Edit size={16}/></button>
-                                        <button className="icon-btn" onClick={() => handleMarkProjectAsCompleted(project.id)} title="Mark Complete"><CheckSquare size={16}/></button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )) : <p className="no-projects-message">No projects match your current filters.</p>}
-                </div>
-            )}
-            {/* TODO: Implement List View if needed */}
-            {currentViewMode === 'list' && (
-                <div className="projects-list-view">
-                    <div className="list-header-row">
-                        <div className="list-col list-col-name">Project Name</div>
-                        <div className="list-col list-col-status">Status</div>
-                        <div className="list-col list-col-progress">Progress</div>
-                        <div className="list-col list-col-created">Created At</div>
-                        <div className="list-col list-col-actions">Actions</div>
-                    </div>
-                    {filteredAndSortedProjects.length > 0 ? filteredAndSortedProjects.map(project => (
-                        <div key={project.id} className="list-project-row">
-                            <div className="list-col list-col-name">{project.name}</div>
-                            <div className="list-col list-col-status">
-                                <span className={`status-badge status-${project.status.toLowerCase()}`}>{project.status}</span>
-                            </div>
-                            <div className="list-col list-col-progress">
-                                <div className="progress-bar-container small">
-                                    <div className="progress-bar-fill" style={{width: `${project.progress}%`, backgroundColor: project.status === 'Active' ? '#6366f1' : '#22c55e'}}></div>
-                                </div>
-                            </div>
-                            <div className="list-col list-col-created">{new Date(project.createdAt).toLocaleDateString()}</div>
-                            <div className="list-col list-col-actions">
-                                {userHasEditPermission && project.isActive === 1 && (
-                                    <>
-                                    <button className="icon-btn" onClick={() => handleOpenEditModal(project)} title="Edit"><Edit size={16}/></button>
-                                    <button className="icon-btn" onClick={() => handleMarkProjectAsCompleted(project.id)} title="Mark Complete"><CheckSquare size={16}/></button>
-                                    </>
-                                )}
-                                 {/* <button className="icon-btn"><MoreVertical size={16}/></button> */}
-                            </div>
-                        </div>
-                    )) : <p className="no-projects-message">No projects match your current filters.</p>}
-                </div>
-            )}
-
+              )) : <p className="no-projects-message">No projects match your current filters.</p>}
+            </div>
           </section>
         </main>
 
