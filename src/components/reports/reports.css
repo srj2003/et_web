@@ -60,7 +60,7 @@
 .filters-section {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 1.2rem;
   align-items: stretch;
   justify-content: flex-start;
 }
@@ -79,13 +79,37 @@
   align-items: flex-end;
   justify-content: space-between;
 }
-.form-group {
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 1100px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.form-group, .date-range-small {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-width: 200px;
-  flex: 1 1 0;
-  position: relative;
+  justify-content: flex-start;
+  align-items: flex-start;
+  min-width: 0;
+}
+.form-group label, .date-range-small label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+.date-range-small .date-input {
+  min-width: 0;
 }
 .floating-label {
   position: relative;
@@ -102,7 +126,7 @@
   z-index: 2;
 }
 .input-select, .input-date {
-  padding: 0.85rem 1rem 0.85rem 2.5rem;
+  padding: 0.85rem 1rem 0.85rem 1rem;
   border-radius: 14px;
   border: 2px solid #e0e7ff;
   font-size: 1.08rem;
@@ -175,6 +199,7 @@
   gap: 0.7rem;
 }
 .reset-button {
+  padding: 0.1rem 0.5rem;
   background: #ede9fe;
   color: #6552f7;
   border: 1.5px solid #c7d2fe;
@@ -211,6 +236,9 @@
   align-items: flex-start;
   justify-content: flex-start;
   transition: box-shadow 0.2s;
+  overflow: visible !important;
+  position: relative;
+  z-index: auto;
 }
 .results-placeholder {
   width: 100%;
@@ -258,4 +286,116 @@
   .results-section {
     padding: 1rem 0.5rem 1.2rem 0.5rem;
   }
+}
+
+.date-range-small .date-input {
+  padding: 0.4rem 0.8rem 0.4rem 2rem;
+  font-size: 0.92rem;
+  height: 32px;
+  min-height: unset;
+  max-width: 140px;
+}
+.date-range-small label {
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+.date-range-small .date-range-separator {
+  font-size: 0.95rem;
+  margin: 0 0.3rem;
+}
+.date-range-small .input-icon {
+  font-size: 1rem;
+  left: 0.7rem !important;
+}
+.date-range-small > div {
+  gap: 0.2rem;
+}
+
+.form-group .input-select, .form-grid .input-select {
+  min-width: 220px;
+  max-width: 100%;
+}
+@media (max-width: 1100px) {
+  .form-group .input-select, .form-grid .input-select {
+    min-width: 180px;
+  }
+}
+@media (max-width: 700px) {
+  .form-group .input-select, .form-grid .input-select {
+    min-width: 120px;
+    width: 100%;
+  }
+}
+
+.fetch-data-small {
+  padding: 0.5rem 1.2rem !important;
+  font-size: 1rem !important;
+  min-width: 120px;
+  max-width: 220px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.input-select:disabled {
+  opacity: 0.6;
+  background: #f1f1f1;
+  cursor: not-allowed;
+}
+
+.form-section, .expense-form-container {
+  overflow: visible !important;
+}
+.react-select__menu {
+  z-index: 2147483647 !important;
+}
+
+.form-section {
+  position: relative;
+}
+.filter-reset-topright {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+}
+
+.attendance-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.attendance-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 600px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.07);
+}
+.attendance-table th, .attendance-table td {
+  border: 1px solid #e0e7ff;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 1rem;
+}
+.attendance-table th {
+  background: #ede9fe;
+  color: #6552f7;
+  font-weight: 700;
+}
+.attendance-table td {
+  background: #f8fafc;
+  color: #2c3e50;
+}
+.attendance-table td:first-child, .attendance-table th:first-child {
+  text-align: left;
+  font-weight: 600;
+  background: #f3f4f6;
 }
