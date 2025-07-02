@@ -6,12 +6,10 @@
 
 // Database Configuration
 
+$host = 'geomaticxevs.in';
 $servername = 'geomaticxevs.in';
-
 $username = 'geoma7i3_demo_user';
-
 $password = 'eT@dEm0##25';
-
 $dbname = 'geoma7i3_demo_et_dms';
 
 

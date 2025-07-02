@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import "./navbar.css";
 
@@ -21,6 +21,7 @@ const Navbar = () => {
   const [companyLogo, setCompanyLogo] = useState("");
   const [loading, setLoading] = useState(true);
   const [roleId, setRoleId] = useState(null);
+  const location = useLocation();
 
   // Add state for sidebar visibility
   const toggleSidebar = () => {
@@ -136,20 +137,20 @@ const Navbar = () => {
         </button>
         <div className="navbar-links">
           {hasAccess("dashboard") && (
-            <Link to="/dashboard" className="navbar-item">
+            <Link to="/dashboard" className={`navbar-item${location.pathname.startsWith('/dashboard') ? ' active' : ''}`}>
               Dashboard
             </Link>
           )}
           {hasAccess("users") && (
-            <Link to="/users" className="navbar-item">
+            <Link to="/users" className={`navbar-item${location.pathname.startsWith('/users') ? ' active' : ''}`}>
               Users
             </Link>
           )}
-          <Link to="/analytics/useranalytics" className="navbar-item">
+          <Link to="/analytics/useranalytics" className={`navbar-item${location.pathname.startsWith('/analytics') ? ' active' : ''}`}>
             Analytics
           </Link>
           {hasAccess("holidays") && (
-            <Link to="/holiday" className="navbar-item">
+            <Link to="/holiday" className={`navbar-item${location.pathname.startsWith('/holiday') ? ' active' : ''}`}>
               Holidays
             </Link>
           )}

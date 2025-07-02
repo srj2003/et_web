@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Search,
   ChevronLeft,
   ChevronRight,
-  CreditCard as Edit2,
+  Pen as Edit2,
   Lock,
+  LockOpen,
   Trash2,
   ArrowLeft,
   Plus,
@@ -15,6 +16,7 @@ import {
   X,
   Eye,
   AlertCircle,
+  Download,
 } from "lucide-react";
 import moment from "moment";
 import Select from "react-select";
@@ -47,6 +49,9 @@ const Users = () => {
   const [submitError, setSubmitError] = useState("");
   const [showUserRoleModal, setShowUserRoleModal] = useState(false);
   const [userRoleSearch, setUserRoleSearch] = useState("");
+  const [showInactiveOnly, setShowInactiveOnly] = useState(false);
+  const [downloadDropdownOpen, setDownloadDropdownOpen] = useState(false);
+  const downloadDropdownRef = useRef(null);
 
   const [formData, setFormData] = useState({
     userId: "",
@@ -87,6 +92,10 @@ const Users = () => {
 
   // Add default avatar data URL
   const defaultAvatar = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjFGNUY5Ii8+CjxwYXRoIGQ9Ik03NSA4OUM1Ny4zMjY5IDg5IDQzIDczLjY3MzEgNDMgNTZDNDMgMzguMzI2OSA1Ny4zMjY5IDI0IDc1IDI0QzkyLjY3MzEgMjQgMTA3IDM4LjMyNjkgMTA3IDU2QzEwNyA3My42NzMxIDkyLjY3MzEgODkgNzUgODlaIiBmaWxsPSIjOTRBM0I4Ii8+CjxwYXRoIGQ9Ik0xMDcuNzc4IDE0NS45MjVDMTA1LjY3NiAxMzQuODIxIDk1LjU1NjQgMTI2IDgzLjY2NjcgMTI2SDY2LjMzMzRDNTQuNDQzNiAxMjYgNDQuMzIzOCAxMzQuODIxIDQyLjIyMjIgMTQ1LjkyNUM0Mi4wNzU0IDE0Ni42MzcgNDIgMTQ3LjM2NyA0MiAxNDhDNDIgMTQ5LjEwNSA0Mi44OTU0IDE1MCA0NCAxNTBIMTA2QzEwNy4xMDUgMTUwIDEwOCAxNDkuMTA1IDEwOCAxNDhDMTA4IDE0Ny4zNjcgMTA3LjkyNSAxNDYuNjM3IDEwNy43NzggMTQ1LjkyNVoiIGZpbGw9IiM5NEEzQjgiLz4KPC9zdmc+Cg==";
+
+  // Get roleId from localStorage and check if user can download
+  const roleId = localStorage.getItem('roleId');
+  const canDownload = ["1", "2", "8"].includes(roleId);
 
   const fetchData = async () => {
     try {
@@ -637,20 +646,23 @@ const Users = () => {
   const filteredUsers = Object.values(MOCK_USERS).filter((user) => {
     const searchLower = searchQuery.toLowerCase();
 
-    // First filter by selected role if in categories tab
-    if (activeTab === "categories" && selectedRole) {
-      if (user.role_name !== selectedRole) {
-        return false;
-      }
+    // Inactive toggle: show only inactive users
+    if (showInactiveOnly) {
+      if (user.u_active !== 0) return false;
+    } else if (activeTab === "all") {
+      // In All tab, show only active users
+      if (user.u_active !== 1) return false;
+    } else if (activeTab === "categories" && selectedRole) {
+      // In categories tab, filter by role
+      if (user.role_name !== selectedRole) return false;
     }
 
-    // Then apply search filter
+    // Search filter
     return (
       (user.user && user.user.toLowerCase().includes(searchLower)) ||
       (user.u_mob && user.u_mob.toLowerCase().includes(searchLower)) ||
       (user.u_email && user.u_email.toLowerCase().includes(searchLower))
     );
-    
   });
 
   const totalFilteredPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
@@ -709,10 +721,81 @@ const Users = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  // Download handler for dropdown
+  const handleDownloadFiltered = async (filter) => {
+    setDownloadDropdownOpen(false);
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        toast.error("Authentication required");
+        window.location.href = '/';
+        return;
+      }
+      const loadingToast = toast.loading("Generating user report...");
+      const response = await fetch(
+        "https://demo-expense.geomaticxevs.in/ET-api/filtered_user_report_download.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ filter })
+        }
+      );
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      if (result.status === "success" && result.file) {
+        const blob = new Blob([atob(result.file)], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = result.file_name || "user_report.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.dismiss(loadingToast);
+        toast.success("User report downloaded successfully!");
+      } else {
+        throw new Error(result.message || "Failed to generate report");
+      }
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      toast.error(error.message || "Failed to download user report");
+    }
+  };
+
+  // Dynamic header title and count
+  let headerTitle = "Users";
+  let headerCount = 0;
+  if (showInactiveOnly) {
+    headerTitle = "Inactive Users";
+    headerCount = filteredUsers.length;
+  } else if (activeTab === "categories") {
+    if (selectedRole) {
+      headerTitle = `Users in ${selectedRole}`;
+      headerCount = filteredUsers.length;
+    } else {
+      headerTitle = "User Roles";
+      headerCount = filteredRoles.length;
+    }
+  } else if (activeTab === "all") {
+    headerTitle = "All Users";
+    headerCount = filteredUsers.length;
+  }
+
   return (
     <div className="users-container">
       <div className="header">
-        <h1 className="title">Users</h1>
+        <h1 className="title">{headerTitle} :-<span className="header-count">({headerCount})</span></h1>
         <button 
           className="add-button" 
           onClick={() => activeTab === "categories" ? setShowAddUserRole(true) : setShowAddUser(true)}
@@ -731,6 +814,25 @@ const Users = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+        {canDownload && (
+          <div className="download-dropdown-wrapper" ref={downloadDropdownRef}>
+            <button
+              className="download-button"
+              onClick={() => setDownloadDropdownOpen((open) => !open)}
+              title="Download User Report"
+              type="button"
+            >
+              <Download size={20}/>Download
+            </button>
+            {downloadDropdownOpen && (
+              <div className="download-dropdown-menu">
+                <button className="download-button" onClick={() => handleDownloadFiltered('all')}>Download All Users</button>
+                <button className="download-button" onClick={() => handleDownloadFiltered('present')}>Download Present Users</button>
+                <button className="download-button" onClick={() => handleDownloadFiltered('absent')}>Download Absent Users</button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="tabs-container">
@@ -739,15 +841,29 @@ const Users = () => {
           onClick={() => {
             setActiveTab("all");
             setSelectedRole(null);
+            setShowInactiveOnly(false);
           }}
         >
           All
         </button>
         <button
           className={`tab ${activeTab === "categories" ? "active" : ""}`}
-          onClick={() => setActiveTab("categories")}
+          onClick={() => {
+            setActiveTab("categories");
+            setShowInactiveOnly(false);
+          }}
         >
           Categories
+        </button>
+        <button
+          className={`tab ${showInactiveOnly ? "active" : ""}`}
+          onClick={() => {
+            setShowInactiveOnly((prev) => !prev);
+            setActiveTab("all");
+            setSelectedRole(null);
+          }}
+        >
+          Inactive
         </button>
       </div>
 
@@ -792,6 +908,7 @@ const Users = () => {
                             e.stopPropagation();
                             handleViewProfile(user);
                           }}
+                          title="Edit user's status"
                         >
                           <Edit2 size={16} />
                         </button>
@@ -801,11 +918,13 @@ const Users = () => {
                             e.stopPropagation();
                             toggleUserStatus(user);
                           }}
+                          title="Active / Inactive"
                         >
-                          <Lock
-                            size={16}
-                            color={user.u_active === 1 ? "#22c55e" : "#ef4444"}
-                          />
+                          {user.u_active === 1 ? (
+                            <LockOpen size={16} color="#22c55e" />
+                          ) : (
+                            <Lock size={16} color="#ef4444" />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -862,6 +981,35 @@ const Users = () => {
                   <span>Back to Roles</span>
                 </button>
               </div>
+              <div className="search-container">
+                <Search size={20} />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {canDownload && (
+                  <div className="download-dropdown-wrapper" ref={downloadDropdownRef}>
+                    <button
+                      className="download-button"
+                      onClick={() => setDownloadDropdownOpen((open) => !open)}
+                      title="Download User Report"
+                      type="button"
+                    >
+                      <Download size={20} />
+                    </button>
+                    {downloadDropdownOpen && (
+                      <div className="download-dropdown-menu">
+                        <button onClick={() => handleDownloadFiltered('all')}>Download All Users</button>
+                        <button onClick={() => handleDownloadFiltered('present')}>Download Present Users</button>
+                        <button onClick={() => handleDownloadFiltered('absent')}>Download Absent Users</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className="table-container">
                 <table className="users-table">
                   <thead>
@@ -901,6 +1049,7 @@ const Users = () => {
                                 e.stopPropagation();
                                 handleViewProfile(user);
                               }}
+                              title="Edit user's status"
                             >
                               <Edit2 size={16} />
                             </button>
@@ -910,11 +1059,13 @@ const Users = () => {
                                 e.stopPropagation();
                                 toggleUserStatus(user);
                               }}
+                              title="Active / Inactive"
                             >
-                              <Lock
-                                size={16}
-                                color={user.u_active === 1 ? "#22c55e" : "#ef4444"}
-                              />
+                              {user.u_active === 1 ? (
+                                <LockOpen size={16} color="#22c55e" />
+                              ) : (
+                                <Lock size={16} color="#ef4444" />
+                              )}
                             </button>
                           </div>
                         </td>

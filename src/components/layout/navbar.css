@@ -2,15 +2,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    padding: 1rem 1.5rem;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(229, 231, 235, 0.5);
     position: fixed;
     top: 0;
-    right: 0;
-    left: var(--sidebar-width);
+    right: 28px;
+    left: calc(var(--sidebar-width)-18px);
     height: var(--navbar-height);
     z-index: 999;
     transition: all 0.3s ease;
@@ -72,6 +72,19 @@
 .navbar-item.active {
     background: rgba(30, 41, 59, 0.15);
     color: #1e293b;
+    position: relative;
+}
+
+.navbar-item.active::after {
+    content: '';
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    bottom: 6px;
+    height: 3px;
+    border-radius: 2px;
+    background: #2563eb; /* blue-600 */
+    box-shadow: 0 1px 4px rgba(37,99,235,0.15);
 }
 
 .notification-container {

@@ -9,9 +9,12 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import attendanceNote from "../../../assets/Attendance_note.jpeg"
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
 const API_URL = "https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php";
-
 const initialHolidays = [
   { id: "1", name: "Bengali New Year", date: "2025-04-15", isSunday: false },
   { id: "2", name: "Good Friday", date: "2025-04-18", isSunday: false },
@@ -39,8 +42,11 @@ export default function MyAttendance() {
   const [currentMonth, setCurrentMonth] = useState("");
   const [filterStatus, setFilterStatus] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [approvedLeaveDates, setApprovedLeaveDates] = useState([]);
+  const [leaves, setLeaves] = useState([]);
+  const [selectedLeave, setSelectedLeave] = useState(null);
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
 
-  // Add auth token check in useEffect
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const userId = localStorage.getItem("userid");
@@ -62,7 +68,54 @@ export default function MyAttendance() {
       }
     };
 
+    const fetchApprovedLeaves = async () => {
+      try {
+        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/my-leaves.php", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (data.status === "success" && Array.isArray(data.data)) {
+          // Collect all dates for approved leaves
+          const approvedDates = [];
+          data.data.forEach(leave => {
+            if (leave.leave_track_status === 1) {
+              // Range from leave_from_date to leave_to_date
+              let current = new Date(leave.leave_from_date);
+              const end = new Date(leave.leave_to_date);
+              while (current <= end) {
+                approvedDates.push(current.toISOString().slice(0, 10));
+                current.setDate(current.getDate() + 1);
+              }
+            }
+          });
+          setApprovedLeaveDates(approvedDates);
+        }
+      } catch (error) {
+        console.error("Error fetching approved leaves:", error);
+      }
+    };
+
+    const fetchLeaves = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/my-leaves.php", {
+          method: "GET",
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.status === 'success' && Array.isArray(data.data)) {
+          setLeaves(data.data);
+        }
+      } catch (err) { /* ignore */ }
+    };
+
     fetchUserId();
+    fetchApprovedLeaves();
+    fetchLeaves();
   }, []);
 
   const onRefresh = () => {
@@ -163,8 +216,18 @@ export default function MyAttendance() {
           return { date: item.date, status: "Holiday", reason: "Holiday" };
         }
 
-        if (item.isSunday) {
-          return { date: item.date, status: "Sunday", reason: "Sunday" };
+        const dateObj = new Date(item.date);
+        const isSunday = dateObj.getDay() === 0;
+
+        if (isSunday) {
+          if (!item.hasLogin) {
+            // No login on Sunday, leave blank (no status)
+            return null;
+          } else if (!item.is_logged_out) {
+            return { date: item.date, status: "Present", reason: "" };
+          } else {
+            return { date: item.date, status: "Present", reason: "" };
+          }
         }
 
         if (!item.hasLogin) {
@@ -185,7 +248,7 @@ export default function MyAttendance() {
 
         return { date: item.date, status: "Present", reason: "" };
       })
-      .filter((item) => item.status !== "Sunday");
+      .filter((item) => item !== null);
   };
 
   const handleFilterStatus = (status) => {
@@ -193,6 +256,7 @@ export default function MyAttendance() {
   };
 
   const calculateTotalCounts = () => {
+    
     const counts = {
       presentCount: 0,
       actualPresentCount: 0,
@@ -232,6 +296,17 @@ export default function MyAttendance() {
       <span className="count-label">{label}</span>
     </div>
   );
+
+  // Helper: find leave for a date
+  const findApprovedLeaveForDate = (dateStr) => {
+    return leaves.find(leave => {
+      if (leave.leave_track_status !== 1) return false;
+      const from = new Date(leave.leave_from_date);
+      const to = new Date(leave.leave_to_date);
+      const d = new Date(dateStr);
+      return d >= from && d <= to;
+    });
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -296,8 +371,8 @@ export default function MyAttendance() {
                   />
                 </div>
               </div>
-              
-              {(startDate || endDate) && (
+              <div className="date-range-view">
+                {(startDate || endDate) && (
                 <div className="date-range-display">
                   Selected Range: 
                   <span>{startDate && format(new Date(startDate), "MMM dd, yyyy")}</span>
@@ -315,6 +390,7 @@ export default function MyAttendance() {
               >
                 {loading ? "Loading..." : "View Attendance"}
               </Button>
+              </div>
             </div>
 
             {dataLoaded && (
@@ -349,6 +425,14 @@ export default function MyAttendance() {
                     Not Logged Out
                   </Button>
                   <Button
+                    variant={filterStatus === "Approved Leave" ? "contained" : "outlined"}
+                    style={{ backgroundColor: filterStatus === "Approved Leave" ? '#2563eb' : '', color: filterStatus === "Approved Leave" ? '#fff' : '#2563eb', borderColor: '#2563eb', borderWidth: 2, marginLeft: 0, marginRight: 0 }}
+                    onClick={() => handleFilterStatus("Approved Leave")}
+                    className="filter-button" id = "approved-leave"
+                  >
+                    Approved Leave
+                  </Button>
+                  <Button
                     variant={filterStatus === null ? "contained" : "outlined"}
                     color="primary"
                     onClick={() => handleFilterStatus(null)}
@@ -370,29 +454,36 @@ export default function MyAttendance() {
               <div className="calendar-view">
                 <div className="left-section">
                     <Calendar
-                      value={new Date(currentMonth || startDate)}
+                      value={undefined}
                       tileClassName={({ date, view }) => {
                         if (view !== 'month') return null;
-                        
+                        const dateStr = format(date, "yyyy-MM-dd");
+                        const leave = findApprovedLeaveForDate(dateStr);
+                        if (filterStatus === "Approved Leave") {
+                          return approvedLeaveDates.includes(dateStr) ? "tile-approved-leave" : "tile-hidden";
+                        }
+                        if (approvedLeaveDates.includes(dateStr)) return "tile-approved-leave";
                         const attendance = attendanceDetails.find(
-                          (a) => a.date === format(date, "yyyy-MM-dd")
+                          (a) => a.date === dateStr
                         );
-                        
                         if (!attendance) return null;
-
-                        // If filter is active, add hidden class for non-matching dates
                         if (filterStatus && attendance.status !== filterStatus) {
                           return 'tile-hidden';
                         }
-                        
-                        // Return appropriate class based on status
                         if (attendance.status === "Present") return "tile-present";
                         if (attendance.status === "Absent") return "tile-absent";
                         if (attendance.status === "Not Logged Out") return "tile-not-logged-out";
                         if (attendance.status === "Holiday") return "tile-holiday";
                         if (attendance.status === "Sunday") return "tile-sunday";
-                        
                         return null;
+                      }}
+                      onClickDay={(date) => {
+                        const dateStr = format(date, "yyyy-MM-dd");
+                        const leave = findApprovedLeaveForDate(dateStr);
+                        if (leave) {
+                          setSelectedLeave(leave);
+                          setLeaveModalOpen(true);
+                        }
                       }}
                       onActiveStartDateChange={({ activeStartDate }) => {
                         setCurrentMonth(activeStartDate);
@@ -420,56 +511,6 @@ export default function MyAttendance() {
                     </div>
                   </div>
                 </div>
-
-{/* <div className="left-section">
-  <Calendar
-    value={new Date(currentMonth || startDate)}
-    tileClassName={({ date, view }) => {
-      if (view !== 'month') return null;
-      
-      const attendance = attendanceDetails.find(
-        (a) => a.date === format(date, "yyyy-MM-dd")
-      );
-      
-      if (!attendance) return null;
-      
-      // Return appropriate class based on status
-      if (attendance.status === "Present") return "tile-present";
-      if (attendance.status === "Absent") return "tile-absent";
-      if (attendance.status === "Not Logged Out") return "tile-not-logged-out";
-      if (attendance.status === "Holiday") return "tile-holiday";
-      if (attendance.status === "Sunday") return "tile-sunday";
-      
-      return null;
-    }}
-    onActiveStartDateChange={({ activeStartDate }) => {
-      setCurrentMonth(activeStartDate);
-    }}
-  />
-  
-  <div className="status-legend">
-    <div className="status-legend-item">
-      <div className="status-legend-color present-color"></div>
-      <span>Present</span>
-    </div>
-    <div className="status-legend-item">
-      <div className="status-legend-color absent-color"></div>
-      <span>Absent</span>
-    </div>
-    <div className="status-legend-item">
-      <div className="status-legend-color not-logged-out-color"></div>
-      <span>Not Logged Out</span>
-    </div>
-    <div className="status-legend-item">
-      <div className="status-legend-color holiday-color"></div>
-      <span>Holiday</span>
-    </div>
-    <div className="status-legend-item">
-      <div className="status-legend-color sunday-color"></div>
-      <span>Sunday</span>
-    </div>
-  </div>
-</div> */}
 
                 <div className="right-section">
                   <div className="detailed-note-container">
@@ -525,6 +566,35 @@ export default function MyAttendance() {
           </div>
         </div>
       </div>
+
+      {/* Leave Details Modal */}
+      <Dialog open={leaveModalOpen} onClose={() => setLeaveModalOpen(false)}>
+        <DialogTitle>Approved Leave Details</DialogTitle>
+        <DialogContent>
+          {selectedLeave && (
+            <div>
+              <div><b>Title:</b> {selectedLeave.leave_title}</div>
+              <div><b>Type:</b> {selectedLeave.leave_ground_text}</div>
+              <div><b>Status:</b> {selectedLeave.leave_track_status_text}</div>
+              <div><b>From:</b> {selectedLeave.leave_from_date}</div>
+              <div><b>To:</b> {selectedLeave.leave_to_date}</div>
+              <div><b>Comment:</b> {selectedLeave.leave_comment}</div>
+              {selectedLeave.documents && selectedLeave.documents.length > 0 && (
+                <div><b>Documents:</b>
+                  <ul>
+                    {selectedLeave.documents.map((doc, idx) => (
+                      <li key={idx}><a href={doc.url} target="_blank" rel="noopener noreferrer">{doc.name}</a></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLeaveModalOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </LocalizationProvider>
   );
 }

@@ -106,25 +106,31 @@
   box-sizing: border-box;
 }
 
-.submit-button {
-  background-color: #7275f7;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  border: none;
-  height: 100%;
-  font-size: 26px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  align-self: stretch;
-  display: flex;
+.date-range-display{
   align-items: center;
-  justify-content: center;
+  margin-right: 1.2rem;
+}
+
+.submit-button {
+  margin-left: 2rem;
+  height: 2.8rem;
+  background: linear-gradient(135deg, #4e2de2, #4a00e0);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 15px rgba(142, 45, 226, 0.4);
 }
 
 .submit-button:hover {
-  background-color: #5d60e6;
+  background: linear-gradient(135deg, #5d60e6, #8a2be2);
+  transform: scale(1.05) rotate(-1deg);
+  box-shadow: 0 6px 20px rgba(93, 96, 230, 0.7);
+  letter-spacing: 2px;
 }
 
 .loading-container {
@@ -156,12 +162,32 @@ span {
   font-size: 24px;
 }
 
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 10px #5d60e6;
+  }
+  50% {
+    box-shadow: 0 0 20px #8e2de2;
+  }
+  100% {
+    box-shadow: 0 0 10px #5d60e6;
+  }
+}
+
+.help-button:hover{
+  animation: pulseGlow 1.8s infinite alternate;
+}
+.submit-button:hover {
+  animation: pulseGlow 0.8s infinite alternate;
+}
 
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
 
 .mark-attendance-container {
   margin-bottom: 24px;
@@ -416,6 +442,11 @@ span {
     margin-top: 8px;
     height: 44px;
   }
+
+  .date-range-view{
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 480px) {
@@ -444,6 +475,11 @@ span {
     min-width: 100%;
     font-size: 16px; /* Better for mobile tap targets */
   }
+
+  .date-range-view{
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 640px) {
@@ -460,6 +496,12 @@ span {
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
+
+  .date-range-view{
+    display: flex;
+    flex-wrap: wrap;
+  }
+
   .button-group {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -567,13 +609,9 @@ span {
 }
 
 .left-section .react-calendar__tile--now {
-  background: #6366f1;
-  color: white;
-  font-weight: 600;
-}
-
-.left-section .react-calendar__tile--now:enabled:hover {
-  background: #818cf8;
+  background: none !important;
+  color: inherit !important;
+  font-weight: inherit !important;
 }
 
 .left-section .react-calendar__tile--active {
@@ -608,19 +646,32 @@ span {
   margin: 0 8px;
 }
 
+.date-range-view{
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  
+}
+
 .date-range-display {
   margin-top: 8px;
   padding: 8px 12px;
   background-color: #f8fafc;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
-  font-size: 24px;
+  font-size: 20px;
   color: #334155;
 }
 
 .date-range-display span {
   font-weight: 600;
   color: #1e293b;
+  font-size: 20px;
+  margin-left: .5rem;
+}
+
+.submit-button{
+  margin: 1.3rem;
 }
 
 /* MUI DatePicker customization */
@@ -766,9 +817,15 @@ span {
   font-weight: 500 !important;
 }
 
-.left-section .react-calendar__month-view__days__day--weekend {
+.left-section .react-calendar__month-view__days__day--weekend:nth-child(7n+7){
   color: #ef4444 !important;
 }
+
+
+/* Make Saturday black, only Sunday should be colored if desired */
+/* .left-section .react-calendar__month-view__days__day--weekend:nth-child(7n+6) {
+  color: #1e293b !important;
+} */
 
 .left-section .react-calendar__month-view__days__day--neighboringMonth {
   color: #cbd5e1 !important;
@@ -828,4 +885,46 @@ span {
   background-color: #f1f5f9 !important;
   transform: scale(1.05) !important;
   transition: all 0.2s ease !important;
+}
+
+/* Ensure attendance status always shows white text, even on Saturday */
+.left-section .tile-present,
+.left-section .tile-absent,
+.left-section .tile-not-logged-out,
+.left-section .tile-holiday,
+.left-section .tile-sunday {
+  color: white !important;
+}
+
+.left-section .tile-approved-leave {
+  background-color: #2563eb !important; /* blue-600 */
+  color: #fff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(37,99,235,0.15);
+}
+
+/* Leave Details Modal styles */
+.MuiDialogContent-root > div {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+.MuiDialogContent-root b {
+  color: #6366f1;
+}
+.MuiDialogContent-root ul {
+  margin: 0.5em 0 0.5em 1.5em;
+  padding: 0;
+}
+.MuiDialogContent-root li {
+  font-size: 1rem;
+  margin-bottom: 0.25em;
+}
+.MuiDialogContent-root a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+.MuiDialogContent-root a:hover {
+  color: #1e40af;
 }

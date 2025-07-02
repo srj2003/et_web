@@ -18,6 +18,14 @@ import {
   RefreshCw,
   Wallet,
   Receipt,
+  Briefcase,
+  Clock,
+  CheckCircle,
+  Shield,
+  CalendarPlus,
+  CalendarCheck,
+  CreditCard,
+  Edit,
 } from "lucide-react";
 import {
   BarChart,
@@ -32,7 +40,58 @@ import {
   Pie,
   Cell,
 } from "recharts";
-// import Calendar  from './calendar';// Add this import at the top
+import { format } from "date-fns";
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css'; // Import default styles
+const API_URL = "https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php";
+const ATTENDANCE_API_URL = "https://demo-expense.geomaticxevs.in/ET-api/fetchAttendance.php";
+
+const initialHolidays = [
+  { id: "1", name: "Bengali New Year", date: "2025-04-15", isSunday: false },
+  { id: "2", name: "Good Friday", date: "2025-04-18", isSunday: false },
+  { id: "3", name: "May Day", date: "2025-05-01", isSunday: false },
+  { id: "4", name: "Independence Day / Janmashtami", date: "2025-08-15", isSunday: false },
+  { id: "5", name: "Maha Shasthi (Durgapuja)", date: "2025-09-28", isSunday: false },
+  { id: "6", name: "Maha Saptami (Durgapuja)", date: "2025-09-29", isSunday: false },
+  { id: "7", name: "Maha Ashtami (Durgapuja)", date: "2025-09-30", isSunday: false },
+  { id: "8", name: "Maha Navami (Durgapuja)", date: "2025-10-01", isSunday: false },
+  { id: "9", name: "Vijaya Dashami / Gandhi Jayanti", date: "2025-10-02", isSunday: false },
+  { id: "10", name: "Diwali / Kali Puja", date: "2025-10-20", isSunday: false },
+  { id: "11", name: "Bhatri Ditiya", date: "2025-10-23", isSunday: false },
+  { id: "12", name: "Christmas", date: "2025-12-25", isSunday: false },
+  { id: "13", name: "New Year Day", date: "2026-01-01", isSunday: false },
+  { id: "14", name: "Republic Day", date: "2026-01-26", isSunday: false },
+  { id: "15", name: "Dol Yatra", date: "2026-03-03", isSunday: false },
+];
+
+function processAttendanceApiResponse(apiData) {
+  const holidayDates = initialHolidays.map((holiday) => holiday.date);
+  return (apiData || [])
+    .map((item) => {
+      if (holidayDates.includes(item.date)) {
+        return { date: item.date, status: "Holiday", reason: "Holiday" };
+      }
+      if (item.isSunday) {
+        return { date: item.date, status: "Sunday", reason: "Sunday" };
+      }
+      if (!item.hasLogin) {
+        return {
+          date: item.date,
+          status: "Absent",
+          reason: "No login recorded",
+        };
+      }
+      if (!item.is_logged_out) {
+        return {
+          date: item.date,
+          status: "Not Logged Out",
+          reason: "Did not log out",
+        };
+      }
+      return { date: item.date, status: "Present", reason: "" };
+    })
+    .filter((item) => item.status !== "Sunday");
+}
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className={`stat-card ${color}`}>
@@ -66,7 +125,7 @@ const AttendanceDetails = ({ attendance }) => {
   return (
     <div className="attendance-details">
       <div className="attendance-card">
-        <h3 className="attendance-card-title">Login Details</h3>
+        {/* <h3 className="attendance-card-title">Login Details</h3> */}
         <div className="attendance-row">
           <span className="attendance-label">Login Time:</span>
           <span className="attendance-value">
@@ -83,7 +142,7 @@ const AttendanceDetails = ({ attendance }) => {
 
       {attendance?.is_logged_out && (
         <div className="attendance-card">
-          <h3 className="attendance-card-title">Logout Details</h3>
+          {/* <h3 className="attendance-card-title">Logout Details</h3> */}
           <div className="attendance-row">
             <span className="attendance-label">Logout Time:</span>
             <span className="attendance-value">
@@ -296,6 +355,17 @@ export default function DashboardWeb() {
   const [analytics, setAnalytics] = useState(null);
   const [roleId, setRoleId] = useState(null);
   const [attendanceStats, setAttendanceStats] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [attendanceDetails, setAttendanceDetails] = useState([]);
+  const [currentMonth, setCurrentMonth] = useState("");
+  const [filterStatus, setFilterStatus] = useState(null);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [showAllProjects, setShowAllProjects] = useState(false);
 
   const initialLoadDone = useRef(false);
 
@@ -521,6 +591,24 @@ export default function DashboardWeb() {
     }
   }, []);
 
+  const fetchMonthlyAttendance = useCallback(async (monthDate) => {
+    const userId = localStorage.getItem("userid");
+    if (!userId) return;
+    const month = format(monthDate, "yyyy-MM");
+    try {
+      const response = await fetch(
+        `https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php?user_id=${userId}&month=${month}`
+      );
+      const result = await response.json();
+      // Use the same logic as myattendance.jsx
+      const processed = processAttendanceApiResponse(result.data || []);
+      setAttendanceDetails(processed);
+    } catch (error) {
+      console.error("Error fetching monthly attendance:", error);
+      setAttendanceDetails([]);
+    }
+  }, []);
+
   const loadDashboardData = useCallback(async () => {
     try {
       if ("geolocation" in navigator) {
@@ -581,6 +669,109 @@ export default function DashboardWeb() {
       initialLoadDone.current = true;
     }
   }, [loadDashboardData]);
+
+  useEffect(() => {
+    // On initial load, fetch for current month
+    if (currentMonth) {
+      fetchMonthlyAttendance(currentMonth);
+    } else {
+      fetchMonthlyAttendance(new Date());
+    }
+  }, [currentMonth, fetchMonthlyAttendance]);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userid");
+    if (!userId) return;
+    const month = format(calendarMonth, "yyyy-MM");
+    fetch(
+      `https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php?user_id=${userId}&month=${month}`
+    )
+      .then((res) => res.json())
+      .then((result) => {
+        // Use the same logic as myattendance.jsx
+        const processed = processAttendanceApiResponse(result.data || []);
+        setAttendanceDetails(processed);
+      })
+      .catch(() => setAttendanceDetails([]));
+  }, [calendarMonth]);
+
+  // Fetch projects for role_id = 3
+  useEffect(() => {
+    if (roleId === "3") {
+      const fetchProjects = async () => {
+        setProjectsLoading(true);
+        try {
+          const userId = localStorage.getItem("userid");
+          const token = localStorage.getItem("authToken");
+          if (!userId || !token) return;
+          const res = await fetch(
+            "https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({ user_id: userId }),
+            }
+          );
+          if (res.status === 401) {
+            localStorage.clear();
+            window.location.href = '/';
+            return;
+          }
+          const data = await res.json();
+          if (data.status === "success" && Array.isArray(data.projects)) {
+            setProjects(data.projects);
+          } else {
+            setProjects([]);
+          }
+        } catch (error) {
+          setProjects([]);
+        } finally {
+          setProjectsLoading(false);
+        }
+      };
+      fetchProjects();
+    }
+  }, [roleId]);
+
+  // Fetch attendance for the current month by default
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      const userId = localStorage.getItem("userid");
+      const token = localStorage.getItem("authToken");
+      if (!userId || !token) return;
+      const year = calendarMonth.getFullYear();
+      const month = calendarMonth.getMonth();
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month , 31);
+      console.log(startDate);
+      try {
+        const response = await fetch(ATTENDANCE_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            start_date: format(startDate, "yyyy-MM-dd"),
+            end_date: format(endDate, "yyyy-MM-dd"),
+          }),
+        });
+        const data = await response.json();
+        if (data.success && Array.isArray(data.attendance)) {
+          setAttendanceDetails(data.attendance);
+        } else {
+          setAttendanceDetails([]);
+        }
+      } catch (err) {
+        setAttendanceDetails([]);
+      }
+    };
+    fetchAttendance();
+  }, [calendarMonth]);
 
   const handleLogin = async () => {
     if (!location) {
@@ -697,6 +888,7 @@ export default function DashboardWeb() {
     if (todayAttendance.attendance?.is_logged_out) {
       return (
         <>
+          
           <p className="login-status-text">Today's attendance completed</p>
           <AttendanceDetails attendance={todayAttendance.attendance} />
         </>
@@ -824,8 +1016,7 @@ export default function DashboardWeb() {
   return (
     <div className="dashboard-main">
       <div className="dashboard-container">
-        <div className="dashboard-header">
-          <div className="welcome-banner">
+      <div className="welcome-banner">
             <div className="welcome-content">
               <h2 className="welcome-text">Welcome back,</h2>
               {userData ? (
@@ -847,8 +1038,102 @@ export default function DashboardWeb() {
               className="welcome-image"
             />
           </div>
+        <div className="dashboard-header"> 
+          <div className="dashboard-header-left">
+            <Calendar
+              value={calendarMonth}
+              onActiveStartDateChange={({ activeStartDate }) => setCalendarMonth(activeStartDate)}
+              tileClassName={({ date, view }) => {
+                if (view !== 'month') return null;
+                const dateStr = format(date, "yyyy-MM-dd");
+                const attendance = attendanceDetails.find(a => a.login_timestamp && a.login_timestamp.startsWith(dateStr));
+                if (!attendance) return null;
+                if (attendance.is_logged_out === 1) return "tile-present";
+                if (attendance.is_logged_out === 0) return "tile-not-logged-out";
+                return "tile-absent";
+              }}
+            />
+          </div>
+          <div className="dashboard-header-right">
+          {userData && userData.not_logged_out_count > 0 && (
+            <div className="warning-container">
+              <p className="warning-text">
+                Warning: you have not logged out for{" "}
+                {userData.not_logged_out_count} day
+                {userData.not_logged_out_count > 1 ? "s" : ""}
+              </p>
+              <button
+                className="info-button"
+                onClick={() =>
+                  alert(
+                    "If not logged out for 3 consecutive days, the user will be marked absent on the 3rd day"
+                  )
+                }
+              >
+                !
+              </button>
+            </div>
+          )}
+          <div className="login-section">{renderLoginSection()}</div>
         </div>
-
+        </div>
+        {/* My Projects Card Section for role_id = 3 */}
+        {roleId === "3" && (
+          <div className="dashboard-projects-section">
+            <h2 className="dashboard-projects-title">My Projects</h2>
+            {projectsLoading ? (
+              <div className="dashboard-projects-loader">Loading projects...</div>
+            ) : projects.length === 0 ? (
+              <div className="dashboard-projects-empty">No projects assigned.</div>
+            ) : (
+              <>
+                <div className="dashboard-projects-grid">
+                  {(showAllProjects
+                    ? [...projects].sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+                    : [...projects]
+                        .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+                        .slice(0, 6)
+                  ).map((project) => (
+                    <div key={project.project_id} className="dashboard-project-card project-card-item status-border-ongoing clickable-project-card">
+                      <div className="project-card-header">
+                        <h3>{project.project_name}</h3>
+                      </div>
+                      <p className="project-card-detail"><Shield size={14} className="mr-1" /> Team Leader: {project.team_leader || 'N/A'}</p>
+                      <p className="project-card-detail"><Users size={14} className="mr-1" /> Total Members: {project.total_members || 'N/A'}</p>
+                      <p className="project-card-detail"><CalendarPlus size={14} className="mr-1" /> Created At: {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}</p>
+                      <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
+                      <p className="project-card-detail">
+                        <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
+                        Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
+                        <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
+                      </p>
+                      <div className="project-card-progress">
+                        <div className="progress-bar-container">
+                          <div className="progress-bar-fill" style={{width: `${project.progress || 0}%`, backgroundColor: project.status === 'Ongoing' ? '#6366f1' : '#22c55e'}}></div>
+                        </div>
+                        <span className="progress-text">{project.progress || 0}%</span>
+                      </div>
+                      <div className="project-card-footer">
+                        <span className={`status-badge status-${project.status?.toLowerCase()}`}>{project.status}</span>
+                        {/* Add action buttons if needed, e.g., edit/mark complete */}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {projects.length > 6 && (
+                  <div className="dashboard-projects-toggle-btn-container">
+                    <button
+                      className="dashboard-projects-toggle-btn"
+                      onClick={() => setShowAllProjects((prev) => !prev)}
+                    >
+                      {showAllProjects ? "Hide" : "View more"}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
         <div className="analytics-section">
           <h2 className="section-title">Your Expense Overview</h2>
           <div className="analytics-grid">
@@ -945,7 +1230,7 @@ export default function DashboardWeb() {
           </div>
         </div>
 
-        {userData && userData.not_logged_out_count > 0 && (
+        {/* {userData && userData.not_logged_out_count > 0 && (
           <div className="warning-container">
             <p className="warning-text">
               Warning: you have not logged out for{" "}
@@ -965,7 +1250,7 @@ export default function DashboardWeb() {
           </div>
         )}
 
-        <div className="login-section">{renderLoginSection()}</div>
+        <div className="login-section">{renderLoginSection()}</div> */}
 
         {/* <div className="location-section">
           <div className="section-header">

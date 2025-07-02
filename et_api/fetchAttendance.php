@@ -38,7 +38,6 @@ if (!$stmt) {
 $stmt->bind_param("iss", $user_id, $start_date, $end_date);
 $stmt->execute();
 $result = $stmt->get_result();
-
 $attendance = array();
 while ($row = $result->fetch_assoc()) {
     $attendance[] = $row;
@@ -46,7 +45,6 @@ while ($row = $result->fetch_assoc()) {
 
 $queryHolidays = "SELECT holiday_date, holiday_name FROM holidays";
 $resultHolidays = $conn->query($queryHolidays);
-
 $holidays = array();
 while ($row = $resultHolidays->fetch_assoc()) {
     $holidays[] = $row;
