@@ -385,7 +385,8 @@ const ManageExpenseWeb = () => {
         </div>
       </div>
 
-      <div className="requestedexpenses-filters-section">
+      {/* Filters Section - Like Leaves */}
+      <div className="requestedexpensesfilters-section">
         <div className="requestedexpensessearch-container">
           <Search size={20} color="#64748b" />
           <input
@@ -396,32 +397,17 @@ const ManageExpenseWeb = () => {
             className="requestedexpensessearch-input"
           />
         </div>
-        <div className="requestedexpensesfilter-container">
-          <button
-            className="requestedexpensesfilter-button"
-            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-          >
-            <Filter size={20} color="#64748b" />
-            Filter
-          </button>
-          {showFilterDropdown && (
-            <div className="requestedexpensesfilter-dropdown">
-              <button onClick={() => handleFilterSelect("All")}>All</button>
-              <button onClick={() => handleFilterSelect("Unattended")}>
-                Unattended
-              </button>
-              <button onClick={() => handleFilterSelect("Pending")}>
-                Pending
-              </button>
-              <button onClick={() => handleFilterSelect("Approved")}>
-                Approved
-              </button>
-              <button onClick={() => handleFilterSelect("Rejected")}>
-                Rejected
-              </button>
-            </div>
-          )}
-        </div>
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="requestedexpensesfilter-button"
+        >
+          <option>All</option>
+          <option>Unattended</option>
+          <option>Pending</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+        </select>
       </div>
 
       <div className="date-filter-container">

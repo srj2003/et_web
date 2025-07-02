@@ -1559,3 +1559,24 @@ body {
   transform: scale(1.5);
   color: #34254e;
 }
+
+.view-details-user-btn {
+  background: linear-gradient(135deg, #6552f7 0%, #6552f7 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.07);
+}
+.view-details-user-btn:hover {
+  background: linear-gradient(135deg, #452cff 0%, #452cff 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.10);
+}

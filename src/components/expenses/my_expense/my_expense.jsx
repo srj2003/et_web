@@ -198,43 +198,30 @@ const ExpenseDetailsWeb = () => {
         </div>
       </div>
 
-      <div className="filters-section">
-        <div className="search-container">
+      {/* Filters Section - Like Leaves */}
+      <div className="myleavesfilters-section">
+        <div className="myleavessearch-container">
           <Search size={20} color="#64748b" />
           <input
             type="text"
             placeholder="Search expenses..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            className="myleavessearch-input"
           />
         </div>
-        <div className="filter-buttons">
-          <button
-            className={`filter-button ${filter === null ? "active" : ""}`}
-            onClick={() => setFilter(null)}
-          >
-            All
-          </button>
-          <button
-            className={`filter-button ${filter === "Approved" ? "active" : ""}`}
-            onClick={() => setFilter("Approved")}
-          >
-            Approved
-          </button>
-          <button
-            className={`filter-button ${filter === "Pending" ? "active" : ""}`}
-            onClick={() => setFilter("Pending")}
-          >
-            Pending
-          </button>
-          <button
-            className={`filter-button ${filter === "Rejected" ? "active" : ""}`}
-            onClick={() => setFilter("Rejected")}
-          >
-            Rejected
-          </button>
-        </div>
+        <select
+          value={filter || "All"}
+          onChange={(e) =>
+            setFilter(e.target.value === "All" ? null : e.target.value)
+          }
+          className="myleavesfilter-button"
+        >
+          <option>All</option>
+          <option>Approved</option>
+          <option>Pending</option>
+          <option>Rejected</option>
+        </select>
       </div>
 
       <div className="expenses-grid">

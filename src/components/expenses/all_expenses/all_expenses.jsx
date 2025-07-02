@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-// import moment from 'moment';
+import moment from "moment";
 
 const AllExpensesWeb = () => {
   const [expenses, setExpenses] = useState([]);
@@ -300,43 +300,29 @@ const AllExpensesWeb = () => {
         </div>
       </div>
 
-      <div className="allexpense-filters-section">
-        <div className="allexpense-search-container">
+      {/* Filters Section - Like Leaves */}
+      <div className="myleavesfilters-section">
+        <div className="myleavessearch-container">
           <Search size={20} color="#64748b" />
           <input
             type="text"
             placeholder="Search expenses..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="allexpense-search-input"
+            className="myleavessearch-input"
           />
         </div>
-        <div className="allexpense-filter-container">
-          <button
-            className="allexpense-filter-button"
-            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-          >
-            <Filter size={20} color="#64748b" />
-            Filter
-          </button>
-          {showFilterDropdown && (
-            <div className="allexpense-filter-dropdown">
-              <button onClick={() => handleFilterSelect("All")}>All</button>
-              <button onClick={() => handleFilterSelect("Unattended")}>
-                Unattended
-              </button>
-              <button onClick={() => handleFilterSelect("Pending")}>
-                Pending
-              </button>
-              <button onClick={() => handleFilterSelect("Approved")}>
-                Approved
-              </button>
-              <button onClick={() => handleFilterSelect("Rejected")}>
-                Rejected
-              </button>
-            </div>
-          )}
-        </div>
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="myleavesfilter-button"
+        >
+          <option>All</option>
+          <option>Unattended</option>
+          <option>Pending</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+        </select>
       </div>
 
       <div className="allexpense-date-filter-container">
