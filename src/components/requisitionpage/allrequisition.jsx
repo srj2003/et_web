@@ -12,6 +12,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 
 const getStatusColor = (status) => {
@@ -26,6 +27,21 @@ const getStatusColor = (status) => {
       return "#64748b";
     default:
       return "#64748b";
+  }
+};
+
+const getStatusBg = (status) => {
+  switch (status) {
+    case "Approved":
+      return "linear-gradient(145deg, #f0fdf4, #dcfce7)";
+    case "Rejected":
+      return "linear-gradient(145deg, #fef2f2, #fee2e2)";
+    case "Partially Approved":
+      return "linear-gradient(145deg, #fef9c3, #fef08a)";
+    case "Unattended":
+      return "linear-gradient(145deg, #f1f5f9, #e2e8f0)";
+    default:
+      return "white";
   }
 };
 
@@ -199,41 +215,50 @@ export default function AllRequisitions() {
       <h1 className="requisition-page-title">All Requisitions</h1>
 
       {/* Stats Grid */}
-      <div className="requisition-stats-grid">
-        <div className="requisition-stat-card">
-          <div className="requisition-stat-icon">
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon">
             <AlertCircle size={24} color="#6366f1" />
           </div>
-          <div className="requisition-stat-info">
+          <div className="stat-info">
             <h3>Total Requisitions</h3>
-            <p className="requisition-stat-value">{stats.total}</p>
+            <p className="stat-value">{stats.total}</p>
           </div>
         </div>
-        <div className="requisition-stat-card">
-          <div className="requisition-stat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
             <Clock size={24} color="#f59e0b" />
           </div>
-          <div className="requisition-stat-info">
-            <h3>Pending</h3>
-            <p className="requisition-stat-value">{stats.pending}</p>
+          <div className="stat-info">
+            <h3>Unattended</h3>
+            <p className="stat-value">{stats.unattended}</p>
           </div>
         </div>
-        <div className="requisition-stat-card">
-          <div className="requisition-stat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
             <Check size={24} color="#10b981" />
           </div>
-          <div className="requisition-stat-info">
+          <div className="stat-info">
             <h3>Approved</h3>
-            <p className="requisition-stat-value">{stats.approved}</p>
+            <p className="stat-value">{stats.approved}</p>
           </div>
         </div>
-        <div className="requisition-stat-card">
-          <div className="requisition-stat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
+            <AlertTriangle size={24} color="#ef4444" />
+          </div>
+          <div className="stat-info">
+            <h3>partiallyApproved</h3>
+            <p className="stat-value">{stats.partiallyApproved}</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">
             <X size={24} color="#ef4444" />
           </div>
-          <div className="requisition-stat-info">
+          <div className="stat-info">
             <h3>Rejected</h3>
-            <p className="requisition-stat-value">{stats.rejected}</p>
+            <p className="stat-value">{stats.rejected}</p>
           </div>
         </div>
       </div>
@@ -270,6 +295,8 @@ export default function AllRequisitions() {
           <div
             className="requisition-requisition-card"
             key={idx}
+            data-status={item.requisition_status}
+            style={{ background: getStatusBg(item.requisition_status) }}
             onClick={() => setSelected(item)}
           >
             <div className="requisition-card-header">

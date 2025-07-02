@@ -15,8 +15,6 @@ const getStatusColor = (status) => {
   switch (status) {
     case "Approved":
       return "#10b981";
-    case "Pending":
-      return "#f59e0b";
     case "Rejected":
       return "#ef4444";
     case "Unattended":
@@ -147,7 +145,7 @@ export default function AllLeaves() {
 
   return (
     <div className="leaves-container">
-      <h1 className="page-title">All Leaves</h1>
+      <h1 className="allleavespage-title">All Leaves</h1>
 
       {/* Stats Grid */}
       <div className="stats-grid">
@@ -213,12 +211,13 @@ export default function AllLeaves() {
         </select>
       </div>
 
-      {/* Leaves Grid */}
+      {/* Leaves Grid - Card Style Like RequestedLeaves, but using allleaves.css classes */}
       <div className="leaves-grid">
         {paginated.map((leave, idx) => (
           <div
             className="leave-card"
             key={leave.leave_id || idx}
+            data-status={leave.leave_track_status_text}
             onClick={() => setSelectedLeave(leave)}
           >
             <div className="leave-header">
@@ -259,20 +258,20 @@ export default function AllLeaves() {
 
       {/* Pagination */}
       {totalPages > 0 && (
-        <div className="pagination-container">
+        <div className="requisition-pagination-container">
           <button
-            className="pagination-button"
+            className="requisition-pagination-button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             <ChevronLeft size={20} />
             Previous
           </button>
-          <div className="pagination-info">
+          <div className="requisition-pagination-number">
             Page {currentPage} of {totalPages}
           </div>
           <button
-            className="pagination-button"
+            className="requisition-pagination-button"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >

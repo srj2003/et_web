@@ -22,9 +22,10 @@ const RequisitionsWeb = () => {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [stats, setStats] = useState({
     total: 0,
-    pending: 0,
+    Unattended: 0,
     approved: 0,
     rejected: 0,
+    partiallyApproved: 0,
   });
   const ITEMS_PER_PAGE = 10;
 
@@ -90,14 +91,17 @@ const RequisitionsWeb = () => {
           // Calculate stats
           setStats({
             total: transformedData.length,
-            pending: transformedData.filter(
-              (req) => req.requisition_status === "Pending"
+            Unattended: transformedData.filter(
+              (req) => req.requisition_status === "Unattended"
             ).length,
             approved: transformedData.filter(
               (req) => req.requisition_status === "Approved"
             ).length,
             rejected: transformedData.filter(
               (req) => req.requisition_status === "Rejected"
+            ).length,
+            partiallyApproved: transformedData.filter(
+              (req) => req.requisition_status === "Partially Approved"
             ).length,
           });
         }
@@ -238,8 +242,8 @@ const RequisitionsWeb = () => {
               <Clock size={24} color="#f59e0b" />
             </div>
             <div className="stat-info">
-              <h3>Pending</h3>
-              <p className="stat-value">{stats.pending}</p>
+              <h3>Unattended</h3>
+              <p className="stat-value">{stats.Unattended}</p>
             </div>
           </div>
           <div className="stat-card">
@@ -249,6 +253,15 @@ const RequisitionsWeb = () => {
             <div className="stat-info">
               <h3>Approved</h3>
               <p className="stat-value">{stats.approved}</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">
+              <X size={24} color="#ef4444" />
+            </div>
+            <div className="stat-info">
+              <h3>PartiallyApproved</h3>
+              <p className="stat-value">{stats.partiallyApproved}</p>
             </div>
           </div>
           <div className="stat-card">
@@ -278,7 +291,7 @@ const RequisitionsWeb = () => {
             className="requestedrequesitionfilter-button"
           >
             <option value="All">All Status</option>
-            <option value="Pending">Pending</option>
+            <option value="Unattended">Unattended</option>
             <option value="Approved">Approved</option>
             <option value="Partially Approved">Partially Approved</option>
             <option value="Rejected">Rejected</option>
@@ -299,7 +312,21 @@ const RequisitionsWeb = () => {
                   {requisition.requisition_title}
                 </h3>
                 <span
-                  className={`status-badge ${requisition.requisition_status.toLowerCase()}`}
+                  className="requisition-status-badge"
+                  style={{
+                    backgroundColor:
+                      requisition.requisition_status === "Approved"
+                        ? "#10b981"
+                        : requisition.requisition_status ===
+                          "Partially Approved"
+                        ? "#fbbf24"
+                        : requisition.requisition_status === "Rejected"
+                        ? "#ef4444"
+                        : requisition.requisition_status === "Unattended"
+                        ? "#64748b"
+                        : "#64748b",
+                    color: "#fff",
+                  }}
                 >
                   {requisition.requisition_status}
                 </span>
@@ -327,7 +354,7 @@ const RequisitionsWeb = () => {
                     {requisition.requisition_date}
                   </span>
                 </div>
-                {requisition.requisition_status !== "Pending" && (
+                {requisition.requisition_status !== "Unattended" && (
                   <div className="requisition-info">
                     <span className="info-label">Approved Amount:</span>
                     <span className="info-value amount">
@@ -336,7 +363,7 @@ const RequisitionsWeb = () => {
                   </div>
                 )}
               </div>
-              {requisition.requisition_status === "Pending" ? (
+              {requisition.requisition_status === "Unattended" ? (
                 <div className="requisition-actions">
                   <button
                     className="action-button approve"
@@ -382,20 +409,20 @@ const RequisitionsWeb = () => {
           ))}
         </div>
         {totalPages > 0 && (
-          <div className="pagination-container">
+          <div className="requisition-pagination-container">
             <button
-              className="pagination-button"
+              className="requisition-pagination-button"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
               <ChevronLeft size={20} />
               Previous
             </button>
-            <div className="pagination-number">
+            <div className="requisition-pagination-number">
               Page {currentPage} of {totalPages}
             </div>
             <button
-              className="pagination-button"
+              className="requisition-pagination-button"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
@@ -457,7 +484,7 @@ const RequisitionsWeb = () => {
                   <p>{selectedRequisition.requisition_comment}</p>
                 </div>
               )}
-              {selectedRequisition.requisition_status === "Pending" && (
+              {selectedRequisition.requisition_status === "Unattended" && (
                 <div className="approval-section">
                   <div className="amount-input">
                     <label>Amount to Approve</label>
@@ -540,7 +567,7 @@ const getRequisitionType = (typeCode) => {
 };
 
 const getStatus = (statusCode) => {
-  if (statusCode === null) return "Pending";
+  if (statusCode === null) return "Unattended";
   switch (statusCode) {
     case 0:
       return "Rejected";
@@ -549,7 +576,7 @@ const getStatus = (statusCode) => {
     case 2:
       return "Partially Approved";
     default:
-      return "Pending";
+      return "Unattended";
   }
 };
 

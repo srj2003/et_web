@@ -121,19 +121,6 @@ const MyLeaves = () => {
     fetchLeaves();
   }, []);
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "Approved":
-        return <CheckCircle size={20} color="#10b981" />;
-      case "Pending":
-        return <Clock size={20} color="#f59e0b" />;
-      case "Rejected":
-        return <XCircle size={20} color="#ef4444" />;
-      default:
-        return null;
-    }
-  };
-
   const getStatusClass = (status) => {
     switch (status) {
       case "Approved":
@@ -189,45 +176,47 @@ const MyLeaves = () => {
     <div className="leaves-container">
       <h1 className="myleavespage-title">My Leaves</h1>
 
-      <div className="myleavesstats-grid">
-        <div className="myleavesstat-card">
-          <div className="myleavesstat-icon">
+      {/* Stats Grid */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon">
             <Calendar size={24} color="#6366f1" />
           </div>
-          <div className="myleavesstat-info">
+          <div className="stat-info">
             <h3>Total Leaves</h3>
-            <p className="myleavesstat-value">{stats.total}</p>
+            <p className="stat-value">{stats.total}</p>
           </div>
         </div>
-        <div className="myleavesstat-card">
-          <div className="myleavesstat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
             <CheckCircle size={24} color="#10b981" />
           </div>
-          <div className="myleavesstat-info">
+          <div className="stat-info">
             <h3>Approved</h3>
-            <p className="myleavesstat-value">{stats.approved}</p>
+            <p className="stat-value">{stats.approved}</p>
           </div>
         </div>
-        <div className="myleavesstat-card">
-          <div className="myleavesstat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
             <Clock size={24} color="#f59e0b" />
           </div>
-          <div className="myleavesstat-info">
+          <div className="stat-info">
             <h3>Unattended</h3>
-            <p className="myleavesstat-value">{stats.unattended}</p>
+            <p className="stat-value">{stats.unattended}</p>
           </div>
         </div>
-        <div className="myleavesstat-card">
-          <div className="myleavesstat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
             <XCircle size={24} color="#ef4444" />
           </div>
-          <div className="myleavesstat-info">
+          <div className="stat-info">
             <h3>Rejected</h3>
-            <p className="myleavesstat-value">{stats.rejected}</p>
+            <p className="stat-value">{stats.rejected}</p>
           </div>
         </div>
       </div>
 
+      {/* Filters Section */}
       <div className="myleavesfilters-section">
         <div className="myleavessearch-container">
           <Search size={20} color="#64748b" />
@@ -251,46 +240,56 @@ const MyLeaves = () => {
         </select>
       </div>
 
-      <div className="myleavesleaves-grid">
+      {/* Leaves Grid - Card Style Like RequestedLeaves */}
+      <div className="requestedleaves-leaves-grid">
         {paginatedLeaves.map((leave) => (
-          <div key={leave.leave_id} className="myleavesleave-card">
-            <div className="myleavesleave-header">
-              <div className="myleavesleave-title-section">
-                <h3 className="myleavesleave-title">{leave.title}</h3>
-                <p className="myleavesleave-subtitle">{leave.leave_type}</p>
+          <div
+            key={leave.leave_id}
+            className="requestedleaves-leave-card"
+            data-status={leave.leave_status}
+          >
+            <div className="requestedleaves-leave-header">
+              <div className="requestedleaves-leave-header-content">
+                <h3 className="requestedleaves-employee-name">You</h3>
+                <span className="requestedleaves-leave-type">
+                  {leave.leave_type}
+                </span>
               </div>
               <span
-                className={`myleavesstatus-badge ${getStatusClass(
-                  leave.leave_status
-                )}`}
+                className={`requestedleaves-status-badge requestedleaves-status-${leave.leave_status.toLowerCase()}`}
               >
-                {getStatusIcon(leave.leave_status)}
                 {leave.leave_status}
               </span>
             </div>
-            <div className="myleavesleave-details">
-              <div className="myleavesleave-info">
-                <span className="myleavesinfo-label">From Date</span>
-                <span className="myleavesinfo-value">{leave.from_date}</span>
-              </div>
-              <div className="myleavesleave-info">
-                <span className="myleavesinfo-label">To Date</span>
-                <span className="myleavesinfo-value">{leave.to_date}</span>
-              </div>
-              <div className="myleavesleave-info">
-                <span className="myleavesinfo-label">Duration</span>
-                <span className="myleavesinfo-value">
-                  {leave.duration} days
-                </span>
-              </div>
-              {leave.leave_reason && (
-                <div className="myleavesleave-info myleavesfull-width">
-                  <span className="myleavesinfo-label">Reason</span>
-                  <span className="myleavesinfo-value">
+            <div className="requestedleaves-leave-details">
+              <div className="requestedleaves-leave-title-section">
+                <h4 className="requestedleaves-leave-title">{leave.title}</h4>
+                {leave.leave_reason && (
+                  <p className="requestedleaves-leave-comment">
                     {leave.leave_reason}
+                  </p>
+                )}
+              </div>
+              <div className="requestedleaves-leave-dates">
+                <div className="requestedleaves-date-item">
+                  <span className="requestedleaves-date-label">From:</span>
+                  <span className="requestedleaves-date-value">
+                    {leave.from_date}
                   </span>
                 </div>
-              )}
+                <div className="requestedleaves-date-item">
+                  <span className="requestedleaves-date-label">To:</span>
+                  <span className="requestedleaves-date-value">
+                    {leave.to_date}
+                  </span>
+                </div>
+                <div className="requestedleaves-date-item">
+                  <span className="requestedleaves-date-label">Duration:</span>
+                  <span className="requestedleaves-date-value">
+                    {leave.duration} days
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         ))}
@@ -298,20 +297,20 @@ const MyLeaves = () => {
 
       {/* Pagination controls */}
       {totalPages > 0 && (
-        <div className="pagination-container">
+        <div className="requisition-pagination-container">
           <button
-            className="pagination-button"
+            className="requisition-pagination-button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             <ChevronLeft size={20} />
             Previous
           </button>
-          <div className="pagination-info">
+          <div className="requisition-pagination-number">
             Page {currentPage} of {totalPages}
           </div>
           <button
-            className="pagination-button"
+            className="requisition-pagination-button"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >

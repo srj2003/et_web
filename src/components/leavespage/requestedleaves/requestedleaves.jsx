@@ -18,10 +18,10 @@ const getStatusColor = (status) => {
   switch (status) {
     case "Approved":
       return "#10b981";
-    case "Unattended":
-      return "#64748b";
     case "Rejected":
       return "#ef4444";
+    case "Unattended":
+      return "#64748b";
     default:
       return "#64748b";
   }
@@ -32,7 +32,7 @@ const getStatusText = (status) => {
   switch (status) {
     case 1:
       return "Approved";
-    case 2:
+    case 0:
       return "Rejected";
     default:
       return "Unattended";
@@ -98,7 +98,7 @@ export default function RequestedLeaves() {
             unattended: data.filter((l) => l.leave_track_status === null)
               .length,
             approved: data.filter((l) => l.leave_track_status === 1).length,
-            rejected: data.filter((l) => l.leave_track_status === 2).length,
+            rejected: data.filter((l) => l.leave_track_status === 0).length,
           });
         } else {
           setError(data.message || "No data available");
@@ -246,41 +246,41 @@ export default function RequestedLeaves() {
       <h1 className="requestedleaves-page-title">Requested Leaves</h1>
 
       {/* Stats Grid */}
-      <div className="requestedleaves-stats-grid">
-        <div className="requestedleaves-stat-card">
-          <div className="requestedleaves-stat-icon">
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon">
             <Calendar size={24} color="#6366f1" />
           </div>
-          <div className="requestedleaves-stat-info">
+          <div className="stat-info">
             <h3>Total Leaves</h3>
-            <p className="requestedleaves-stat-value">{stats.total}</p>
+            <p className="stat-value">{stats.total}</p>
           </div>
         </div>
-        <div className="requestedleaves-stat-card">
-          <div className="requestedleaves-stat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
             <Clock size={24} color="#64748b" />
           </div>
-          <div className="requestedleaves-stat-info">
+          <div className="stat-info">
             <h3>Unattended</h3>
-            <p className="requestedleaves-stat-value">{stats.unattended}</p>
+            <p className="stat-value">{stats.unattended}</p>
           </div>
         </div>
-        <div className="requestedleaves-stat-card">
-          <div className="requestedleaves-stat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
             <CheckCircle size={24} color="#10b981" />
           </div>
-          <div className="requestedleaves-stat-info">
+          <div className="stat-info">
             <h3>Approved</h3>
-            <p className="requestedleaves-stat-value">{stats.approved}</p>
+            <p className="stat-value">{stats.approved}</p>
           </div>
         </div>
-        <div className="requestedleaves-stat-card">
-          <div className="requestedleaves-stat-icon">
+        <div className="stat-card">
+          <div className="stat-icon">
             <XCircle size={24} color="#ef4444" />
           </div>
-          <div className="requestedleaves-stat-info">
+          <div className="stat-info">
             <h3>Rejected</h3>
-            <p className="requestedleaves-stat-value">{stats.rejected}</p>
+            <p className="stat-value">{stats.rejected}</p>
           </div>
         </div>
       </div>
@@ -392,20 +392,20 @@ export default function RequestedLeaves() {
 
       {/* Pagination */}
       {totalPages > 0 && (
-        <div className="pagination-container">
+        <div className="requisition-pagination-container">
           <button
-            className="pagination-button"
+            className="requisition-pagination-button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             <ChevronLeft size={20} />
             Previous
           </button>
-          <div className="pagination-info">
+          <div className="requisition-pagination-number">
             Page {currentPage} of {totalPages}
           </div>
           <button
-            className="pagination-button"
+            className="requisition-pagination-button"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >
