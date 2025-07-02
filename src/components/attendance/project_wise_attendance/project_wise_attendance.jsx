@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./project_wise_attendance.css";
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 // import "../../users/users.css";
 
 const Attendance = () => {
@@ -26,6 +27,7 @@ const Attendance = () => {
   const [mapModalCoords, setMapModalCoords] = useState(null);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleRowClick = async (item) => {
     setSelectedUser(item);
@@ -311,26 +313,28 @@ const Attendance = () => {
                         </span>
                       </td>
                       <td>
-                        <FaMapMarkerAlt
-                          className="location-icon"
-                          style={{ color: '#6552f7' }}
-                          title="Location"
-                          onClick={e => {
-                            e.stopPropagation();
-                            if (item.latitude && item.longitude) {
-                              setMapModalCoords({ lat: item.latitude, lng: item.longitude });
-                            } else if (item.u_latitude && item.u_longitude) {
-                              setMapModalCoords({ lat: item.u_latitude, lng: item.u_longitude });
-                            } else if (item.login_lat_long) {
-                              // Parse 'lat,long' string
-                              const [lat, lng] = item.login_lat_long.split(',').map(Number);
-                              setMapModalCoords({ lat, lng });
-                            } else {
-                              setMapModalCoords(null);
-                            }
-                            setMapModalOpen(true);
-                          }}
-                        />
+                        {item.is_logged_out === 0 && (
+                          <FaMapMarkerAlt
+                            className="location-icon"
+                            style={{ color: '#6552f7' }}
+                            title="Location"
+                            onClick={e => {
+                              e.stopPropagation();
+                              if (item.latitude && item.longitude) {
+                                setMapModalCoords({ lat: item.latitude, lng: item.longitude });
+                              } else if (item.u_latitude && item.u_longitude) {
+                                setMapModalCoords({ lat: item.u_latitude, lng: item.u_longitude });
+                              } else if (item.login_lat_long) {
+                                // Parse 'lat,long' string
+                                const [lat, lng] = item.login_lat_long.split(',').map(Number);
+                                setMapModalCoords({ lat, lng });
+                              } else {
+                                setMapModalCoords(null);
+                              }
+                              setMapModalOpen(true);
+                            }}
+                          />
+                        )}
                       </td>
                     </tr>
                   );
@@ -391,6 +395,20 @@ const Attendance = () => {
                 <h3 className="user-name-modal">{[selectedUser.u_fname, selectedUser.u_mname, selectedUser.u_lname].filter(Boolean).join(" ")}</h3>
                 <h6 >e-mail:{[selectedUser.u_email].filter(Boolean).join(" ")}</h6>
                 <h6 >phone no.:{[selectedUser.u_mob].filter(Boolean).join(" ")}</h6>
+                <button
+                  className="view-details-user-btn"
+                  style={{margin: '1rem auto 0.5rem auto', display: 'block'}}
+                  onClick={() => {
+                    navigate('/reports', {
+                      state: {
+                        userId: selectedUser.u_id,
+                        userName: [selectedUser.u_fname, selectedUser.u_mname, selectedUser.u_lname].filter(Boolean).join(' ')
+                      }
+                    });
+                  }}
+                >
+                  View details
+                </button>
               </div>
               <div className="details-section">
                 <div className="detail-item">

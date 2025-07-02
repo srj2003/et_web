@@ -3,6 +3,7 @@ import "./reports.css";
 // import "../expenses/add_expense/add_expense.css";
 import { FaUser, FaCalendarAlt, FaGlobe, FaRedo, FaSearch, FaDownload } from 'react-icons/fa';
 import Select from "react-select";
+import { useLocation } from 'react-router-dom';
 
 const dummyUsers = [
   { id: 1, name: "Alice Smith" },
@@ -36,8 +37,16 @@ const Reports = () => {
   const [workReportTable, setWorkReportTable] = useState(null);
   const [workReportLoading, setWorkReportLoading] = useState(false);
   const [workReportError, setWorkReportError] = useState("");
+  const location = useLocation();
 
   useEffect(() => {
+    // If navigated with state, pre-populate only user
+    if (location && location.state) {
+      const { userId, userName } = location.state;
+      if (userId && userName) {
+        setSelectedUsers([{ value: userId, label: userName }]);
+      }
+    }
     const fetchProjects = async () => {
       setLoadingProjects(true);
       const userId = localStorage.getItem("userid");
@@ -65,7 +74,7 @@ const Reports = () => {
       }
     };
     fetchProjects();
-  }, []);
+  }, [location]);
 
   useEffect(() => {
     const fetchAllUsers = async () => {
