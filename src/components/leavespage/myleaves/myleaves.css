@@ -1,5 +1,5 @@
-/* Reuse the same CSS structure as my_expense.css but replace expense-specific classes */
-.leaves-container {
+/* All class selectors are now prefixed with 'myleaves' to match the updated JSX */
+.myleaves-container {
     height: 100vh;
     font-family: 'Inter', 'Inter-SemiBold', sans-serif;
     background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
@@ -9,8 +9,7 @@
     padding: 2rem;
 }
 
-/* Reuse the same styles but replace .expense- with .leave- */
-.leave-card {
+.myleavesleave-card {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
     border-radius: 24px;
@@ -20,12 +19,12 @@
     transition: all 0.3s ease;
 }
 
-.leave-card:hover {
+.myleavesleave-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-.leave-header {
+.myleavesleave-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -33,11 +32,11 @@
     gap: 1rem;
 }
 
-.leave-title-section {
+.myleavesleave-title-section {
     flex: 1;
 }
 
-.leave-title {
+.myleavesleave-title {
     font-size: 1.1rem;
     color: #1e293b;
     font-weight: 600;
@@ -45,13 +44,13 @@
     line-height: 1.4;
 }
 
-.leave-subtitle {
+.myleavesleave-subtitle {
     font-size: 0.9rem;
     color: #64748b;
     margin: 0;
 }
 
-.status-badge {
+.myleavesstatus-badge {
     flex-shrink: 0;
     min-width: fit-content;
     height: fit-content;
@@ -64,42 +63,41 @@
     gap: 0.5rem;
 }
 
-.leave-details {
+.myleavesleave-details {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
 }
 
-.leave-info {
+.myleavesleave-info {
     display: flex;
     flex-direction: column;
     gap: 0.375rem;
 }
 
-.info-label {
+.myleavesinfo-label {
     font-size: 0.875rem;
     color: #64748b;
     font-weight: 500;
 }
 
-.info-value {
+.myleavesinfo-value {
     font-size: 1rem;
     color: #1e293b;
     font-weight: 500;
 }
 
-.full-width {
+.myleavesfull-width {
     grid-column: 1 / -1;
 }
 
-.leaves-grid {
+.myleavesleaves-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 2rem;
 }
 
-/* Update the filters-section styles */
-.filters-section {
+.myleavesfilters-section {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
     border-radius: 24px;
@@ -115,7 +113,7 @@
     align-items: center;
 }
 
-.search-container {
+.myleavessearch-container {
     flex: 1;
     display: flex;
     align-items: center;
@@ -127,13 +125,13 @@
     transition: all 0.3s ease;
 }
 
-.search-container:focus-within {
+.myleavessearch-container:focus-within {
     border-color: #6366f1;
     box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
     transform: translateY(-1px);
 }
 
-.search-input {
+.myleavessearch-input {
     flex: 1;
     border: none;
     background: none;
@@ -142,11 +140,11 @@
     outline: none;
 }
 
-.search-input::placeholder {
+.myleavessearch-input::placeholder {
     color: #94a3b8;
 }
 
-.filter-button {
+.myleavesfilter-button {
     padding: 0.875rem 1.25rem;
     background: rgba(248, 250, 252, 0.9);
     border: 2px solid rgba(99, 102, 241, 0.2);
@@ -165,45 +163,42 @@
     padding-right: 2.5rem;
 }
 
-.filter-button:hover {
+.myleavesfilter-button:hover {
     background-color: rgba(99, 102, 241, 0.05);
     border-color: rgba(99, 102, 241, 0.3);
     transform: translateY(-1px);
 }
 
-.filter-button option {
+.myleavesfilter-button option {
     font-size: 0.9375rem;
     padding: 0.75rem;
     background: white;
     color: #1e293b;
 }
 
-/* Status badge for unattended leaves */
-.status-badge.status-approved {
+.myleavesstatus-badge.status-approved {
   background-color: rgba(16, 185, 129, 0.1);
   color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-.status-badge.status-pending {
+.myleavesstatus-badge.status-pending {
   background-color: rgba(245, 158, 11, 0.1);
   color: #f59e0b;
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-.status-badge.status-rejected {
+.myleavesstatus-badge.status-rejected {
   background-color: rgba(239, 68, 68, 0.1);
   color: #ef4444;
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-.status-badge.status-unattended {
+.myleavesstatus-badge.status-unattended {
   background-color: rgba(148, 163, 184, 0.1);
   color: #94a3b8;
   border: 1px solid rgba(148, 163, 184, 0.2);
 }
-
-/* Pagination */
 .pagination-container {
   display: flex;
   justify-content: center;
@@ -230,18 +225,93 @@
   cursor: not-allowed;
 }
 
-.pagination-button:hover:not(:disabled) {
-  background: #4f46e5;
-}
-
 .pagination-info {
   font-size: 1rem;
   color: #475569;
 }
 
+/* --- MYLEAVES STATS CARDS --- */
+.myleavesstats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  margin-top: 1.5rem;
+}
+
+.myleavesstat-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.myleavesstat-card:hover {
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.10);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.myleavesstat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.myleavesstat-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.15rem;
+}
+
+.myleavesstat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #6366f1;
+  margin-bottom: 0.1rem;
+}
+
+/* Color coding for each stat */
+.myleavesstat-card.total {
+  border-left: 5px solid #6366f1;
+}
+.myleavesstat-card.approved {
+  border-left: 5px solid #10b981;
+}
+.myleavesstat-card.unattended {
+  border-left: 5px solid #f59e0b;
+}
+.myleavesstat-card.rejected {
+  border-left: 5px solid #ef4444;
+}
+
+@media (max-width: 768px) {
+  .myleavesstats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .myleavesstat-card {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+  .myleavesstat-title {
+    font-size: 0.95rem;
+  }
+  .myleavesstat-value {
+    font-size: 1.3rem;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-    .leaves-container {
+    .myleaves-container {
         padding: 1rem;
         background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
     }
@@ -521,4 +591,35 @@
         border-radius: 12px;
         margin-top: 0.5rem;
     }
+}
+
+/* Loader Centering Styles */
+.myleaves-loading-container {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.myleaves-loading-spinner {
+  width: 56px;
+  height: 56px;
+  border: 6px solid #e0e7ff;
+  border-top: 6px solid #6366f1;
+  border-radius: 50%;
+  animation: myleaves-spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes myleaves-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.myleaves-loading-text {
+  color: #6366f1;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }

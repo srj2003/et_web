@@ -61,7 +61,7 @@ export default function AllLeaves() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ userId }),
           }
@@ -124,9 +124,9 @@ export default function AllLeaves() {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading leaves...</p>
+      <div className="requestedleaves-loading-container">
+        <div className="requestedleaves-loading-spinner"></div>
+        <div className="requestedleaves-loading-text">Loading leaves...</div>
       </div>
     );
   }
@@ -190,21 +190,21 @@ export default function AllLeaves() {
       </div>
 
       {/* Search and Filters */}
-      <div className="filters-section">
-        <div className="search-container">
+      <div className="myleavesfilters-section">
+        <div className="myleavessearch-container">
           <Search size={20} color="#64748b" />
           <input
             type="text"
             placeholder="Search leaves..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            className="myleavessearch-input"
           />
         </div>
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="filter-button"
+          className="myleavesfilter-button"
         >
           <option>All</option>
           <option>Unattended</option>
@@ -258,7 +258,7 @@ export default function AllLeaves() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalPages > 0 && (
         <div className="pagination-container">
           <button
             className="pagination-button"
@@ -268,7 +268,7 @@ export default function AllLeaves() {
             <ChevronLeft size={20} />
             Previous
           </button>
-          <div className="pagination-number">
+          <div className="pagination-info">
             Page {currentPage} of {totalPages}
           </div>
           <button

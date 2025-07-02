@@ -74,7 +74,7 @@ export default function RequestedLeaves() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ userId }),
           }
@@ -144,7 +144,9 @@ export default function RequestedLeaves() {
         return;
       }
 
-      const cardElement = document.querySelector(`[data-leave-id="${leaveId}"]`);
+      const cardElement = document.querySelector(
+        `[data-leave-id="${leaveId}"]`
+      );
       if (!cardElement) return;
 
       cardElement.classList.add(
@@ -157,7 +159,7 @@ export default function RequestedLeaves() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
           body: JSON.stringify({
             leave_id: leaveId,
@@ -173,35 +175,42 @@ export default function RequestedLeaves() {
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Update leaves state and stats
-        setLeaves(prevLeaves => {
-          const updatedLeaves = prevLeaves.filter(leave => leave.leave_id !== leaveId);
-          
+        setLeaves((prevLeaves) => {
+          const updatedLeaves = prevLeaves.filter(
+            (leave) => leave.leave_id !== leaveId
+          );
+
           // Update stats
-          setStats(prevStats => ({
+          setStats((prevStats) => ({
             total: prevStats.total,
-            unattended: prevStats.unattended - .5,
-            approved: action === "approve" ? prevStats.approved +.5  : prevStats.approved,
-            rejected: action === "reject" ? prevStats.rejected +.5 : prevStats.rejected
+            unattended: prevStats.unattended - 0.5,
+            approved:
+              action === "approve"
+                ? prevStats.approved + 0.5
+                : prevStats.approved,
+            rejected:
+              action === "reject"
+                ? prevStats.rejected + 0.5
+                : prevStats.rejected,
           }));
 
           return updatedLeaves;
         });
 
         const remainingCards = document.querySelectorAll(
-          '.leave-card:not(.disappearing-approve):not(.disappearing-reject)'
+          ".leave-card:not(.disappearing-approve):not(.disappearing-reject)"
         );
-        remainingCards.forEach(card => {
+        remainingCards.forEach((card) => {
           card.classList.add("appearing");
         });
 
         setSelectedLeave(null);
 
         setTimeout(() => {
-          remainingCards.forEach(card => {
+          remainingCards.forEach((card) => {
             card.classList.remove("appearing");
           });
         }, 300);
-
       } else {
         alert(data.message || "Failed to process action");
         cardElement.classList.remove(
@@ -217,80 +226,81 @@ export default function RequestedLeaves() {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className="requestedleaves-loading-container">
+        <div className="requestedleaves-loading-spinner"></div>
+        <div className="requestedleaves-loading-text">Loading leaves...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="error-container">
+      <div className="requestedleaves-error-container">
         <p>{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="leaves-container">
-      <h1 className="page-title">Requested Leaves</h1>
+    <div className="requestedleaves-container">
+      <h1 className="requestedleaves-page-title">Requested Leaves</h1>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
+      <div className="requestedleaves-stats-grid">
+        <div className="requestedleaves-stat-card">
+          <div className="requestedleaves-stat-icon">
             <Calendar size={24} color="#6366f1" />
           </div>
-          <div className="stat-info">
+          <div className="requestedleaves-stat-info">
             <h3>Total Leaves</h3>
-            <p className="stat-value">{stats.total}</p>
+            <p className="requestedleaves-stat-value">{stats.total}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="requestedleaves-stat-card">
+          <div className="requestedleaves-stat-icon">
             <Clock size={24} color="#64748b" />
           </div>
-          <div className="stat-info">
+          <div className="requestedleaves-stat-info">
             <h3>Unattended</h3>
-            <p className="stat-value">{stats.unattended}</p>
+            <p className="requestedleaves-stat-value">{stats.unattended}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="requestedleaves-stat-card">
+          <div className="requestedleaves-stat-icon">
             <CheckCircle size={24} color="#10b981" />
           </div>
-          <div className="stat-info">
+          <div className="requestedleaves-stat-info">
             <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
+            <p className="requestedleaves-stat-value">{stats.approved}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="requestedleaves-stat-card">
+          <div className="requestedleaves-stat-icon">
             <XCircle size={24} color="#ef4444" />
           </div>
-          <div className="stat-info">
+          <div className="requestedleaves-stat-info">
             <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
+            <p className="requestedleaves-stat-value">{stats.rejected}</p>
           </div>
         </div>
       </div>
 
       {/* Filters Section */}
-      <div className="filters-section">
-        <div className="search-container">
+      <div className="myleavesfilters-section">
+        <div className="myleavessearch-container">
           <Search size={20} color="#64748b" />
           <input
             type="text"
             placeholder="Search leaves..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            className="myleavessearch-input"
           />
         </div>
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="filter-button"
+          className="myleavesfilter-button"
         >
           <option>All</option>
           <option>Unattended</option>
@@ -300,43 +310,51 @@ export default function RequestedLeaves() {
       </div>
 
       {/* Leaves Grid */}
-      <div className="leaves-grid">
+      <div className="requestedleaves-leaves-grid">
         {paginated.map((leave, idx) => (
           <div
-            className="leave-card"
+            className="requestedleaves-leave-card"
             key={leave.leave_id || idx}
             data-leave-id={leave.leave_id}
             onClick={() => setSelectedLeave(leave)}
             data-status={getStatusText(leave.leave_track_status)}
           >
-            <div className="leave-header">
-              <div className="leave-header-content">
-                <h3 className="employee-name">{leave.user_name}</h3>
-                <span className="leave-type">{leave.leave_ground_text}</span>
+            <div className="requestedleaves-leave-header">
+              <div className="requestedleaves-leave-header-content">
+                <h3 className="requestedleaves-employee-name">
+                  {leave.user_name}
+                </h3>
+                <span className="requestedleaves-leave-type">
+                  {leave.leave_ground_text}
+                </span>
               </div>
               <span
-                className={`status-badge status-${getStatusText(
+                className={`requestedleaves-status-badge requestedleaves-status-${getStatusText(
                   leave.leave_track_status
                 ).toLowerCase()}`}
               >
                 {getStatusText(leave.leave_track_status)}
               </span>
             </div>
-            <div className="leave-details">
-              <div className="leave-title-section">
-                <h4 className="leave-title">{leave.leave_title}</h4>
-                <p className="leave-comment">{leave.leave_comment}</p>
+            <div className="requestedleaves-leave-details">
+              <div className="requestedleaves-leave-title-section">
+                <h4 className="requestedleaves-leave-title">
+                  {leave.leave_title}
+                </h4>
+                <p className="requestedleaves-leave-comment">
+                  {leave.leave_comment}
+                </p>
               </div>
-              <div className="leave-dates">
-                <div className="date-item">
-                  <span className="date-label">From:</span>
-                  <span className="date-value">
+              <div className="requestedleaves-leave-dates">
+                <div className="requestedleaves-date-item">
+                  <span className="requestedleaves-date-label">From:</span>
+                  <span className="requestedleaves-date-value">
                     {new Date(leave.leave_from_date).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="date-item">
-                  <span className="date-label">To:</span>
-                  <span className="date-value">
+                <div className="requestedleaves-date-item">
+                  <span className="requestedleaves-date-label">To:</span>
+                  <span className="requestedleaves-date-value">
                     {new Date(leave.leave_to_date).toLocaleDateString()}
                   </span>
                 </div>
@@ -345,9 +363,9 @@ export default function RequestedLeaves() {
 
             {/* Add action buttons for unattended leaves */}
             {leave.leave_track_status === null && (
-              <div className="leave-actions">
+              <div className="requestedleaves-leave-actions">
                 <button
-                  className="action-button approve"
+                  className="requestedleaves-action-button requestedleaves-approve"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAction(leave.leave_id, "approve");
@@ -357,7 +375,7 @@ export default function RequestedLeaves() {
                   Approve
                 </button>
                 <button
-                  className="action-button reject"
+                  className="requestedleaves-action-button requestedleaves-reject"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAction(leave.leave_id, "reject");
@@ -399,41 +417,47 @@ export default function RequestedLeaves() {
 
       {/* Leave Details Modal */}
       {selectedLeave && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="requestedleaves-modal-overlay">
+          <div className="requestedleaves-modal-content">
+            <div className="requestedleaves-modal-header">
               <h2>Leave Details</h2>
               <button
-                className="close-button"
+                className="requestedleaves-close-button"
                 onClick={() => setSelectedLeave(null)}
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="details-section">
+            <div className="requestedleaves-modal-body">
+              <div className="requestedleaves-details-section">
                 <h3>{selectedLeave.leave_title}</h3>
-                <div className="submission-flow">
-                  <span className="flow-item">
-                    <span className="flow-label">Submitted By:</span>
+                <div className="requestedleaves-submission-flow">
+                  <span className="requestedleaves-flow-item">
+                    <span className="requestedleaves-flow-label">
+                      Submitted By:
+                    </span>
                     {selectedLeave.user_name}
                   </span>
-                  <span className="flow-arrow">→</span>
-                  <span className="flow-item">
-                    <span className="flow-label">Submitted To:</span>
+                  <span className="requestedleaves-flow-arrow">→</span>
+                  <span className="requestedleaves-flow-item">
+                    <span className="requestedleaves-flow-label">
+                      Submitted To:
+                    </span>
                     {selectedLeave.submitted_to}
                   </span>
                 </div>
               </div>
-              <div className="details-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Leave ID</span>
-                  <span className="detail-value">{selectedLeave.leave_id}</span>
+              <div className="requestedleaves-details-grid">
+                <div className="requestedleaves-detail-item">
+                  <span className="requestedleaves-detail-label">Leave ID</span>
+                  <span className="requestedleaves-detail-value">
+                    {selectedLeave.leave_id}
+                  </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Status</span>
+                <div className="requestedleaves-detail-item">
+                  <span className="requestedleaves-detail-label">Status</span>
                   <span
-                    className="detail-value"
+                    className="requestedleaves-detail-value"
                     style={{
                       color: getStatusColor(
                         getStatusText(selectedLeave.leave_track_status)
@@ -443,87 +467,104 @@ export default function RequestedLeaves() {
                     {getStatusText(selectedLeave.leave_track_status)}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Leave Type</span>
-                  <span className="detail-value">
+                <div className="requestedleaves-detail-item">
+                  <span className="requestedleaves-detail-label">
+                    Leave Type
+                  </span>
+                  <span className="requestedleaves-detail-value">
                     {selectedLeave.leave_ground}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">From Date</span>
-                  <span className="detail-value">
+                <div className="requestedleaves-detail-item">
+                  <span className="requestedleaves-detail-label">
+                    From Date
+                  </span>
+                  <span className="requestedleaves-detail-value">
                     {new Date(
                       selectedLeave.leave_from_date
                     ).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">To Date</span>
-                  <span className="detail-value">
+                <div className="requestedleaves-detail-item">
+                  <span className="requestedleaves-detail-label">To Date</span>
+                  <span className="requestedleaves-detail-value">
                     {new Date(selectedLeave.leave_to_date).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Created At</span>
-                  <span className="detail-value">
+                <div className="requestedleaves-detail-item">
+                  <span className="requestedleaves-detail-label">
+                    Created At
+                  </span>
+                  <span className="requestedleaves-detail-value">
                     {new Date(
                       selectedLeave.leave_track_created_at
                     ).toLocaleString()}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Created By ID</span>
-                  <span className="detail-value">
+                <div className="requestedleaves-detail-item">
+                  <span className="requestedleaves-detail-label">
+                    Created By ID
+                  </span>
+                  <span className="requestedleaves-detail-value">
                     {selectedLeave.leave_track_created_by}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Submitted To ID</span>
-                  <span className="detail-value">
+                <div className="requestedleaves-detail-item">
+                  <span className="requestedleaves-detail-label">
+                    Submitted To ID
+                  </span>
+                  <span className="requestedleaves-detail-value">
                     {selectedLeave.leave_track_submitted_to_id}
                   </span>
                 </div>
                 {selectedLeave.leave_comment && (
-                  <div className="detail-item full-width">
-                    <span className="detail-label">Comment</span>
-                    <span className="detail-value">
+                  <div className="requestedleaves-detail-item requestedleaves-full-width">
+                    <span className="requestedleaves-detail-label">
+                      Comment
+                    </span>
+                    <span className="requestedleaves-detail-value">
                       {selectedLeave.leave_comment}
                     </span>
                   </div>
                 )}
                 {selectedLeave.documents ? (
-                  <div className="detail-item full-width">
-                    <div className="documents-header">
-                      <span className="detail-label">
+                  <div className="requestedleaves-detail-item requestedleaves-full-width">
+                    <div className="requestedleaves-documents-header">
+                      <span className="requestedleaves-detail-label">
                         <FileText size={16} />
                         Documents
                       </span>
                     </div>
                     {selectedLeave.documents.length > 0 ? (
-                      <div className="documents-grid">
+                      <div className="requestedleaves-documents-grid">
                         {selectedLeave.documents.map((doc, index) => (
                           <a
                             key={index}
-                            href={"https://demo-expense.geomaticxevs.in/ET-api/"+doc.url}
+                            href={
+                              "https://demo-expense.geomaticxevs.in/ET-api/" +
+                              doc.url
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="document-card"
+                            className="requestedleaves-document-card"
                           >
-                            <div className="document-icon">
+                            <div className="requestedleaves-document-icon">
                               <FileText size={24} />
                             </div>
-                            <div className="document-info">
-                              <span className="document-name">{doc.name}</span>
+                            <div className="requestedleaves-document-info">
+                              <span className="requestedleaves-document-name">
+                                {doc.name}
+                              </span>
                               <ExternalLink
                                 size={14}
-                                className="external-icon"
+                                className="requestedleaves-external-icon"
                               />
                             </div>
                           </a>
                         ))}
                       </div>
                     ) : (
-                      <div className="no-documents">
+                      <div className="requestedleaves-no-documents">
                         <FileX size={24} />
                         <p>No documents attached</p>
                       </div>
@@ -532,9 +573,9 @@ export default function RequestedLeaves() {
                 ) : null}
               </div>
               {selectedLeave.leave_track_status === null && (
-                <div className="modal-actions">
+                <div className="requestedleaves-modal-actions">
                   <button
-                    className="action-button approve"
+                    className="requestedleaves-action-button requestedleaves-approve"
                     onClick={() =>
                       handleAction(selectedLeave.leave_id, "approve")
                     }
@@ -543,7 +584,7 @@ export default function RequestedLeaves() {
                     Approve
                   </button>
                   <button
-                    className="action-button reject"
+                    className="requestedleaves-action-button requestedleaves-reject"
                     onClick={() =>
                       handleAction(selectedLeave.leave_id, "reject")
                     }

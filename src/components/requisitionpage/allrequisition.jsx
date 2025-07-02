@@ -159,9 +159,11 @@ export default function AllRequisitions() {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading requisitions...</p>
+      <div className="requestedrequisition-loading-container">
+        <div className="requestedrequisition-loading-spinner"></div>
+        <div className="requestedrequisition-loading-text">
+          Loading Requisition...
+        </div>
       </div>
     );
   }
@@ -182,8 +184,8 @@ export default function AllRequisitions() {
 
   if (!requisitions.length) {
     return (
-      <div className="no-records-container">
-        <div className="no-records-content">
+      <div className="requisition-no-records-container">
+        <div className="requisition-no-records-content">
           <AlertCircle size={48} color="#64748b" />
           <h2>No Requisitions Found</h2>
           <p>There are no requisitions to display.</p>
@@ -193,67 +195,67 @@ export default function AllRequisitions() {
   }
 
   return (
-    <div className="requisitions-container">
-      <h1 className="page-title">All Requisitions</h1>
+    <div className="leaves-container">
+      <h1 className="requisition-page-title">All Requisitions</h1>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
+      <div className="requisition-stats-grid">
+        <div className="requisition-stat-card">
+          <div className="requisition-stat-icon">
             <AlertCircle size={24} color="#6366f1" />
           </div>
-          <div className="stat-info">
+          <div className="requisition-stat-info">
             <h3>Total Requisitions</h3>
-            <p className="stat-value">{stats.total}</p>
+            <p className="requisition-stat-value">{stats.total}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="requisition-stat-card">
+          <div className="requisition-stat-icon">
             <Clock size={24} color="#f59e0b" />
           </div>
-          <div className="stat-info">
+          <div className="requisition-stat-info">
             <h3>Pending</h3>
-            <p className="stat-value">{stats.pending}</p>
+            <p className="requisition-stat-value">{stats.pending}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="requisition-stat-card">
+          <div className="requisition-stat-icon">
             <Check size={24} color="#10b981" />
           </div>
-          <div className="stat-info">
+          <div className="requisition-stat-info">
             <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
+            <p className="requisition-stat-value">{stats.approved}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="requisition-stat-card">
+          <div className="requisition-stat-icon">
             <X size={24} color="#ef4444" />
           </div>
-          <div className="stat-info">
+          <div className="requisition-stat-info">
             <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
+            <p className="requisition-stat-value">{stats.rejected}</p>
           </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="filters-section">
-        <div className="search-container">
+      <div className="requisition-filters-section">
+        <div className="requisition-search-container">
           <Search size={20} color="#64748b" />
           <input
             type="text"
             placeholder="Search requisitions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            className="requisition-search-input"
           />
         </div>
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="filter-button"
+          className="requisition-filter-button"
         >
-          <option>All</option>
+          <option>All Status</option>
           <option>Pending</option>
           <option>Approved</option>
           <option>Rejected</option>
@@ -263,18 +265,20 @@ export default function AllRequisitions() {
       </div>
 
       {/* Requisitions Grid */}
-      <div className="requisitions-grid">
+      <div className="requisition-requisitions-grid">
         {paginated.map((item, idx) => (
           <div
-            className="requisition-card"
+            className="requisition-requisition-card"
             key={idx}
             onClick={() => setSelected(item)}
           >
-            <div className="card-header">
-              <div className="submission-flow">
-                <div className="name-container">
-                  <h3 className="employee-name">{item.created_by_full_name}</h3>
-                  <div className="submission-arrow">
+            <div className="requisition-card-header">
+              <div className="requisition-submission-flow">
+                <div className="requisition-name-container">
+                  <h3 className="requisition-employee-name">
+                    {item.created_by_full_name}
+                  </h3>
+                  <div className="requisition-submission-arrow">
                     <ArrowRight size={16} color="#6366f1" />
                     <span>
                       {item.submitted_to_full_name || "Not submitted"}
@@ -282,7 +286,7 @@ export default function AllRequisitions() {
                   </div>
                 </div>
                 <span
-                  className="status-badge"
+                  className="requisition-status-badge"
                   style={{
                     backgroundColor: getStatusColor(item.requisition_status),
                   }}
@@ -291,14 +295,16 @@ export default function AllRequisitions() {
                 </span>
               </div>
             </div>
-            <div className="requisition-details">
-              <h4 className="requisition-title">{item.requisition_title}</h4>
-              <span className="amount">
+            <div className="requisition-requisition-details">
+              <h4 className="requisition-requisition-title">
+                {item.requisition_title}
+              </h4>
+              <span className="requisition-amount">
                 ₹{parseFloat(item.requisition_req_amount).toFixed(2)}
               </span>
             </div>
-            <div className="requisition-meta">
-              <span className="date">
+            <div className="requisition-requisition-meta">
+              <span className="requisition-date">
                 {new Date(item.requisition_date).toLocaleDateString()}
               </span>
             </div>
@@ -308,20 +314,20 @@ export default function AllRequisitions() {
 
       {/* Pagination */}
       {totalPages > 0 && (
-        <div className="pagination-container">
+        <div className="requisition-pagination-container">
           <button
-            className="pagination-button"
+            className="requisition-pagination-button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             <ChevronLeft size={20} />
             Previous
           </button>
-          <div className="pagination-number">
+          <div className="requisition-pagination-number">
             Page {currentPage} of {totalPages}
           </div>
           <button
-            className="pagination-button"
+            className="requisition-pagination-button"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >
@@ -333,44 +339,46 @@ export default function AllRequisitions() {
 
       {/* Modal */}
       {selected && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="requisition-modal-overlay">
+          <div className="requisition-modal-content">
+            <div className="requisition-modal-header">
               <h2>Requisition Details</h2>
               <button
-                className="close-button"
+                className="requisition-close-button"
                 onClick={() => setSelected(null)}
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="details-section">
+            <div className="requisition-modal-body">
+              <div className="requisition-details-section">
                 <h3>{selected.requisition_title}</h3>
-                <p className="employee-name">{selected.created_by_full_name}</p>
+                <p className="requisition-employee-name">
+                  {selected.created_by_full_name}
+                </p>
               </div>
-              <div className="details-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Amount</span>
-                  <span className="detail-value amount">
+              <div className="requisition-details-grid">
+                <div className="requisition-detail-item">
+                  <span className="requisition-detail-label">Amount</span>
+                  <span className="requisition-detail-value requisition-amount">
                     ₹{parseFloat(selected.requisition_req_amount).toFixed(2)}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Status</span>
-                  <span className="detail-value">
+                <div className="requisition-detail-item">
+                  <span className="requisition-detail-label">Status</span>
+                  <span className="requisition-detail-value">
                     {selected.requisition_status}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Date</span>
-                  <span className="detail-value">
+                <div className="requisition-detail-item">
+                  <span className="requisition-detail-label">Date</span>
+                  <span className="requisition-detail-value">
                     {new Date(selected.requisition_date).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Submitted To</span>
-                  <span className="detail-value">
+                <div className="requisition-detail-item">
+                  <span className="requisition-detail-label">Submitted To</span>
+                  <span className="requisition-detail-value">
                     {selected.submitted_to_full_name || "Not submitted"}
                   </span>
                 </div>

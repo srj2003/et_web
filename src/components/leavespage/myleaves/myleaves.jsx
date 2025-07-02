@@ -166,8 +166,9 @@ const MyLeaves = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className="myleaves-loading-container">
+        <div className="myleaves-loading-spinner"></div>
+        <div className="myleaves-loading-text">Loading leaves...</div>
       </div>
     );
   }
@@ -186,62 +187,62 @@ const MyLeaves = () => {
 
   return (
     <div className="leaves-container">
-      <h1 className="page-title">My Leaves</h1>
+      <h1 className="myleavespage-title">My Leaves</h1>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
+      <div className="myleavesstats-grid">
+        <div className="myleavesstat-card">
+          <div className="myleavesstat-icon">
             <Calendar size={24} color="#6366f1" />
           </div>
-          <div className="stat-info">
+          <div className="myleavesstat-info">
             <h3>Total Leaves</h3>
-            <p className="stat-value">{stats.total}</p>
+            <p className="myleavesstat-value">{stats.total}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="myleavesstat-card">
+          <div className="myleavesstat-icon">
             <CheckCircle size={24} color="#10b981" />
           </div>
-          <div className="stat-info">
+          <div className="myleavesstat-info">
             <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
+            <p className="myleavesstat-value">{stats.approved}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="myleavesstat-card">
+          <div className="myleavesstat-icon">
             <Clock size={24} color="#f59e0b" />
           </div>
-          <div className="stat-info">
+          <div className="myleavesstat-info">
             <h3>Unattended</h3>
-            <p className="stat-value">{stats.unattended}</p>
+            <p className="myleavesstat-value">{stats.unattended}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="myleavesstat-card">
+          <div className="myleavesstat-icon">
             <XCircle size={24} color="#ef4444" />
           </div>
-          <div className="stat-info">
+          <div className="myleavesstat-info">
             <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
+            <p className="myleavesstat-value">{stats.rejected}</p>
           </div>
         </div>
       </div>
 
-      <div className="filters-section">
-        <div className="search-container">
+      <div className="myleavesfilters-section">
+        <div className="myleavessearch-container">
           <Search size={20} color="#64748b" />
           <input
             type="text"
             placeholder="Search leaves..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            className="myleavessearch-input"
           />
         </div>
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="filter-button"
+          className="myleavesfilter-button"
         >
           <option>All</option>
           <option>Unattended</option>
@@ -250,38 +251,44 @@ const MyLeaves = () => {
         </select>
       </div>
 
-      <div className="leaves-grid">
+      <div className="myleavesleaves-grid">
         {paginatedLeaves.map((leave) => (
-          <div key={leave.leave_id} className="leave-card">
-            <div className="leave-header">
-              <div className="leave-title-section">
-                <h3 className="leave-title">{leave.title}</h3>
-                <p className="leave-subtitle">{leave.leave_type}</p>
+          <div key={leave.leave_id} className="myleavesleave-card">
+            <div className="myleavesleave-header">
+              <div className="myleavesleave-title-section">
+                <h3 className="myleavesleave-title">{leave.title}</h3>
+                <p className="myleavesleave-subtitle">{leave.leave_type}</p>
               </div>
               <span
-                className={`status-badge ${getStatusClass(leave.leave_status)}`}
+                className={`myleavesstatus-badge ${getStatusClass(
+                  leave.leave_status
+                )}`}
               >
                 {getStatusIcon(leave.leave_status)}
                 {leave.leave_status}
               </span>
             </div>
-            <div className="leave-details">
-              <div className="leave-info">
-                <span className="info-label">From Date</span>
-                <span className="info-value">{leave.from_date}</span>
+            <div className="myleavesleave-details">
+              <div className="myleavesleave-info">
+                <span className="myleavesinfo-label">From Date</span>
+                <span className="myleavesinfo-value">{leave.from_date}</span>
               </div>
-              <div className="leave-info">
-                <span className="info-label">To Date</span>
-                <span className="info-value">{leave.to_date}</span>
+              <div className="myleavesleave-info">
+                <span className="myleavesinfo-label">To Date</span>
+                <span className="myleavesinfo-value">{leave.to_date}</span>
               </div>
-              <div className="leave-info">
-                <span className="info-label">Duration</span>
-                <span className="info-value">{leave.duration} days</span>
+              <div className="myleavesleave-info">
+                <span className="myleavesinfo-label">Duration</span>
+                <span className="myleavesinfo-value">
+                  {leave.duration} days
+                </span>
               </div>
               {leave.leave_reason && (
-                <div className="leave-info full-width">
-                  <span className="info-label">Reason</span>
-                  <span className="info-value">{leave.leave_reason}</span>
+                <div className="myleavesleave-info myleavesfull-width">
+                  <span className="myleavesinfo-label">Reason</span>
+                  <span className="myleavesinfo-value">
+                    {leave.leave_reason}
+                  </span>
                 </div>
               )}
             </div>

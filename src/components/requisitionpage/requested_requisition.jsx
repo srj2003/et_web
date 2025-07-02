@@ -53,7 +53,7 @@ const RequisitionsWeb = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ userId }),
           }
@@ -197,9 +197,11 @@ const RequisitionsWeb = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading requisitions...</p>
+      <div className="requestedrequisition-loading-container">
+        <div className="requestedrequisition-loading-spinner"></div>
+        <div className="requestedrequisition-loading-text">
+          Loading Requisition...
+        </div>
       </div>
     );
   }
@@ -219,8 +221,8 @@ const RequisitionsWeb = () => {
 
   return (
     <>
-      <div className="requisitions-container">
-        <h1 className="page-title">Requested Requisitions</h1>
+      <div className="leaves-container">
+        <h1 className="requisition-page-title">Requested Requisitions</h1>
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-icon">
@@ -259,21 +261,21 @@ const RequisitionsWeb = () => {
             </div>
           </div>
         </div>
-        <div className="filters-section">
-          <div className="search-container">
+        <div className="requestedrequesitionfilters-section">
+          <div className="requestedrequesitionsearch-container">
             <Search size={20} color="#64748b" />
             <input
               type="text"
               placeholder="Search by name or title..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
+              className="requestedrequesitionsearch-input"
             />
           </div>
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="filter-button"
+            className="requestedrequesitionfilter-button"
           >
             <option value="All">All Status</option>
             <option value="Pending">Pending</option>

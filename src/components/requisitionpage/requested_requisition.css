@@ -102,39 +102,41 @@
 }
 
 /* Filters Section */
-.filters-section {
-    display: flex;
-    gap: 1rem;
+.requestedrequesitionfilters-section {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 1.75rem;
     margin-bottom: 2rem;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
 }
 
-.filter-button {
-    min-width: 150px;
-    padding: 0.75rem;
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    border-radius: 12px;
-    background: white;
-    color: #1e293b;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.filter-button:hover {
-    border-color: rgba(99, 102, 241, 0.4);
-    background: rgba(99, 102, 241, 0.05);
-}
-
-.search-container {
+.requestedrequesitionsearch-container {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background-color: #f1f5f9;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 0.875rem 1.25rem;
+    border-radius: 16px;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    transition: all 0.3s ease;
 }
 
-.search-input {
+.requestedrequesitionsearch-container:focus-within {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
+}
+
+.requestedrequesitionsearch-input {
     flex: 1;
     border: none;
     background: none;
@@ -143,10 +145,41 @@
     outline: none;
 }
 
-.search-input::placeholder {
+.requestedrequesitionsearch-input::placeholder {
     color: #94a3b8;
 }
 
+.requestedrequesitionfilter-button {
+    padding: 0.875rem 1.25rem;
+    background: rgba(248, 250, 252, 0.9);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 16px;
+    color: #475569;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+    padding-right: 2.5rem;
+}
+
+.requestedrequesitionfilter-button:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+}
+
+.requestedrequesitionfilter-button option {
+    font-size: 0.9375rem;
+    padding: 0.75rem;
+    background: white;
+    color: #1e293b;
+}
 /* Requisitions Grid */
 .requisitions-grid {
     display: grid;
@@ -582,7 +615,7 @@
 }
 
 /* Page Title */
-.page-title {
+.requisition-page-title {
     font-size: 2.5rem;
     font-weight: 800;
     color: #1e293b;
@@ -594,18 +627,7 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.page-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 4px;
-    background: linear-gradient(90deg, #6366f1, #4f46e5);
-    border-radius: 2px;
-    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
-}
+
 
 /* No Records Found */
 .no-records-container {
@@ -634,4 +656,33 @@
 .no-records-content p {
   color: #64748b;
   font-size: 1rem;
+}
+.requestedrequisition-loading-container {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.requestedrequisition-loading-spinner {
+  width: 56px;
+  height: 56px;
+  border: 6px solid #e0e7ff;
+  border-top: 6px solid #6366f1;
+  border-radius: 50%;
+  animation: requestedleaves-spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes requestedrequisition-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.requestedrequisition-loading-text {
+  color: #6366f1;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
