@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./add_work_report.css";
 import { Loader2 } from "lucide-react";
+import Select from "react-select";
 
 const AddWorkReport = () => {
   const [userId, setUserId] = useState(null);
@@ -11,6 +12,8 @@ const AddWorkReport = () => {
   const [projectName, setProjectName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [projectOptions, setProjectOptions] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -73,6 +76,35 @@ const AddWorkReport = () => {
     };
 
     fetchUserData();
+
+    // Fetch projects for the user
+    const fetchProjects = async () => {
+      setLoadingProjects(true);
+      const storedUserId = localStorage.getItem("userid");
+      try {
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: storedUserId })
+          }
+        );
+        const data = await response.json();
+        if (data.status === "success" && Array.isArray(data.projects)) {
+          setProjectOptions(
+            data.projects.map(p => ({ value: p.project_name, label: p.project_name }))
+          );
+        } else {
+          setProjectOptions([]);
+        }
+      } catch (err) {
+        setProjectOptions([]);
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+    fetchProjects();
   }, []);
 
   const handleAddWorkReport = async () => {
@@ -199,14 +231,18 @@ const AddWorkReport = () => {
 
           <div className="input-card">
             <label className="input-label" htmlFor="projectName">Project Name</label>
-            <input
+            <Select
               id="projectName"
-              type="text"
-              className="text-input"
-              placeholder="Enter project name"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              disabled={isSubmitting}
+              isSearchable
+              isLoading={loadingProjects}
+              options={projectOptions}
+              value={projectOptions.find(opt => opt.value === projectName) || null}
+              onChange={opt => setProjectName(opt ? opt.value : "")}
+              placeholder="Select project name"
+              isClearable
+              classNamePrefix="react-select"
+              styles={{ container: base => ({ ...base, minWidth: 220 }) }}
+              isDisabled={isSubmitting}
             />
           </div>
 
