@@ -18,7 +18,8 @@ import {
   Users,
   UserCircle, // For header
   Loader2,
-  CreditCard
+  CreditCard,
+  Eye
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'; // Added for charts
 
@@ -111,6 +112,7 @@ const ProjectManagementDashboard = () => {
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
 
   const [activeFilterStatus, setActiveFilterStatus] = useState('All'); // 'All', 'Active', 'Completed'
+  const [userFilter, setUserFilter] = useState('');
 
   // New states for user projects modal
   const [showUserProjectsModal, setShowUserProjectsModal] = useState(false);
@@ -119,6 +121,16 @@ const ProjectManagementDashboard = () => {
 
   // Add this state at the top with other states
   const [expandedProjects, setExpandedProjects] = useState(false);
+
+  // Modal state for project details
+  const [showProjectDetailModal, setShowProjectDetailModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editFields, setEditFields] = useState({});
+  const [showTeamMembers, setShowTeamMembers] = useState(false);
+
+  // New state for team members modal
+  const [showTeamMembersModal, setShowTeamMembersModal] = useState(false);
 
   // API Fetching
   const fetchProjectsData = useCallback(async () => {
@@ -168,7 +180,7 @@ const ProjectManagementDashboard = () => {
                 status: parseInt(item.expense_type_is_active) === 1 ? "Active" : "Completed",
                 startDate: item.expense_type_created_at,
                 endDate: new Date(new Date(item.expense_type_created_at).getTime() + (Math.random() * 30 + 7) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                progress: Math.floor(Math.random() * 100),
+                progress: parseInt(item.expense_type_is_active) === 1 ? Math.floor(Math.random() * 100) : 100,
                 tasks: [
                     { id: 1, name: "Initial Planning", status: "Completed" },
                     { id: 2, name: "Development", status: "In Progress" },
@@ -428,6 +440,11 @@ const ProjectManagementDashboard = () => {
       result = result.filter(p => p.status === activeFilterStatus);
     }
 
+    // Filter by user
+    if (userFilter) {
+      result = result.filter(p => String(p.createdBy) === String(userFilter));
+    }
+
     // Filter by global search query (project name)
     if (globalSearchQuery) {
       result = result.filter(p => p.name.toLowerCase().includes(globalSearchQuery.toLowerCase()));
@@ -440,7 +457,7 @@ const ProjectManagementDashboard = () => {
       return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
     return result;
-  }, [projects, activeFilterStatus, globalSearchQuery, sortOrder]);
+  }, [projects, activeFilterStatus, globalSearchQuery, sortOrder, userFilter]);
 
   // Stats for dashboard cards
   const runningProjectsCount = useMemo(() => projects.filter(p => p.isActive === 1).length, [projects]);
@@ -468,6 +485,39 @@ const ProjectManagementDashboard = () => {
     return String(date.getDate()).padStart(2, '0');
   }
 
+  // Helper to open modal with project
+  const handleOpenProjectDetailModal = (project) => {
+    setSelectedProject(project);
+    setEditFields({
+      projectLead: project.projectLead || '',
+      teamLead: project.teamLead || '',
+      teamMembers: project.teamMembers || [],
+      createdAt: project.createdAt,
+      endDate: project.endDate,
+      budgetAllotted: project.budgetAllotted || '',
+      budgetExpended: project.budgetExpended || '',
+    });
+    setEditMode(false);
+    setShowProjectDetailModal(true);
+    setShowTeamMembers(false);
+  };
+
+  // Handler for editing fields
+  const handleEditFieldChange = (field, value) => {
+    setEditFields((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handler for saving edits (mock, you can connect to API)
+  const handleSaveProjectEdits = () => {
+    // Here you would call your API to update the project
+    // For now, just update local state for demo
+    setProjects((prev) => prev.map((p) =>
+      p.id === selectedProject.id ? { ...p, ...editFields } : p
+    ));
+    setSelectedProject((prev) => ({ ...prev, ...editFields }));
+    setEditMode(false);
+  };
+
   if (isLoading) {
     return (
       <div className="dashboard-loading-state">
@@ -494,7 +544,7 @@ const ProjectManagementDashboard = () => {
         <div className="dashboard-header-left">
           
           <div className="search-global-container">
-            <Search size={20} className="search-icon-global" />
+            <Search size={25} className="search-icon-global" />
             <input
               type="text"
               placeholder="Search projects..."
@@ -561,8 +611,8 @@ const ProjectManagementDashboard = () => {
                   className={`project-card-item status-border-${project.status.toLowerCase()} clickable-project-card`}
                   role="button"
                   tabIndex={0}
-                  onClick={() => console.log('Project clicked:', project.id, project.name)}
-                  onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') console.log('Project clicked:', project.id, project.name); }}
+                  onClick={() => handleOpenProjectDetailModal(project)}
+                  onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') handleOpenProjectDetailModal(project); }}
                 >
                   <div className="project-card-header">
                     <h3>{project.name}</h3>
@@ -587,8 +637,8 @@ const ProjectManagementDashboard = () => {
                     <span className={`status-badge status-${project.status.toLowerCase()}`}>{project.status}</span>
                     {userHasEditPermission && project.isActive === 1 && (
                       <div className="card-actions">
-                        <button className="icon-btn" onClick={() => handleOpenEditModal(project)} title="Edit"><Edit size={16}/></button>
-                        <button className="icon-btn" onClick={() => handleMarkProjectAsCompleted(project.id)} title="Mark Complete"><CheckSquare size={16}/></button>
+                        <button className="icon-btn" onClick={e => { e.stopPropagation(); handleOpenEditModal(project); }} title="Edit"><Edit size={16}/></button>
+                        <button className="icon-btn" onClick={e => { e.stopPropagation(); handleMarkProjectAsCompleted(project.id); }} title="Mark Complete"><CheckSquare size={16}/></button>
                       </div>
                     )}
                   </div>
@@ -657,7 +707,26 @@ const ProjectManagementDashboard = () => {
                     <option value="Completed">Completed</option>
                 </select>
             </div>
-             <div className="filter-group">
+            <div className="filter-group">
+                <label htmlFor="userFilter">Sort by User</label>
+                <select
+                  id="userFilter"
+                  className="form-select"
+                  value={userFilter}
+                  onChange={e => setUserFilter(e.target.value)}
+                >
+                  <option value="">All Users</option>
+                  {(() => {
+                    const myRoleId = parseInt(localStorage.getItem('roleId'));
+                    return employeeList
+                      .filter(emp => parseInt(emp.roleId) < myRoleId)
+                      .map(emp => (
+                        <option key={emp.u_id} value={emp.u_id}>{emp.name}</option>
+                      ));
+                  })()}
+                </select>
+            </div>
+            <div className="filter-group">
                 <label htmlFor="sortOrder">Sort by Date</label>
                 <select 
                     id="sortOrder" 
@@ -693,7 +762,6 @@ const ProjectManagementDashboard = () => {
                         className="sidebar-project-card"
                       >
                         <div className="project-card-content">
-                          <h5>{project.project_name}</h5>
                           <span className={`status-badge status-${project.status?.toLowerCase()}`}>
                             {project.status}
                           </span>
@@ -883,9 +951,9 @@ const ProjectManagementDashboard = () => {
                     >
                       <div className="project-card-content">
                         <h3>{project.project_name}</h3>
-                        <span className={`project-status status-${project.status?.toLowerCase()}`}>
+                        {/* <span className={`project-status status-${project.status?.toLowerCase()}`}>
                           {project.status}
-                        </span>
+                        </span> */}
                       </div>
                       {project.created_at && (
                         <div className="project-card-footer">
@@ -903,9 +971,228 @@ const ProjectManagementDashboard = () => {
         </div>
       )}
 
+      {/* Project Detail Modal */}
+      {showProjectDetailModal && selectedProject && (
+        <div className="modal-overlay">
+          <div className="modal project-detail-modal scrollable-modal">
+            <div className="modal-header project-detail-modal-header">
+              <div className="modal-title-with-icon">
+                <span className="modal-title-icon"><FileText size={22} /></span>
+                <h2>Project Details</h2>
+              </div>
+              <button className="close-btn icon-btn" onClick={() => { setShowProjectDetailModal(false); setEditMode(false); }}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-content project-detail-modal-content">
+              {/* TEAM INFORMATION */}
+              <div className="modal-section-title">TEAM INFORMATION</div>
+              <div className="project-detail-row">
+                <span className="row-icon"><UserCircle size={18} /></span>
+                <span className="row-label">Project Lead</span>
+                {editMode ? (
+                  <select
+                    className="form-input team-members-dropdown"
+                    value={editFields.projectLead || ''}
+                    onChange={e => handleEditFieldChange('projectLead', e.target.value)}
+                  >
+                    <option value="">Select Project Lead...</option>
+                    {employeeList
+                      // Filter by designation if available, fallback to all
+                      .filter(emp => emp.designation === 'Project Lead' || !employeeList.some(e => e.designation === 'Project Lead'))
+                      .map(emp => (
+                        <option key={emp.u_id} value={emp.u_id}>{emp.name}</option>
+                      ))}
+                  </select>
+                ) : (
+                  <span className="row-value row-value-pill">{employeeList.find(e => e.u_id === selectedProject.projectLead)?.name || <span className="row-value-unassigned">Not Assigned</span>}</span>
+                )}
+              </div>
+              <div className="project-detail-row">
+                <span className="row-icon"><Shield size={18} /></span>
+                <span className="row-label">Team Lead</span>
+                {editMode ? (
+                  <select
+                    className="form-input team-members-dropdown"
+                    value={editFields.teamLead || ''}
+                    onChange={e => handleEditFieldChange('teamLead', e.target.value)}
+                  >
+                    <option value="">Select Team Lead...</option>
+                    {employeeList
+                      .filter(emp => emp.designation === 'Team Lead' || !employeeList.some(e => e.designation === 'Team Lead'))
+                      .map(emp => (
+                        <option key={emp.u_id} value={emp.u_id}>{emp.name}</option>
+                      ))}
+                  </select>
+                ) : (
+                  <span className="row-value row-value-pill">{employeeList.find(e => e.u_id === selectedProject.teamLead)?.name || <span className="row-value-unassigned">Not Assigned</span>}</span>
+                )}
+              </div>
+              <div className="project-detail-row">
+                <span className="row-icon"><Users size={18} /></span>
+                <span className="row-label">Project Team Supervisor</span>
+                {editMode ? (
+                  <select
+                    className="form-input team-members-dropdown"
+                    value={editFields.supervisor || ''}
+                    onChange={e => handleEditFieldChange('supervisor', e.target.value)}
+                  >
+                    <option value="">Select Supervisor...</option>
+                    {employeeList
+                      .filter(emp => emp.designation === 'Supervisor' || !employeeList.some(e => e.designation === 'Supervisor'))
+                      .map(emp => (
+                        <option key={emp.u_id} value={emp.u_id}>{emp.name}</option>
+                      ))}
+                  </select>
+                ) : (
+                  <span className="row-value row-value-pill">{employeeList.find(e => e.u_id === selectedProject.supervisor)?.name || <span className="row-value-unassigned">Not Assigned</span>}</span>
+                )}
+              </div>
+              <div className="project-detail-row team-members-row">
+                <span className="row-icon"><Users size={18} /></span>
+                <span className="row-label">Total Team Members</span>
+                <span className="row-value team-members-count">{editMode ? (editFields.teamMembers ? editFields.teamMembers.length : 0) : (selectedProject.teamMembers ? selectedProject.teamMembers.length : 0)}</span>
+                {editMode ? (
+                  <div className="team-members-multiselect">
+                    {employeeList.filter(emp => (editFields.teamMembers || []).includes(emp.u_id)).map(emp => (
+                      <span key={emp.u_id} className="team-member-tag">
+                        {emp.name}
+                        <button className="remove-tag-btn" onClick={() => handleEditFieldChange('teamMembers', editFields.teamMembers.filter(id => id !== emp.u_id))}>
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                    <select
+                      className="form-input team-members-dropdown"
+                      value=""
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val && !editFields.teamMembers.includes(val)) {
+                          handleEditFieldChange('teamMembers', [...editFields.teamMembers, val]);
+                        }
+                      }}
+                    >
+                      <option value="" disabled>Add team member...</option>
+                      {employeeList.filter(emp => !(editFields.teamMembers || []).includes(emp.u_id)).map(emp => (
+                        <option key={emp.u_id} value={emp.u_id}>{emp.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <button className="view-members-btn" onClick={() => setShowTeamMembersModal(true)}><Eye size={16} style={{marginRight:4}}/>View Members</button>
+                )}
+              </div>
+
+              <div className="modal-section-divider" />
+              {/* TIMELINE */}
+              <div className="modal-section-title">TIMELINE</div>
+              <div className="project-detail-row timeline-row timeline-row-green align-timeline-row">
+                <span className="row-icon"><CalendarPlus size={18} /></span>
+                <span className="row-label">Created On</span>
+                {editMode ? (
+                  <input className="form-input" type="date" value={editFields.createdAt ? editFields.createdAt.split('T')[0] : ''} onChange={e => handleEditFieldChange('createdAt', e.target.value)} />
+                ) : (
+                  <span className="row-value timeline-value-green">{selectedProject.createdAt ? new Date(selectedProject.createdAt).toLocaleDateString() : <span className="row-value-unassigned">Not Set</span>}</span>
+                )}
+              </div>
+              <div className="project-detail-row timeline-row timeline-row-orange align-timeline-row">
+                <span className="row-icon"><CalendarCheck size={18} /></span>
+                <span className="row-label">Expected End Date</span>
+                {editMode ? (
+                  <input className="form-input" type="date" value={editFields.endDate || ''} onChange={e => handleEditFieldChange('endDate', e.target.value)} />
+                ) : (
+                  <span className="row-value timeline-value-orange">{selectedProject.endDate || <span className="row-value-unassigned">Not Set</span>}</span>
+                )}
+              </div>
+
+              <div className="modal-section-divider" />
+              {/* BUDGET */}
+              <div className="modal-section-title">BUDGET</div>
+              <div className="project-detail-row">
+                <span className="row-icon"><CreditCard size={18} /></span>
+                <span className="row-label">Allotted Budget</span>
+                {editMode ? (
+                  <input className="form-input" type="number" value={editFields.budgetAllotted} onChange={e => handleEditFieldChange('budgetAllotted', e.target.value)} />
+                ) : (
+                  <span className="row-value row-value-pill">₹ {selectedProject.budgetAllotted || <span className="row-value-unassigned">Not Set</span>}</span>
+                )}
+              </div>
+              <div className="project-detail-row">
+                <span className="row-icon"><CreditCard size={18} /></span>
+                <span className="row-label">Budget Expended Till Date</span>
+                {editMode ? (
+                  <input className="form-input" type="number" value={editFields.budgetExpended} onChange={e => handleEditFieldChange('budgetExpended', e.target.value)} />
+                ) : (
+                  <span className="row-value row-value-pill">₹ {selectedProject.budgetExpended || <span className="row-value-unassigned">Not Set</span>}</span>
+                )}
+              </div>
+            </div>
+            <div className="modal-actions">
+              {selectedProject.status === 'Completed' && !editMode && (
+                <button className="btn btn-secondary" onClick={() => setEditMode(true)}>
+                  Edit
+                </button>
+              )}
+              {editMode ? (
+                <>
+                  <button className="btn btn-secondary" onClick={() => { setEditMode(false); setEditFields({
+                    projectLead: selectedProject.projectLead || '',
+                    teamLead: selectedProject.teamLead || '',
+                    supervisor: selectedProject.supervisor || '',
+                    teamMembers: selectedProject.teamMembers || [],
+                    createdAt: selectedProject.createdAt,
+                    endDate: selectedProject.endDate,
+                    budgetAllotted: selectedProject.budgetAllotted || '',
+                    budgetExpended: selectedProject.budgetExpended || '',
+                  }); }}>
+                    Cancel
+                  </button>
+                  <button className="btn btn-primary" onClick={handleSaveProjectEdits}>
+                    Save
+                  </button>
+                </>
+              ) : (
+                <button className="btn btn-primary" onClick={() => { setShowProjectDetailModal(false); setEditMode(false); }}>
+                  Close
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team Members Modal */}
+      {showTeamMembersModal && selectedProject && (
+        <div className="modal-overlay">
+          <div className="modal team-members-modal">
+            <div className="modal-header">
+              <h3>Team Members</h3>
+              <button className="close-btn icon-btn" onClick={() => setShowTeamMembersModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-content team-members-modal-content">
+              {selectedProject.teamMembers && selectedProject.teamMembers.length > 0 ? (
+                <ul className="team-members-list-modal">
+                  {selectedProject.teamMembers.map((u_id, idx) => {
+                    const emp = employeeList.find(e => e.u_id === u_id);
+                    return (
+                      <li key={u_id || idx} className="team-member-list-item-modal">
+                        {emp ? emp.name : u_id}
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="no-projects-message">No team members assigned.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
 
 export default ProjectManagementDashboard;
-
