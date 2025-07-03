@@ -30,7 +30,7 @@ const AllExpensesWeb = () => {
   const itemsPerPage = 16;
   const [stats, setStats] = useState({
     total: 0,
-    pending: 0,
+    Unattended: 0,
     approved: 0,
     rejected: 0,
   });
@@ -70,8 +70,6 @@ const AllExpensesWeb = () => {
         return "Rejected";
       case 1:
         return "Approved";
-      case 2:
-        return "Pending";
       default:
         return "Unattended";
     }
@@ -143,7 +141,7 @@ const AllExpensesWeb = () => {
       // Calculate stats
       setStats({
         total: transformedData.length,
-        pending: transformedData.filter((exp) => exp.status === "Pending")
+        Unattended: transformedData.filter((exp) => exp.status === "Unattended")
           .length,
         approved: transformedData.filter((exp) => exp.status === "Approved")
           .length,
@@ -276,8 +274,8 @@ const AllExpensesWeb = () => {
             <Clock size={24} color="#f59e0b" />
           </div>
           <div className="stat-info">
-            <h3>Pending</h3>
-            <p className="stat-value">{stats.pending}</p>
+            <h3>Unattended</h3>
+            <p className="stat-value">{stats.Unattended}</p>
           </div>
         </div>
         <div className="stat-card">
@@ -319,7 +317,6 @@ const AllExpensesWeb = () => {
         >
           <option>All</option>
           <option>Unattended</option>
-          <option>Pending</option>
           <option>Approved</option>
           <option>Rejected</option>
         </select>
@@ -363,53 +360,89 @@ const AllExpensesWeb = () => {
         </div>
       </div>
 
-      <div className="allexpense-expenses-grid">
+      <div className="all_expenses-expenses-grid">
         {currentItems.map((expense) => (
           <div
             key={expense.id}
-            className="allexpense-expense-card"
+            className="all_expenses-leave-card"
+            data-status={expense.status}
             onClick={() => {
               setSelectedExpense(expense);
               setShowExpenseDetails(true);
             }}
           >
-            <div className="allexpense-expense-header">
-              <div className="allexpense-submission-flow">
-                <div className="allexpense-name-container">
-                  <h3 className="allexpense-employee-name">
-                    {expense.employee}
-                  </h3>
-                  <div className="allexpense-submission-arrow">
-                    <ArrowRight size={16} color="#6366f1" />
-                    <span className="allexpense-submitted-to-name">
-                      {expense.submitted_to || "Not submitted"}
-                    </span>
-                  </div>
-                </div>
-                <span
-                  className={`allexpense-status-badge ${expense.status.toLowerCase()}`}
-                >
-                  {expense.status}
+            <div className="all_expenses-leave-header">
+              <div className="all_expenses-leave-header-content">
+                <h3 className="all_expenses-employee-name">
+                  {expense.expense_title}
+                </h3>
+                <span className="all_expenses-leave-type">
+                  {expense.expense_type}
                 </span>
               </div>
-            </div>
-            <div className="allexpense-expense-details">
-              <h4 className="allexpense-expense-title">
-                {expense.expense_title}
-              </h4>
-              <span className="allexpense-amount">
-                ₹{expense.amount.toFixed(2)}
+              <span
+                className={`all_expenses-status-badge all_expenses-status-${expense.status.toLowerCase()}`}
+              >
+                {expense.status}
               </span>
             </div>
-            <div className="allexpense-expense-meta">
-              <span className="allexpense-expense-type">
-                {expense.expense_type}
-              </span>
-              <span className="allexpense-date">{expense.date}</span>
+            <div className="all_expenses-leave-details">
+              <div className="all_expenses-leave-title-section">
+                {expense.remarks && (
+                  <p className="all_expenses-leave-comment">
+                    {expense.remarks}
+                  </p>
+                )}
+              </div>
+              <div className="all_expenses-leave-dates">
+                <div className="all_expenses-date-item">
+                  <span className="all_expenses-date-label">Date:</span>
+                  <span className="all_expenses-date-value">
+                    {expense.date}
+                  </span>
+                </div>
+                <div className="all_expenses-date-item">
+                  <span className="all_expenses-date-label">Amount:</span>
+                  <span className="all_expenses-date-value">
+                    ₹{expense.amount}
+                  </span>
+                </div>
+                <div className="all_expenses-date-item">
+                  <span className="all_expenses-date-label">Status:</span>
+                  <span className="all_expenses-date-value">
+                    {expense.status}
+                  </span>
+                </div>
+                {expense.expense_id && (
+                  <div className="all_expenses-date-item">
+                    <span className="all_expenses-date-label">Expense ID:</span>
+                    <span className="all_expenses-date-value">
+                      {expense.expense_id}
+                    </span>
+                  </div>
+                )}
+                {expense.submitted_to && (
+                  <div className="all_expenses-date-item">
+                    <span className="all_expenses-date-label">
+                      Submitted To:
+                    </span>
+                    <span className="all_expenses-date-value">
+                      {expense.submitted_to}
+                    </span>
+                  </div>
+                )}
+                {expense.approved_by && (
+                  <div className="all_expenses-date-item">
+                    <span className="all_expenses-date-label">
+                      Approved By:
+                    </span>
+                    <span className="all_expenses-date-value">
+                      {expense.approved_by}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-            {expense.remarks && (
-              <p className="allexpense-remarks">{expense.remarks}</p>
-            )}
           </div>
         ))}
       </div>

@@ -16,7 +16,6 @@ import {
 // Define status types
 const ExpenseStatus = {
   Unattended: "Unattended",
-  Pending: "Pending",
   Approved: "Approved",
   Rejected: "Rejected",
 };
@@ -35,9 +34,10 @@ const ManageExpenseWeb = () => {
   const [showExpenseDetails, setShowExpenseDetails] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [roleId, setRoleId] = useState(null);
+  const [expenseTypeItems, setExpenseTypeItems] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
-    pending: 0,
+    Unattended: 0,
     approved: 0,
     rejected: 0,
   });
@@ -82,7 +82,7 @@ const ManageExpenseWeb = () => {
       case 1:
         return ExpenseStatus.Approved;
       case 2:
-        return ExpenseStatus.Pending;
+        return ExpenseStatus.Unattended;
       default:
         return ExpenseStatus.Unattended;
     }
@@ -109,6 +109,31 @@ const ManageExpenseWeb = () => {
     },
     [formatDate, getExpenseType, getStatus]
   );
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        const headsResponse = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_heads=true",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const headsData = await headsResponse.json();
+        console.log(headsData);
+        if (headsData.status === "success") {
+          setExpenseTypeItems(headsData.data);
+        }
+      } catch (error) {
+        console.error("Error fetching dropdown data:", error);
+      }
+    };
+    fetchDropdownData();
+  }, []);
 
   // Fetch data from PHP endpoint
   const fetchExpenses = useCallback(async () => {
@@ -155,8 +180,8 @@ const ManageExpenseWeb = () => {
       // Calculate stats
       setStats({
         total: transformedData.length,
-        pending: transformedData.filter(
-          (exp) => exp.status === ExpenseStatus.Pending
+        Unattended: transformedData.filter(
+          (exp) => exp.status === ExpenseStatus.Unattended
         ).length,
         approved: transformedData.filter(
           (exp) => exp.status === ExpenseStatus.Approved
@@ -323,6 +348,11 @@ const ManageExpenseWeb = () => {
     startIndex + ITEMS_PER_PAGE
   );
 
+  // Add missing handlePageChange for pagination
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   if (loading && expenses.length === 0) {
     return (
       <div className="requestedleaves-loading-container">
@@ -345,7 +375,7 @@ const ManageExpenseWeb = () => {
 
   return (
     <div className="leaves-container">
-      <h1 className="page-title">Requested Expenses</h1>
+      <h1 className="requestedexpensespage-title">Requested Expenses</h1>
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon">
@@ -361,8 +391,8 @@ const ManageExpenseWeb = () => {
             <Clock size={24} color="#f59e0b" />
           </div>
           <div className="stat-info">
-            <h3>Pending</h3>
-            <p className="stat-value">{stats.pending}</p>
+            <h3>Unattended</h3>
+            <p className="stat-value">{stats.Unattended}</p>
           </div>
         </div>
         <div className="stat-card">
@@ -404,7 +434,7 @@ const ManageExpenseWeb = () => {
         >
           <option>All</option>
           <option>Unattended</option>
-          <option>Pending</option>
+          <option>Unattended</option>
           <option>Approved</option>
           <option>Rejected</option>
         </select>
@@ -448,49 +478,64 @@ const ManageExpenseWeb = () => {
         </div>
       </div>
 
-      <div className="expenses-grid">
+      <div className="requestedexpenses-grid">
         {paginatedExpenses.map((expense) => (
           <div
             key={expense.id}
-            className="expense-card"
+            className="requestedexpenses-card"
+            data-status={expense.status}
             onClick={() => {
               setSelectedExpense(expense);
               setShowExpenseDetails(true);
             }}
           >
-            <div className="expense-header">
-              <div className="submission-flow">
-                <div className="name-container">
-                  <h3 className="employee-name">{expense.employee}</h3>
-                  <div className="submission-arrow">
-                    <ArrowRight size={16} color="#6366f1" />
-                    <span className="submitted-to-name">
-                      {expense.submitted_to || "Not submitted"}
-                    </span>
-                  </div>
-                </div>
-                <span
-                  className={`status-badge ${expense.status.toLowerCase()}`}
-                >
-                  {expense.status}
+            <div className="requestedexpenses-header">
+              <div className="requestedexpenses-header-content">
+                <h3 className="requestedexpenses-employee-name">
+                  {expense.employee}
+                </h3>
+                <span className="requestedexpenses-type">
+                  {expense.expense_type}
                 </span>
               </div>
+              <span
+                className={`requestedexpenses-status-badge requestedexpenses-status-${expense.status.toLowerCase()}`}
+              >
+                {expense.status}
+              </span>
             </div>
-            <div className="expense-details">
-              <h4 className="expense-title">{expense.expense_title}</h4>
-              <span className="amount">₹{expense.amount.toFixed(2)}</span>
+            <div className="requestedexpenses-details">
+              <div className="requestedexpenses-title-section">
+                <h4 className="requestedexpenses-title">
+                  {expense.expense_title}
+                </h4>
+                {expense.remarks && (
+                  <p className="requestedexpenses-comment">
+                    {expense.remarks}
+                  </p>
+                )}
+              </div>
+              <div className="requestedexpenses-dates">
+                <div className="requestedexpenses-date-item">
+                  <span className="requestedexpenses-date-label">Date:</span>
+                  <span className="requestedexpenses-date-value">
+                    {expense.date}
+                  </span>
+                </div>
+                <div className="requestedexpenses-date-item">
+                  <span className="requestedexpenses-date-label">Amount:</span>
+                  <span className="requestedexpenses-date-value">
+                    ₹{expense.amount.toFixed(2)}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="expense-meta">
-              <span className="expense-type">{expense.expense_type}</span>
-              <span className="date">{expense.date}</span>
-            </div>
-            {expense.remarks && <p className="remarks">{expense.remarks}</p>}
             {expense.status === "Unattended" &&
               roleId !== null &&
               (roleId < 5 || roleId === 8) && (
-                <div className="expense-actions">
+                <div className="requestedexpenses-actions">
                   <button
-                    className="action-button approve"
+                    className="requestedexpenses-action-button requestedexpenses-approve"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleAction(expense.expense_id, "approve");
@@ -500,7 +545,7 @@ const ManageExpenseWeb = () => {
                     Approve
                   </button>
                   <button
-                    className="action-button reject"
+                    className="requestedexpenses-action-button requestedexpenses-reject"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleAction(expense.expense_id, "reject");
