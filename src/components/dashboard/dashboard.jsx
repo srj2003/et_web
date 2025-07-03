@@ -84,8 +84,8 @@ function processAttendanceApiResponse(apiData) {
       if (!item.is_logged_out) {
         return {
           date: item.date,
-          status: "Not Logged Out",
-          reason: "Did not log out",
+          status: "Not Punched Out",
+          reason: "Did not Punched out",
         };
       }
       return { date: item.date, status: "Present", reason: "" };
@@ -125,15 +125,15 @@ const AttendanceDetails = ({ attendance }) => {
   return (
     <div className="attendance-details">
       <div className="attendance-card">
-        {/* <h3 className="attendance-card-title">Login Details</h3> */}
+        {/* <h3 className="attendance-card-title">PunchIn Details</h3> */}
         <div className="attendance-row">
-          <span className="attendance-label">Login Time:</span>
+          <span className="attendance-label">PunchIn Time:</span>
           <span className="attendance-value">
             {new Date(attendance?.login_timestamp || "").toLocaleTimeString()}
           </span>
         </div>
         <div className="attendance-row">
-          <span className="attendance-label">Login Location:</span>
+          <span className="attendance-label">PunchIn Location:</span>
           <span className="attendance-value">
             {formatLocation(attendance?.login_lat_long)}
           </span>
@@ -142,9 +142,9 @@ const AttendanceDetails = ({ attendance }) => {
 
       {attendance?.is_logged_out && (
         <div className="attendance-card">
-          {/* <h3 className="attendance-card-title">Logout Details</h3> */}
+          {/* <h3 className="attendance-card-title">PunchOut Details</h3> */}
           <div className="attendance-row">
-            <span className="attendance-label">Logout Time:</span>
+            <span className="attendance-label">PunchOut Time:</span>
             <span className="attendance-value">
               {new Date(
                 attendance?.logout_timestamp || ""
@@ -152,7 +152,7 @@ const AttendanceDetails = ({ attendance }) => {
             </span>
           </div>
           <div className="attendance-row">
-            <span className="attendance-label">Logout Location:</span>
+            <span className="attendance-label">PunchOut Location:</span>
             <span className="attendance-value">
               {formatLocation(attendance?.logout_lat_long)}
             </span>
@@ -745,8 +745,11 @@ export default function DashboardWeb() {
       const year = calendarMonth.getFullYear();
       const month = calendarMonth.getMonth();
       const startDate = new Date(year, month, 1);
-      const endDate = new Date(year, month , 31);
-      console.log(startDate);
+      const endDate = new Date(year, month + 1, 0);
+      // Format as 'yyyy-MM-dd HH:mm:ss'
+      const startDateStr = format(startDate, "yyyy-MM-dd 00:00:00");
+      const endDateStr = format(endDate, "yyyy-MM-dd 23:59:59");
+      console.log(startDate, endDate);
       try {
         const response = await fetch(ATTENDANCE_API_URL, {
           method: "POST",
@@ -756,8 +759,8 @@ export default function DashboardWeb() {
           },
           body: JSON.stringify({
             user_id: userId,
-            start_date: format(startDate, "yyyy-MM-dd"),
-            end_date: format(endDate, "yyyy-MM-dd"),
+            start_date: startDateStr,
+            end_date: endDateStr,
           }),
         });
         const data = await response.json();
@@ -873,13 +876,13 @@ export default function DashboardWeb() {
     if (!todayAttendance?.has_login) {
       return (
         <>
-          <p className="login-status-text">Login to register your attendance</p>
+          <p className="login-status-text">PunchIn to register your attendance</p>
           <button
             className={`login-button ${isLoggingIn ? "loading" : ""}`}
             onClick={handleLogin}
             disabled={isLoggingIn}
           >
-            {isLoggingIn ? "Logging in..." : "Login"}
+            {isLoggingIn ? "Punching In..." : "PunchIn"}
           </button>
         </>
       );
@@ -888,8 +891,7 @@ export default function DashboardWeb() {
     if (todayAttendance.attendance?.is_logged_out) {
       return (
         <>
-          
-          <p className="login-status-text">Today's attendance completed</p>
+          <p className="login-status-text">Today's attendance completed (Punched Out)</p>
           <AttendanceDetails attendance={todayAttendance.attendance} />
         </>
       );
@@ -897,14 +899,14 @@ export default function DashboardWeb() {
 
     return (
       <>
-        <p className="login-status-text">Currently logged in</p>
+        <p className="login-status-text">Currently Punched In</p>
         <AttendanceDetails attendance={todayAttendance.attendance} />
         <button
           className={`logout-button ${isLoggingOut ? "loading" : ""}`}
           onClick={handleLogout}
           disabled={isLoggingOut}
         >
-          {isLoggingOut ? "Logging out..." : "Logout"}
+          {isLoggingOut ? "Punching Out..." : "PunchOut"}
         </button>
       </>
     );
@@ -1016,7 +1018,7 @@ export default function DashboardWeb() {
   return (
     <div className="dashboard-main">
       <div className="dashboard-container">
-      <div className="welcome-banner">
+      {/* <div className="welcome-banner">
             <div className="welcome-content">
               <h2 className="welcome-text">Welcome back,</h2>
               {userData ? (
@@ -1037,10 +1039,12 @@ export default function DashboardWeb() {
               alt="Profile"
               className="welcome-image"
             />
-          </div>
+      </div */}
         <div className="dashboard-header"> 
           <div className="dashboard-header-left">
-            <Calendar
+            
+            <Calendar 
+              className="calendar-header"
               value={calendarMonth}
               onActiveStartDateChange={({ activeStartDate }) => setCalendarMonth(activeStartDate)}
               tileClassName={({ date, view }) => {
@@ -1080,7 +1084,7 @@ export default function DashboardWeb() {
         {/* My Projects Card Section for role_id = 3 */}
         {roleId === "3" && (
           <div className="dashboard-projects-section">
-            <h2 className="dashboard-projects-title">My Projects</h2>
+            <h2 className="dashboard-projects-title"><u>My Projects:- </u> </h2>
             {projectsLoading ? (
               <div className="dashboard-projects-loader">Loading projects...</div>
             ) : projects.length === 0 ? (
@@ -1261,6 +1265,7 @@ export default function DashboardWeb() {
             <p>{locationText}</p>
           </div>
         </div> */}
+
 
         
 

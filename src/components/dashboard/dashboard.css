@@ -180,6 +180,18 @@ body {
   /* Prevents shrinking */
 }
 
+.calendar-header {
+  width: 100%;
+  max-width: 100%;
+  margin-left: 1rem;
+}
+
+.dashboard-header-left {
+  flex: 1 1 0%;
+  min-width: 30px;
+  margin-right: 0 rem;
+}
+
 .dashboard-header-right {
   flex: 1 1 0%;
   min-width: 30px;
@@ -371,7 +383,7 @@ body {
   /* Emphasize */
   border-radius: var(--radius-md);
   padding: 1rem 1.5rem;
-  margin-bottom: .2rem;
+  /* margin-bottom: .2rem; */
   display: flex;
   align-items: center;
 }
@@ -413,8 +425,9 @@ body {
 .login-section {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
-  padding: 1.2rem;
-  margin-bottom: 2rem;
+  padding-bottom: 1.2rem;
+  padding-inline: 1.2rem;
+  /* margin-bottom: 2rem; */
   box-shadow: var(--shadow-md);
   text-align: center;
   max-width: auto;
@@ -579,6 +592,7 @@ body {
 }
 
 .attendance-label {
+  font-size: 1.2rem;
   font-weight: 500;
   color: var(--text-secondary);
   margin-right: 1rem;
@@ -588,6 +602,7 @@ body {
   color: var(--text-primary);
   font-weight: 500;
   text-align: right;
+  font-size: 1.2rem;
 }
 
 /* Location Section */
@@ -629,6 +644,17 @@ body {
 
 .location-details p:last-child {
   margin-bottom: 0;
+}
+
+.dashboard-projects-section {
+  padding-bottom: 1.2rem;
+  padding-inline: 1.2rem;
+  margin-bottom: .2rem;
+  margin-top: .2rem;
+}
+
+.dashboard-projects-title {
+  margin-bottom: .2rem;
 }
 
 /* Quote Section */
@@ -1016,7 +1042,7 @@ body {
   }
 
   .login-section {
-    padding: 1.25rem;
+    padding-bottom: 1.25rem;
   }
 
   .attendance-details {
