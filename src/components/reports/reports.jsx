@@ -37,6 +37,12 @@ const Reports = () => {
   const [workReportTable, setWorkReportTable] = useState(null);
   const [workReportLoading, setWorkReportLoading] = useState(false);
   const [workReportError, setWorkReportError] = useState("");
+  const [expenseTypes, setExpenseTypes] = useState([]);
+  const [loadingExpenseTypes, setLoadingExpenseTypes] = useState(false);
+  const [selectedExpenseType, setSelectedExpenseType] = useState(null);
+  const [expenseReportTable, setExpenseReportTable] = useState([]);
+  const [expenseReportLoading, setExpenseReportLoading] = useState(false);
+  const [expenseReportError, setExpenseReportError] = useState("");
   const location = useLocation();
 
   useEffect(() => {
@@ -45,6 +51,7 @@ const Reports = () => {
       const { userId, userName } = location.state;
       if (userId && userName) {
         setSelectedUsers([{ value: userId, label: userName }]);
+        console.log(selectedUsers.user_id);
       }
     }
     const fetchProjects = async () => {
@@ -131,6 +138,36 @@ const Reports = () => {
     fetchUsers();
   }, [selectedProject]);
 
+  // Effect: fetch expense heads when domain is set to Expense
+  useEffect(() => {
+    const isExpenseDomain = dummyDomains.find(d => d.id == selectedDomain)?.name === 'Expense';
+    if (isExpenseDomain && expenseTypes.length === 0) {
+      const fetchExpenseHeads = async () => {
+        setLoadingExpenseTypes(true);
+        try {
+          const token = localStorage.getItem("authToken");
+          const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_heads=true", {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` },
+          });
+          const data = await response.json();
+          if (data.status === 'success' && Array.isArray(data.data)) {
+            setExpenseTypes(data.data);
+          } else {
+            setExpenseTypes([]);
+          }
+        } catch (err) {
+          setExpenseTypes([]);
+        } finally {
+          setLoadingExpenseTypes(false);
+        }
+      };
+      fetchExpenseHeads();
+    }
+    // Reset selected expense type if domain changes
+    if (!isExpenseDomain) setSelectedExpenseType(null);
+  }, [selectedDomain]);
+
   const handleReset = () => {
     setSelectedUsers([]);
     setSelectedDomain("");
@@ -146,6 +183,8 @@ const Reports = () => {
     setAttendanceError("");
     setWorkReportTable(null);
     setWorkReportError("");
+    setExpenseReportTable([]);
+    setExpenseReportError("");
     if (selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Attendance") {
       if (!selectedUsers.length || !dateFrom || !dateTo) {
         setAttendanceError("Please select at least one user, start date, and end date.");
@@ -215,6 +254,47 @@ const Reports = () => {
         setWorkReportLoading(false);
       }
     }
+    else if (selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Expense") {
+      if (!selectedUsers.length || !dateFrom || !dateTo) {
+        setExpenseReportError("Please select at least one user, start date, and end date.");
+        return;
+      }
+      setExpenseReportLoading(true);
+      try {
+        const token = localStorage.getItem("authToken");
+        // Fetch for each user
+        const userFetches = selectedUsers.map(userOption => {
+          const userId = userOption.value;
+          const body = {
+            user_id: userId,
+            start_date: dateFrom,
+            end_date: dateTo,
+          };
+          if (selectedProject) body.expense_type_id = selectedProject;
+          if (selectedExpenseType) body.expense_head_id = selectedExpenseType;
+          return fetch("https://demo-expense.geomaticxevs.in/ET-api/expense_report_fetcher.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify(body)
+          })
+            .then(res => res.json())
+            .then(data => ({ userId, data, userLabel: userOption.label }));
+        });
+        const results = await Promise.all(userFetches);
+        // Flatten all results, add userLabel to each row
+        const allRows = [];
+        results.forEach(({ userId, data, userLabel }) => {
+          if (data.status === "success" && Array.isArray(data.data)) {
+            data.data.forEach(row => allRows.push({ ...row, userLabel }));
+          }
+        });
+        setExpenseReportTable(allRows);
+      } catch (err) {
+        setExpenseReportError("Network error or invalid response");
+      } finally {
+        setExpenseReportLoading(false);
+      }
+    }
   };
 
   // Helper to get user options
@@ -280,24 +360,23 @@ const Reports = () => {
     }
   };
 
-  // Helper to get all dates in range (inclusive)
-  function getAllDatesInRange(start, end) {
+  // Helper: get all dates in range as strings (YYYY-MM-DD)
+  function getAllDateStringsInRange(start, end) {
     const dates = [];
     let current = new Date(start);
     const endDate = new Date(end);
     while (current <= endDate) {
-      dates.push(new Date(current));
+      dates.push(current.toISOString().split('T')[0]);
       current.setDate(current.getDate() + 1);
     }
     return dates;
   }
-  // Helper to format date as DD-MM-YYYY
-  function formatDateDMY(dateStr) {
+  // Helper: format date as DD-MMM
+  function formatDateShort(dateStr) {
     const d = new Date(dateStr);
     const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
+    const month = d.toLocaleString('default', { month: 'short' });
+    return `${day}-${month}`;
   }
 
   return (
@@ -363,7 +442,26 @@ const Reports = () => {
               </select>
             </div>
           </div>
-          
+          {/* Expense Type dropdown (conditionally rendered) */}
+          {dummyDomains.find(d => d.id == selectedDomain)?.name === 'Expense' && (
+            <div className="form-group">
+              <label htmlFor="expense-type-select">Expense Type <span style={{color: '#e74c3c'}}>*</span></label>
+              <div style={{ position: 'relative' }}>
+                <Select
+                  id="expense-type-select"
+                  isLoading={loadingExpenseTypes}
+                  options={expenseTypes}
+                  value={expenseTypes.find(t => t.value === selectedExpenseType) || null}
+                  onChange={option => setSelectedExpenseType(option ? option.value : null)}
+                  placeholder="Select expense type"
+                  isClearable
+                  classNamePrefix="react-select"
+                  styles={{ container: base => ({ ...base, minWidth: 220 }) }}
+                  noOptionsMessage={() => loadingExpenseTypes ? "Loading..." : "No expense types found"}
+                />
+              </div>
+            </div>
+          )}
           <div className="form-group date-range-small">
             {isLeavesDomain ? (
               <>
@@ -438,20 +536,19 @@ const Reports = () => {
                   </thead>
                   <tbody>
                     {/* For each date in range, show all reports for that date, or empty row if none */}
-                    {getAllDatesInRange(dateFrom, dateTo).map(dateObj => {
-                      const dateStr = dateObj.toISOString().split('T')[0];
+                    {getAllDateStringsInRange(dateFrom, dateTo).map(dateStr => {
                       const reportsForDate = workReportTable.filter(r => r.date === dateStr);
                       if (reportsForDate.length === 0) {
                         return (
                           <tr key={dateStr}>
-                            <td>{formatDateDMY(dateStr)}</td>
+                            <td>{formatDateShort(dateStr)}</td>
                             <td colSpan={4} style={{textAlign:'center',color:'#bbb'}}>No report</td>
                           </tr>
                         );
                       }
                       return reportsForDate.map((report, idx) => (
                         <tr key={dateStr + '-' + (report.id || idx)}>
-                          <td>{formatDateDMY(report.date)}</td>
+                          <td>{formatDateShort(report.date)}</td>
                           <td>{report.user_name}</td>
                           <td>{report.project_name}</td>
                           <td className="work-report-cell" style={{ whiteSpace: 'pre-line' }}>{report.work_details}</td>
@@ -459,6 +556,61 @@ const Reports = () => {
                         </tr>
                       ));
                     })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="results-placeholder">
+                <p className="results-text">No data to display. Please use the filters above and click <b>Fetch Data</b> to view your report.</p>
+              </div>
+            )
+          ) : selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Expense" ? (
+            expenseReportLoading ? (
+              <div className="results-placeholder"><p className="results-text">Loading expense report data...</p></div>
+            ) : expenseReportError ? (
+              <div className="results-placeholder"><p className="results-text" style={{color: 'red'}}>{expenseReportError}</p></div>
+            ) : expenseReportTable && expenseReportTable.length > 0 ? (
+              <div className="attendance-table-wrapper">
+                <table className="attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Project</th>
+                      <th>Name</th>
+                      <th>Expense Type</th>
+                      <th>Total</th>
+                      {getAllDateStringsInRange(dateFrom, dateTo).map(dateStr => (
+                        <th key={dateStr}>{formatDateShort(dateStr)}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Group by user, project, expense type */}
+                    {(() => {
+                      // Group rows by userLabel, project, expense_head_title
+                      const groups = {};
+                      expenseReportTable.forEach(row => {
+                        const projectName = row.expense_type_name || '-';
+                        const key = `${row.userLabel}||${projectName}||${row.expense_head_title}`;
+                        if (!groups[key]) groups[key] = { projectName, userLabel: row.userLabel, expenseType: row.expense_head_title, byDate: {}, total: 0 };
+                        // Use expense_track_created_at as key (YYYY-MM-DD)
+                        const dateKey = row.expense_track_created_at?.split('T')[0] || row.expense_track_created_at?.split(' ')[0];
+                        const amount = Number(row.expense_total_amount) || 0;
+                        if (!groups[key].byDate[dateKey]) groups[key].byDate[dateKey] = 0;
+                        groups[key].byDate[dateKey] += amount;
+                        groups[key].total += amount;
+                      });
+                      return Object.values(groups).map((group, idx) => (
+                        <tr key={group.userLabel + '-' + group.projectName + '-' + group.expenseType + '-' + idx}>
+                          <td>{group.projectName}</td>
+                          <td>{group.userLabel}</td>
+                          <td>{group.expenseType}</td>
+                          <td>{group.total > 0 ? group.total : ''}</td>
+                          {getAllDateStringsInRange(dateFrom, dateTo).map(dateStr => (
+                            <td key={dateStr}>{group.byDate[dateStr] > 0 ? group.byDate[dateStr] : ''}</td>
+                          ))}
+                        </tr>
+                      ));
+                    })()}
                   </tbody>
                 </table>
               </div>
