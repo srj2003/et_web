@@ -226,7 +226,7 @@ const ExpenseDetailsWeb = () => {
             <Clock size={24} color="#f59e0b" />
           </div>
           <div className="myexpenses-stat-info">
-            <h3>Unattended</h3>
+            <h3>Unatteended</h3>
             <p className="myexpenses-stat-value">{stats.Unattended}</p>
           </div>
         </div>
