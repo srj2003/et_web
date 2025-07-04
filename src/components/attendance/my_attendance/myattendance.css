@@ -928,3 +928,11 @@ span {
 .MuiDialogContent-root a:hover {
   color: #1e40af;
 }
+
+.tile-future {
+  background-color: #e5e7eb !important;
+  color: #9ca3af !important;
+  opacity: 0.6 !important;
+  border-radius: 50% !important;
+  pointer-events: none;
+}

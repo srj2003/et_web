@@ -788,14 +788,14 @@ const Users = () => {
       headerCount = filteredRoles.length;
     }
   } else if (activeTab === "all") {
-    headerTitle = "All Users";
+    headerTitle = "All Active Users";
     headerCount = filteredUsers.length;
   }
 
   return (
     <div className="users-container">
-      <div className="header">
-        <h1 className="title">{headerTitle} :-<span className="header-count">({headerCount})</span></h1>
+      <div className="the-header">
+        <h1 className="header-title">{headerTitle} :-<span className="header-count">({headerCount})</span></h1>
         <button 
           className="add-button" 
           onClick={() => activeTab === "categories" ? setShowAddUserRole(true) : setShowAddUser(true)}
@@ -805,7 +805,7 @@ const Users = () => {
         </button>
       </div>
 
-      <div className="search-container">
+      <div className="user-search-container">
         <Search size={20} />
         <input
           type="text"
@@ -844,7 +844,7 @@ const Users = () => {
             setShowInactiveOnly(false);
           }}
         >
-          All
+          All Active users
         </button>
         <button
           className={`tab ${activeTab === "categories" ? "active" : ""}`}

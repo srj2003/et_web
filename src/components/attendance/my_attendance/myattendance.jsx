@@ -118,6 +118,25 @@ export default function MyAttendance() {
     fetchLeaves();
   }, []);
 
+  // Auto-load current month's attendance on mount
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userid");
+    if (!token || !userId) return;
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    setStartDate(format(firstDay, "yyyy-MM-dd"));
+    setEndDate(format(now, "yyyy-MM-dd"));
+  }, []);
+
+  // Fetch attendance when startDate and endDate are set (auto or manual)
+  useEffect(() => {
+    if (userId && startDate && endDate) {
+      fetchAttendanceData();
+    }
+    // eslint-disable-next-line
+  }, [userId, startDate, endDate]);
+
   const onRefresh = () => {
     setStartDate(null);
     setEndDate(null);
@@ -466,6 +485,9 @@ export default function MyAttendance() {
                         const attendance = attendanceDetails.find(
                           (a) => a.date === dateStr
                         );
+                        // Shade future dates
+                        const todayStr = format(new Date(), "yyyy-MM-dd");
+                        if (dateStr > todayStr) return "tile-future";
                         if (!attendance) return null;
                         if (filterStatus && attendance.status !== filterStatus) {
                           return 'tile-hidden';
