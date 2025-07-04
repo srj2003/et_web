@@ -571,45 +571,87 @@ const Reports = () => {
               <div className="results-placeholder"><p className="results-text" style={{color: 'red'}}>{expenseReportError}</p></div>
             ) : expenseReportTable && expenseReportTable.length > 0 ? (
               <div className="attendance-table-wrapper">
-                <table className="attendance-table">
+                <table className="attendance-table expense-report-table custom-expense-table">
                   <thead>
                     <tr>
-                      <th>Project</th>
-                      <th>Name</th>
-                      <th>Expense Type</th>
-                      <th>Total</th>
-                      {getAllDateStringsInRange(dateFrom, dateTo).map(dateStr => (
-                        <th key={dateStr}>{formatDateShort(dateStr)}</th>
-                      ))}
+                      <th>projects</th>
+                      <th>user</th>
+                      <th>expense types</th>
+                      {/* Dynamically add maxEntryCount columns for expense entries */}
+                      {(() => {
+                        // Build nested structure to find maxEntryCount
+                        const grouped = {};
+                        let maxEntryCount = 0;
+                        expenseReportTable.forEach(row => {
+                          const project = row.expense_type_name || '-';
+                          const user = row.userLabel;
+                          const head = row.expense_head_title;
+                          const dateKey = row.expense_track_created_at?.split('T')[0] || row.expense_track_created_at?.split(' ')[0];
+                          const amount = Number(row.expense_total_amount) || 0;
+                          if (!grouped[project]) grouped[project] = {};
+                          if (!grouped[project][user]) grouped[project][user] = {};
+                          if (!grouped[project][user][head]) grouped[project][user][head] = [];
+                          grouped[project][user][head].push({ amount, date: dateKey });
+                          if (grouped[project][user][head].length > maxEntryCount) maxEntryCount = grouped[project][user][head].length;
+                        });
+                        return Array.from({ length: maxEntryCount }).map((_, i) => (
+                          <th key={i}> </th>
+                        ));
+                      })()}
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Group by user, project, expense type */}
+                    {/* Group by project, then user, then expense head, and use rowspan for project/user. Each expense type row shows each entry in its own cell. */}
                     {(() => {
-                      // Group rows by userLabel, project, expense_head_title
-                      const groups = {};
+                      // Build nested structure and find maxEntryCount
+                      const grouped = {};
+                      let maxEntryCount = 0;
                       expenseReportTable.forEach(row => {
-                        const projectName = row.expense_type_name || '-';
-                        const key = `${row.userLabel}||${projectName}||${row.expense_head_title}`;
-                        if (!groups[key]) groups[key] = { projectName, userLabel: row.userLabel, expenseType: row.expense_head_title, byDate: {}, total: 0 };
-                        // Use expense_track_created_at as key (YYYY-MM-DD)
+                        const project = row.expense_type_name || '-';
+                        const user = row.userLabel;
+                        const head = row.expense_head_title;
                         const dateKey = row.expense_track_created_at?.split('T')[0] || row.expense_track_created_at?.split(' ')[0];
                         const amount = Number(row.expense_total_amount) || 0;
-                        if (!groups[key].byDate[dateKey]) groups[key].byDate[dateKey] = 0;
-                        groups[key].byDate[dateKey] += amount;
-                        groups[key].total += amount;
+                        if (!grouped[project]) grouped[project] = {};
+                        if (!grouped[project][user]) grouped[project][user] = {};
+                        if (!grouped[project][user][head]) grouped[project][user][head] = [];
+                        grouped[project][user][head].push({ amount, date: dateKey });
+                        if (grouped[project][user][head].length > maxEntryCount) maxEntryCount = grouped[project][user][head].length;
                       });
-                      return Object.values(groups).map((group, idx) => (
-                        <tr key={group.userLabel + '-' + group.projectName + '-' + group.expenseType + '-' + idx}>
-                          <td>{group.projectName}</td>
-                          <td>{group.userLabel}</td>
-                          <td>{group.expenseType}</td>
-                          <td>{group.total > 0 ? group.total : ''}</td>
-                          {getAllDateStringsInRange(dateFrom, dateTo).map(dateStr => (
-                            <td key={dateStr}>{group.byDate[dateStr] > 0 ? group.byDate[dateStr] : ''}</td>
-                          ))}
-                        </tr>
-                      ));
+                      // Prepare flat rows with rowspan info
+                      const rows = [];
+                      Object.entries(grouped).forEach(([project, users]) => {
+                        const projectRowspan = Object.values(users).reduce((sum, heads) => sum + Object.keys(heads).length, 0);
+                        let projectRendered = false;
+                        Object.entries(users).forEach(([user, heads]) => {
+                          const userRowspan = Object.keys(heads).length;
+                          let userRendered = false;
+                          Object.entries(heads).forEach(([head, details], idx) => {
+                            rows.push(
+                              <tr key={project + '-' + user + '-' + head}>
+                                {!projectRendered && (
+                                  <td rowSpan={projectRowspan} className="custom-project-cell">{project}</td>
+                                )}
+                                {!userRendered && (
+                                  <td rowSpan={userRowspan} className="custom-user-cell">{user}</td>
+                                )}
+                                <td className="custom-expense-type-cell">
+                                  {head}
+                                </td>
+                                {/* Render each entry in its own cell, fill up to maxEntryCount */}
+                                {Array.from({ length: maxEntryCount }).map((_, i) => (
+                                  <td key={i} className="custom-expense-entry-cell">
+                                    {details[i] ? (<><b>{details[i].amount}/-</b> [{(() => { const d = new Date(details[i].date); return `${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(-2)}`; })()}]</>) : ''}
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                            projectRendered = true;
+                            userRendered = true;
+                          });
+                        });
+                      });
+                      return rows;
                     })()}
                   </tbody>
                 </table>
