@@ -42,9 +42,8 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; // Import default styles
-const API_URL = "https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php";
-const ATTENDANCE_API_URL = "https://demo-expense.geomaticxevs.in/ET-api/fetchAttendance.php";
+import 'react-calendar/dist/Calendar.css';
+import '../attendance/my_attendance/myattendance.css';
 
 const initialHolidays = [
   { id: "1", name: "Bengali New Year", date: "2025-04-15", isSunday: false },
@@ -362,12 +361,12 @@ export default function DashboardWeb() {
   const [currentMonth, setCurrentMonth] = useState("");
   const [filterStatus, setFilterStatus] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [projectView, setProjectView] = useState('list');
   const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   const initialLoadDone = useRef(false);
 
@@ -681,22 +680,6 @@ export default function DashboardWeb() {
     }
   }, [currentMonth, fetchMonthlyAttendance]);
 
-  useEffect(() => {
-    const userId = localStorage.getItem("userid");
-    if (!userId) return;
-    const month = format(calendarMonth, "yyyy-MM");
-    fetch(
-      `https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php?user_id=${userId}&month=${month}`
-    )
-      .then((res) => res.json())
-      .then((result) => {
-        // Use the same logic as myattendance.jsx
-        const processed = processAttendanceApiResponse(result.data || []);
-        setAttendanceDetails(processed);
-      })
-      .catch(() => setAttendanceDetails([]));
-  }, [calendarMonth]);
-
   // Fetch projects for role_id = 3
   useEffect(() => {
     if (roleId === "3") {
@@ -738,9 +721,9 @@ export default function DashboardWeb() {
     }
   }, [roleId]);
 
-  // Fetch attendance for the current month by default
+  // Fetch attendance for the visible month
   useEffect(() => {
-    const fetchAttendance = async () => {
+    const fetchMonthAttendance = async () => {
       const userId = localStorage.getItem("userid");
       const token = localStorage.getItem("authToken");
       if (!userId || !token) return;
@@ -748,26 +731,28 @@ export default function DashboardWeb() {
       const month = calendarMonth.getMonth();
       const startDate = new Date(year, month, 1);
       const endDate = new Date(year, month + 1, 0);
-      // Format as 'yyyy-MM-dd HH:mm:ss'
-      const startDateStr = format(startDate, "yyyy-MM-dd 00:00:00");
-      const endDateStr = format(endDate, "yyyy-MM-dd 23:59:59");
-      console.log(startDate, endDate);
+      const startDateStr = format(startDate, "yyyy-MM-dd");
+      const endDateStr = format(endDate, "yyyy-MM-dd");
       try {
-        const response = await fetch(ATTENDANCE_API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            start_date: startDateStr,
-            end_date: endDateStr,
-          }),
-        });
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              start_date: startDateStr,
+              end_date: endDateStr,
+            }),
+          }
+        );
         const data = await response.json();
-        if (data.success && Array.isArray(data.attendance)) {
-          setAttendanceDetails(data.attendance);
+        if (data && data.success) {
+          const processed = processApiResponse(data.attendance, data.holidays);
+          setAttendanceDetails(processed);
         } else {
           setAttendanceDetails([]);
         }
@@ -775,7 +760,7 @@ export default function DashboardWeb() {
         setAttendanceDetails([]);
       }
     };
-    fetchAttendance();
+    fetchMonthAttendance();
   }, [calendarMonth]);
 
   const handleLogin = async () => {
@@ -992,6 +977,69 @@ export default function DashboardWeb() {
   // Add these colors for the pie chart
   const COLORS = ["#6366f1", "#10b981", "#f59e0b"];
 
+  function processApiResponse(apiData, holidays) {
+    const holidayDates = initialHolidays.map((holiday) => holiday.date);
+    return apiData
+      .map((item) => {
+        if (holidayDates.includes(item.date)) {
+          return { date: item.date, status: "Holiday", reason: "Holiday" };
+        }
+        const dateObj = new Date(item.date);
+        const isSunday = dateObj.getDay() === 0;
+        if (isSunday) {
+          if (!item.hasLogin) {
+            return null;
+          } else {
+            return { date: item.date, status: "Present", reason: "" };
+          }
+        }
+        if (!item.hasLogin) {
+          return {
+            date: item.date,
+            status: "Absent",
+            reason: "No login recorded",
+          };
+        }
+        if (!item.is_logged_out) {
+          return {
+            date: item.date,
+            status: "Not Logged Out",
+            reason: "Did not log out",
+          };
+        }
+        return { date: item.date, status: "Present", reason: "" };
+      })
+      .filter((item) => item !== null);
+  }
+
+  function calculateTotalCounts() {
+    const counts = {
+      presentCount: 0,
+      absentCount: 0,
+      notLoggedOutCount: 0,
+      holidayCount: 0,
+    };
+    attendanceDetails.forEach((attendance) => {
+      if (attendance.status === "Present") {
+        counts.presentCount++;
+      } else if (attendance.status === "Absent") {
+        counts.absentCount++;
+      } else if (attendance.status === "Not Logged Out") {
+        counts.notLoggedOutCount++;
+      } else if (attendance.status === "Holiday") {
+        counts.holidayCount++;
+      }
+    });
+    return counts;
+  }
+
+  const CountBox = ({ value, label, color }) => (
+    <div className="count-box" style={{ backgroundColor: color }}>
+      <span className="count-value">{value}</span>
+      <span className="count-label">{label}</span>
+    </div>
+  );
+
   if (loading || checkingAttendance) {
     return (
       <div className="loading-container">
@@ -1020,45 +1068,39 @@ export default function DashboardWeb() {
   return (
     <div className="dashboard-main">
       <div className="dashboard-container">
-      {/* <div className="welcome-banner">
-            <div className="welcome-content">
-              <h2 className="welcome-text">Welcome back,</h2>
-              {userData ? (
-                <>
-                  <h1 className="name-text">
-                    {`${userData.u_fname}${
-                      userData.u_mname ? ` ${userData.u_mname} ` : " "
-                    }${userData.u_lname}`}
-                  </h1>
-                  <p className="role-text">{userData.role_name}</p>
-                </>
-              ) : (
-                <h1 className="name-text">User</h1>
-              )}
-            </div>
-            <img
-              src={userData?.u_pro_img || "/assets/images/default_profile.png"}
-              alt="Profile"
-              className="welcome-image"
-            />
-      </div */}
         <div className="dashboard-header"> 
           <div className="dashboard-header-left">
-            
-            <Calendar 
-              className="calendar-header"
-              value={calendarMonth}
-              onActiveStartDateChange={({ activeStartDate }) => setCalendarMonth(activeStartDate)}
-              tileClassName={({ date, view }) => {
-                if (view !== 'month') return null;
-                const dateStr = format(date, "yyyy-MM-dd");
-                const attendance = attendanceDetails.find(a => a.login_timestamp && a.login_timestamp.startsWith(dateStr));
-                if (!attendance) return null;
-                if (attendance.is_logged_out === 1) return "tile-present";
-                if (attendance.is_logged_out === 0) return "tile-not-logged-out";
-                return "tile-absent";
-              }}
-            />
+            <div className="dashboard-calendar-view">
+              <div className="left-section">
+                <Calendar
+                  value={calendarMonth}
+                  onActiveStartDateChange={({ activeStartDate }) => setCalendarMonth(activeStartDate)}
+                  tileClassName={({ date, view }) => {
+                    if (view !== 'month') return null;
+                    const dateStr = format(date, "yyyy-MM-dd");
+                    const todayStr = format(new Date(), "yyyy-MM-dd");
+                    if (dateStr > todayStr) return "tile-future";
+                    const attendance = attendanceDetails.find((a) => a.date === dateStr);
+                    if (!attendance) return null;
+                    if (attendance.status === "Present") return "tile-present";
+                    if (attendance.status === "Absent") return "tile-absent";
+                    if (attendance.status === "Not Logged Out") return "tile-not-logged-out";
+                    if (attendance.status === "Holiday") return "tile-holiday";
+                    return null;
+                  }}
+                />
+              </div>
+              <div className="middle-section">
+                <div className="count-container">
+                  <div className="count-inner-container">
+                    <CountBox value={calculateTotalCounts().presentCount} label="Present" color="#3fd1a0" />
+                    <CountBox value={calculateTotalCounts().absentCount} label="Absent" color="#f05b5b" />
+                    <CountBox value={calculateTotalCounts().holidayCount} label="Holiday" color="#6b7280" />
+                    <CountBox value={calculateTotalCounts().notLoggedOutCount} label="Not Logged Out" color="#fab541" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="dashboard-header-right">
           {userData && userData.not_logged_out_count > 0 && (
