@@ -456,28 +456,7 @@ const Sidebar = () => {
       </ul>
 
       {/* Add this new section for bottom menu items */}
-      <div className="sidebar-bottom">
-        <div className="bottom-divider"></div>
-        <ul className="bottom-menu">
-          <li className="menu-item">
-            <Link
-              to="/help"
-              className={`menu-link ${
-                location.pathname === "/help" ? "active" : ""
-              }`}
-            >
-              <HelpCircle size={20} className="menu-icon" />
-              <span className="menu-title">Help</span>
-            </Link>
-          </li>
-          <li className="menu-item">
-            <button onClick={handleLogout} className="menu-link logout-link">
-              <LogOut size={20} className="menu-icon" />
-              <span className="menu-title">Logout</span>
-            </button>
-          </li>
-        </ul>
-      </div>
+      {/* Help and Logout removed from sidebar. Now handled in profile dropdown. */}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import "./navbar.css";
@@ -22,6 +22,7 @@ const Navbar = () => {
   const [loading, setLoading] = useState(true);
   const [roleId, setRoleId] = useState(null);
   const location = useLocation();
+  const profileDropdownRef = useRef(null);
 
   // Add state for sidebar visibility
   const toggleSidebar = () => {
@@ -97,6 +98,23 @@ const Navbar = () => {
     fetchUserData();
   }, []);
 
+  useEffect(() => {
+    if (!showProfileDropdown) return;
+    function handleClickOutside(event) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target) &&
+        !event.target.classList.contains("profile-button")
+      ) {
+        setShowProfileDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileDropdown]);
+
   const notifications = [
     {
       id: 1,
@@ -123,6 +141,27 @@ const Navbar = () => {
       );
     }
     return false;
+  };
+
+  const handleLogout = async () => {
+    const userId = localStorage.getItem("userid");
+    const authToken = localStorage.getItem("authToken");
+    try {
+      await fetch("https://demo-expense.geomaticxevs.in/ET-api/logout.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, authToken })
+      });
+    } catch (err) {
+      alert("Can not logout.");
+    }
+    localStorage.removeItem("userid");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("roleId");
+    localStorage.removeItem("currentLoginTime");
+    alert("You have been logged out. Please login again.");
+    window.location.href = "/";
   };
 
   return (
@@ -161,7 +200,7 @@ const Navbar = () => {
         <div className="profile-container">
           <button
             className="profile-button"
-            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+            onClick={() => setShowProfileDropdown((prev) => !prev)}
           >
             <img
               src={userData?.u_pro_img || "/assets/images/default_profile.png"}
@@ -171,7 +210,8 @@ const Navbar = () => {
           </button>
 
           {showProfileDropdown && (
-            <div className="profile-dropdown">
+            <div className={`profile-dropdown ${showProfileDropdown ? 'show' : ''}`}
+             ref={profileDropdownRef}>
               <div className="profile-info">
                 <img
                   src={
@@ -195,6 +235,12 @@ const Navbar = () => {
                 <Link to="/profile" className="profile-action-link">
                   View Profile
                 </Link>
+                <Link to="/help" className="profile-action-link">
+                  Help
+                </Link>
+                <button onClick={handleLogout} className="profile-action-link" style={{color:'#ef4444'}}>
+                  Logout
+                </button>
               </div>
             </div>
           )}

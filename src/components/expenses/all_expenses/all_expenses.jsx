@@ -5,12 +5,13 @@ import {
   Filter,
   Calendar,
   ArrowRight,
-  AlertCircle,
+  CheckCircle,
+  XCircle,
   Clock,
-  Check,
   X,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
 } from "lucide-react";
 import moment from "moment";
 
@@ -34,6 +35,7 @@ const AllExpensesWeb = () => {
     approved: 0,
     rejected: 0,
   });
+  const [viewMode, setViewMode] = useState("card"); // "card" or "table"
 
   // Helper function to format date
   const formatDate = useCallback((dateString) => {
@@ -83,7 +85,7 @@ const AllExpensesWeb = () => {
         expense_id: item.expense_track_id,
         employee: item.created_by_full_name,
         expense_title: item.expense_track_title,
-        expense_type: getExpenseType(item.expense_type_id),
+        expense_type: item.expense_type_name,
         amount: item.expense_total_amount,
         date: formatDate(item.expense_track_created_at),
         status: getStatus(item.expense_track_status),
@@ -135,6 +137,7 @@ const AllExpensesWeb = () => {
       }
 
       const apiData = await response.json();
+      console.log("API Data:", apiData);
       const transformedData = transformExpenseData(apiData);
       setExpenses(transformedData);
 
@@ -259,193 +262,310 @@ const AllExpensesWeb = () => {
   return (
     <div className="leaves-container">
       <h1 className="allexpense-page-title">All Expenses</h1>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
-            <AlertCircle size={24} color="#6366f1" />
-          </div>
-          <div className="stat-info">
-            <h3>Total Expenses</h3>
-            <p className="stat-value">{stats.total}</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Clock size={24} color="#f59e0b" />
-          </div>
-          <div className="stat-info">
-            <h3>Unattended</h3>
-            <p className="stat-value">{stats.Unattended}</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Check size={24} color="#10b981" />
-          </div>
-          <div className="stat-info">
-            <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <X size={24} color="#ef4444" />
-          </div>
-          <div className="stat-info">
-            <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters Section - Like Leaves */}
-      <div className="myleavesfilters-section">
-        <div className="myleavessearch-container">
-          <Search size={20} color="#64748b" />
-          <input
-            type="text"
-            placeholder="Search expenses..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="myleavessearch-input"
-          />
-        </div>
-        <select
-          value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
-          className="myleavesfilter-button"
-        >
-          <option>All</option>
-          <option>Unattended</option>
-          <option>Approved</option>
-          <option>Rejected</option>
-        </select>
-      </div>
-
-      <div className="allexpense-date-filter-container">
-        <div className="allexpense-date-filter-buttons">
-          <button
-            className={`allexpense-date-filter-button ${
-              dateRangeType === "today" ? "active" : ""
-            }`}
-            onClick={() => handleDateRangeSelect("today")}
-          >
-            Today
-          </button>
-          <button
-            className={`allexpense-date-filter-button ${
-              dateRangeType === "lastMonth" ? "active" : ""
-            }`}
-            onClick={() => handleDateRangeSelect("lastMonth")}
-          >
-            Last Month
-          </button>
-          <button
-            className={`allexpense-date-filter-button ${
-              dateRangeType === "custom" ? "active" : ""
-            }`}
-            onClick={() => handleDateRangeSelect("custom")}
-          >
-            <Calendar size={16} />
-            Custom
-          </button>
-          {dateRangeType && (
-            <button
-              className="allexpense-clear-button"
-              onClick={() => handleDateRangeSelect(null)}
-            >
-              Clear
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="all_expenses-expenses-grid">
-        {currentItems.map((expense) => (
+      <div className="allexpense-stats-grid">
+        <div className="allexpense-stat-card">
           <div
-            key={expense.id}
-            className="all_expenses-leave-card"
-            data-status={expense.status}
-            onClick={() => {
-              setSelectedExpense(expense);
-              setShowExpenseDetails(true);
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              color: "#fff",
             }}
           >
-            <div className="all_expenses-leave-header">
-              <div className="all_expenses-leave-header-content">
-                <h3 className="all_expenses-employee-name">
-                  {expense.expense_title}
-                </h3>
-                <span className="all_expenses-leave-type">
-                  {expense.expense_type}
+            <DollarSign size={28} />
+          </div>
+          <div className="allexpense-stat-info">
+            <h3>Total Expenses</h3>
+            <div className="allexpense-stat-value">{stats.total}</div>
+          </div>
+        </div>
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+              color: "#fff",
+            }}
+          >
+            <CheckCircle size={28} />
+          </div>
+          <div className="allexpense-stat-info">
+            <h3>Approved</h3>
+            <div className="allexpense-stat-value">{stats.approved}</div>
+          </div>
+        </div>
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #64748b 0%, #334155 100%)",
+              color: "#fff",
+            }}
+          >
+            <Clock size={28} />
+          </div>
+          <div className="allexpense-stat-info">
+            <h3>Unattended</h3>
+            <div className="allexpense-stat-value">{stats.Unattended}</div>
+          </div>
+        </div>
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+              color: "#fff",
+            }}
+          >
+            <X size={28} />
+          </div>
+          <div className="allexpense-stat-info">
+            <h3>Rejected</h3>
+            <div className="allexpense-stat-value">{stats.rejected}</div>
+          </div>
+        </div>
+      </div>
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "card" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "table" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
+      </div>
+      {viewMode === "card" ? (
+        <div className="all_expenses-expenses-grid">
+          {currentItems.map((expense) => (
+            <div
+              key={expense.id}
+              className="all_expenses-leave-card"
+              data-status={expense.status}
+              style={{ position: "relative" }}
+              onClick={() => {
+                setSelectedExpense(expense);
+                setShowExpenseDetails(true);
+              }}
+            >
+              <div className="all_expenses-leave-header">
+                <div className="all_expenses-leave-header-content">
+                  <h3 className="all_expenses-employee-name">
+                    {expense.expense_type_name || expense.expense_type}
+                  </h3>
+                  <span className="all_expenses-leave-type">
+                    {expense.expense_title}
+                  </span>
+                </div>
+                <span
+                  className={`all_expenses-status-badge all_expenses-status-${expense.status.toLowerCase()}`}
+                >
+                  {expense.status}
                 </span>
               </div>
-              <span
-                className={`all_expenses-status-badge all_expenses-status-${expense.status.toLowerCase()}`}
-              >
-                {expense.status}
-              </span>
-            </div>
-            <div className="all_expenses-leave-details">
-              <div className="all_expenses-leave-title-section">
-                {expense.remarks && (
-                  <p className="all_expenses-leave-comment">
-                    {expense.remarks}
-                  </p>
-                )}
+              <div className="all_expenses-leave-details">
+                <div className="all_expenses-leave-title-section">
+                  {expense.remarks && (
+                    <p className="all_expenses-leave-comment">
+                      {expense.remarks}
+                    </p>
+                  )}
+                </div>
+                <div className="all_expenses-leave-dates">
+                  <div className="all_expenses-date-item">
+                    <span className="all_expenses-date-label">Date:</span>
+                    <span className="all_expenses-date-value">
+                      {expense.date}
+                    </span>
+                  </div>
+                  <div className="all_expenses-date-item">
+                    <span className="all_expenses-date-label">Amount:</span>
+                    <span className="all_expenses-date-value">
+                      ₹{expense.amount}
+                    </span>
+                  </div>
+                  <div className="all_expenses-date-item">
+                    <span className="all_expenses-date-label">Status:</span>
+                    <span className="all_expenses-date-value">
+                      {expense.status}
+                    </span>
+                  </div>
+                  {expense.expense_id && (
+                    <div className="all_expenses-date-item">
+                      <span className="all_expenses-date-label">
+                        Expense ID:
+                      </span>
+                      <span className="all_expenses-date-value">
+                        {expense.expense_id}
+                      </span>
+                    </div>
+                  )}
+                  {expense.submitted_to && (
+                    <div className="all_expenses-date-item">
+                      <span className="all_expenses-date-label">
+                        Submitted To:
+                      </span>
+                      <span className="all_expenses-date-value">
+                        {expense.submitted_to}
+                      </span>
+                    </div>
+                  )}
+                  {expense.approved_by && (
+                    <div className="all_expenses-date-item">
+                      <span className="all_expenses-date-label">
+                        Approved By:
+                      </span>
+                      <span className="all_expenses-date-value">
+                        {expense.approved_by}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="all_expenses-leave-dates">
-                <div className="all_expenses-date-item">
-                  <span className="all_expenses-date-label">Date:</span>
-                  <span className="all_expenses-date-value">
-                    {expense.date}
-                  </span>
-                </div>
-                <div className="all_expenses-date-item">
-                  <span className="all_expenses-date-label">Amount:</span>
-                  <span className="all_expenses-date-value">
-                    ₹{expense.amount}
-                  </span>
-                </div>
-                <div className="all_expenses-date-item">
-                  <span className="all_expenses-date-label">Status:</span>
-                  <span className="all_expenses-date-value">
-                    {expense.status}
-                  </span>
-                </div>
-                {expense.expense_id && (
-                  <div className="all_expenses-date-item">
-                    <span className="all_expenses-date-label">Expense ID:</span>
-                    <span className="all_expenses-date-value">
-                      {expense.expense_id}
-                    </span>
-                  </div>
-                )}
-                {expense.submitted_to && (
-                  <div className="all_expenses-date-item">
-                    <span className="all_expenses-date-label">
-                      Submitted To:
-                    </span>
-                    <span className="all_expenses-date-value">
-                      {expense.submitted_to}
-                    </span>
-                  </div>
-                )}
-                {expense.approved_by && (
-                  <div className="all_expenses-date-item">
-                    <span className="all_expenses-date-label">
-                      Approved By:
-                    </span>
-                    <span className="all_expenses-date-value">
-                      {expense.approved_by}
-                    </span>
-                  </div>
-                )}
-              </div>
+              {/* Amount breakdown badge at bottom right */}
+              {Array.isArray(expense.expense_details) &&
+                expense.expense_details.length > 0 &&
+                (() => {
+                  // Group by expense_head_name and sum amounts
+                  const categoryMap = {};
+                  expense.expense_details.forEach((detail) => {
+                    const head =
+                      detail.expense_head_name ||
+                      detail.expense_head_title ||
+                      "Other";
+                    const amt = Number(detail.expense_product_amount) || 0;
+                    if (!categoryMap[head]) categoryMap[head] = 0;
+                    categoryMap[head] += amt;
+                  });
+                  const categories = Object.keys(categoryMap);
+                  const values = categories.map(
+                    (cat) => `₹${categoryMap[cat]}`
+                  );
+                  return (
+                    <div
+                      className="myexpenses-breakdown-badge myexpenses-breakdown-bottom"
+                      style={{ "--breakdown-cols": categories.length + 1 }}
+                    >
+                      <div className="myexpenses-breakdown-categories">
+                        {categories.map((cat, idx) => (
+                          <span
+                            key={cat}
+                            className="myexpenses-breakdown-category-label"
+                            title={cat}
+                          >
+                            {cat && cat.length > 8
+                              ? cat.slice(0, 8) + "..."
+                              : cat}
+                          </span>
+                        ))}
+                        <span className="myexpenses-breakdown-category-label myexpenses-breakdown-category-total">
+                          Total
+                        </span>
+                      </div>
+                      <div className="myexpenses-breakdown-category-amounts">
+                        {values.map((val, idx) => (
+                          <span
+                            key={idx}
+                            className="myexpenses-breakdown-category-amount"
+                          >
+                            {val}
+                          </span>
+                        ))}
+                        <span className="myexpenses-breakdown-category-amount myexpenses-breakdown-category-total">{`₹${Object.values(
+                          categoryMap
+                        ).reduce((a, b) => a + Number(b), 0)}`}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="myexpenses-table-container">
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Expense ID</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Submitted To</th>
+                <th>Approved By</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentItems.map((expense) => (
+                <tr key={expense.expense_id}>
+                  <td>{expense.expense_id}</td>
+                  <td>{expense.expense_title}</td>
+                  <td>{expense.expense_type_name || expense.expense_type}</td>
+                  <td>{expense.date}</td>
+                  <td>{expense.status}</td>
+                  <td>₹{expense.amount}</td>
+                  <td>{expense.submitted_to}</td>
+                  <td>{expense.approved_by || "-"}</td>
+                  <td>
+                    <details>
+                      <summary>Show</summary>
+                      <table className="myexpenses-details-table">
+                        <thead>
+                          <tr>
+                            <th>Head</th>
+                            <th>Amount</th>
+                            <th>Qty</th>
+                            <th>Unit</th>
+                            <th>Name</th>
+                            <th>Desc</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {expense.expense_details &&
+                            expense.expense_details.map((d, i) => (
+                              <tr key={d.expense_id || i}>
+                                <td
+                                  title={
+                                    d.expense_head_name || d.expense_head_title
+                                  }
+                                >
+                                  {(d.expense_head_name ||
+                                    d.expense_head_title) &&
+                                  (d.expense_head_name || d.expense_head_title)
+                                    .length > 8
+                                    ? (
+                                        d.expense_head_name ||
+                                        d.expense_head_title
+                                      ).slice(0, 8) + "..."
+                                    : d.expense_head_name ||
+                                      d.expense_head_title}
+                                </td>
+                                <td>₹{d.expense_product_amount}</td>
+                                <td>{d.expense_product_qty}</td>
+                                <td>{d.expense_product_unit}</td>
+                                <td>{d.expense_product_name}</td>
+                                <td>{d.expense_product_desc}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </details>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination Controls */}
       {totalPages > 0 && (
