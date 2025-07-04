@@ -149,12 +149,12 @@ const AttendanceDetails = ({ attendance }) => {
                 attendance?.logout_timestamp || ""
               ).toLocaleTimeString()}
             </span>
-          </div>
-          <div className="attendance-row">
-            <span className="attendance-label">PunchOut Location:</span>
-            <span className="attendance-value">
-              {formatLocation(attendance?.logout_lat_long)}
-            </span>
+            <div className="attendance-row">
+              <span className="attendance-label">PunchOut Location:</span>
+              <span className="attendance-value">
+                {formatLocation(attendance?.logout_lat_long)}
+              </span>
+            </div>
           </div>
         </div>
       )}
@@ -1128,50 +1128,56 @@ export default function DashboardWeb() {
         {/* My Projects Card Section for role_id = 3 */}
         {roleId === "3" && (
           <div className="dashboard-projects-section">
-            <div className="dashboard-projects-title-row" style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'.5rem'}}>
-              <h2 className="dashboard-projects-title"><u>My Projects:- </u></h2>
-              <div style={{display:'flex',alignItems:'center',gap:'1rem'}}>
-                {/* Total projects and status counts */}
-                <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
-                  <span style={{fontWeight:600}}>Total projects: {projects.length}</span>
-                  {/* Ongoing count */}
-                  <span style={{background:'#e0e7ff',color:'#6366f1',borderRadius:'12px',padding:'2px 10px',fontSize:'0.95em',fontWeight:500}}>
-                    Ongoing: {projects.filter(p => (p.status||'').toLowerCase() === 'ongoing').length}
-                  </span>
-                  {/* Completed count */}
-                  <span style={{background:'#dcfce7',color:'#22c55e',borderRadius:'12px',padding:'2px 10px',fontSize:'0.95em',fontWeight:500}}>
-                    Completed: {projects.filter(p => (p.status||'').toLowerCase() === 'completed').length}
-                  </span>
-                </div>
-                {/* Project select dropdown */}
+            <div className="projects-banner">
+              <div className="projects-banner-title">
+                <span style={{ textDecoration: 'none', color: '#fff', fontWeight: 600, fontSize: '1.3rem' }}>My Projects:-</span>
+              </div>
+              <div className="projects-status-info">
+                <span style={{ color: '#fff' }}>Total projects: {projects.length}</span>
+                <span className="status-pill ongoing">
+                  Ongoing: {projects.filter(p => (p.status||'').toLowerCase() === 'ongoing').length}
+                </span>
+                <span className="status-pill completed">
+                  Completed: {projects.filter(p => (p.status||'').toLowerCase() === 'completed').length}
+                </span>
+              </div>
+              <div className="projects-banner-controls">
                 <select
-                  className="dashboard-projects-dropdown"
-                  value={selectedProjectId || ''}
+                  className="projects-filter"
+                  value={selectedProjectId}
                   onChange={e => setSelectedProjectId(e.target.value)}
-                  style={{padding:'4px 10px',borderRadius:'6px',border:'1px solid #cbd5e1',fontSize:'1em'}}
                 >
-                  <option value="">All Projects</option>
+                  <option value="">Select Project</option>
+                  <option value="ALL">All Projects</option>
                   {projects.map(project => (
                     <option key={project.project_id} value={project.project_id}>{project.project_name}</option>
                   ))}
                 </select>
-                {/* Grid/List view toggle icons */}
-                <div className="dashboard-projects-view-toggle">
+                {selectedProjectId && (
+                  <button
+                    type="button"
+                    className="projects-clear-btn"
+                    style={{ marginLeft: '0.5rem', background: '#fff', color: '#633976', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 10px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.15s' }}
+                    onClick={() => setSelectedProjectId("")}
+                    title="Clear project selection"
+                  >
+                    Clear
+                  </button>
+                )}
+                <div className="projects-view-toggle">
                   <button
                     className={`view-toggle-btn${projectView === 'list' ? ' active' : ''}`}
                     title="List View"
                     onClick={() => setProjectView('list')}
-                    style={{background:'none',border:'none',cursor:'pointer',padding:'0 6px'}}
                   >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={projectView === 'list' ? '#6366f1' : '#64748b'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="6"/><line x1="3" y1="12" x2="3" y2="12"/><line x1="3" y1="18" x2="3" y2="18"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="6"/><line x1="3" y1="12" x2="3" y2="12"/><line x1="3" y1="18" x2="3" y2="18"/></svg>
                   </button>
                   <button
                     className={`view-toggle-btn${projectView === 'grid' ? ' active' : ''}`}
                     title="Grid View"
                     onClick={() => setProjectView('grid')}
-                    style={{background:'none',border:'none',cursor:'pointer',padding:'0 6px'}}
                   >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={projectView === 'grid' ? '#6366f1' : '#64748b'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                   </button>
                 </div>
               </div>
@@ -1180,75 +1186,13 @@ export default function DashboardWeb() {
               <div className="dashboard-projects-loader">Loading projects...</div>
             ) : projects.length === 0 ? (
               <div className="dashboard-projects-empty">No projects assigned.</div>
-            ) : (selectedProjectId ? (
-              // Only show the selected project
-              projectView === 'list' ? (
-                <div className="dashboard-projects-list">
-                  {projects.filter(p => p.project_id === selectedProjectId).map((project) => (
-                    <nav key={project.project_id} className="dashboard-project-line-nav">
-                      <div className="project-line-left">
-                        <span className="project-line-title">{project.project_name}</span>
-                        <span className="project-line-leader">Team leader: <b>{project.team_leader || 'N/A'}</b></span>
-                      </div>
-                      <div className="project-line-center">
-                        <span className="project-line-active">
-                          <span className="dot dot-green"></span>
-                          {project.active_users ?? 0} <span className="project-line-label"></span>
-                        </span>
-                        <span className="project-line-inactive">
-                          <span className="dot dot-red"></span>
-                          {project.inactive_users ?? 0} <span className="project-line-label"></span>
-                        </span>
-                      </div>
-                      <div className="project-line-status">
-                        Status: <b>{project.status || 'N/A'}</b>
-                      </div>
-                      <button className="project-line-view-btn" title="View Project">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                      </button>
-                    </nav>
-                  ))}
-                </div>
-              ) : (
-                <div className="dashboard-projects-grid">
-                  {projects.filter(p => p.project_id === selectedProjectId).map((project) => (
-                    <div key={project.project_id} className="dashboard-project-card project-card-item status-border-ongoing clickable-project-card">
-                      <div className="project-card-header">
-                        <h3>{project.project_name}</h3>
-                      </div>
-                      <p className="project-card-detail"><Shield size={14} className="mr-1" /> Team Leader: {project.team_leader || 'N/A'}</p>
-                      <p className="project-card-detail"><Users size={14} className="mr-1" /> Total Members: {project.total_members || 'N/A'}</p>
-                      <p className="project-card-detail"><CalendarPlus size={14} className="mr-1" /> Created At: {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}</p>
-                      <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
-                      <p className="project-card-detail">
-                        <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
-                        Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
-                        <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
-                      </p>
-                      <div className="project-card-progress">
-                        <div className="progress-bar-container">
-                          <div className="progress-bar-fill" style={{width: `${project.progress || 0}%`, backgroundColor: project.status === 'Ongoing' ? '#6366f1' : '#22c55e'}}></div>
-                        </div>
-                        <span className="progress-text">{project.progress || 0}%</span>
-                      </div>
-                      <div className="project-card-footer">
-                        <span className={`status-badge status-${project.status?.toLowerCase()}`}>{project.status}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )
             ) : (
-              // Show all or first 6 projects as before
-              <>
-                {projectView === 'list' ? (
+              selectedProjectId === '' ? (
+                <div className="dashboard-projects-empty">Please select a project or 'All Projects' to view details.</div>
+              ) : selectedProjectId === 'ALL' ? (
+                projectView === 'list' ? (
                   <div className="dashboard-projects-list">
-                    {(showAllProjects
-                      ? [...projects].sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
-                      : [...projects]
-                          .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
-                          .slice(0, 6)
-                    ).map((project) => (
+                    {[...projects].sort((a, b) => new Date(b.start_date) - new Date(a.start_date)).map((project) => (
                       <nav key={project.project_id} className="dashboard-project-line-nav">
                         <div className="project-line-left">
                           <span className="project-line-title">{project.project_name}</span>
@@ -1275,12 +1219,7 @@ export default function DashboardWeb() {
                   </div>
                 ) : (
                   <div className="dashboard-projects-grid">
-                    {(showAllProjects
-                      ? [...projects].sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
-                      : [...projects]
-                          .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
-                          .slice(0, 6)
-                    ).map((project) => (
+                    {[...projects].sort((a, b) => new Date(b.start_date) - new Date(a.start_date)).map((project) => (
                       <div key={project.project_id} className="dashboard-project-card project-card-item status-border-ongoing clickable-project-card">
                         <div className="project-card-header">
                           <h3>{project.project_name}</h3>
@@ -1306,19 +1245,67 @@ export default function DashboardWeb() {
                       </div>
                     ))}
                   </div>
-                )}
-                {projects.length > 6 && (
-                  <div className="dashboard-projects-toggle-btn-container">
-                    <button
-                      className="dashboard-projects-toggle-btn"
-                      onClick={() => setShowAllProjects((prev) => !prev)}
-                    >
-                      {showAllProjects ? "Hide" : "View more"}
-                    </button>
+                )
+              ) : (
+                // Show only the selected project
+                projectView === 'list' ? (
+                  <div className="dashboard-projects-list">
+                    {projects.filter(p => String(p.project_id) === String(selectedProjectId)).map((project) => (
+                      <nav key={project.project_id} className="dashboard-project-line-nav">
+                        <div className="project-line-left">
+                          <span className="project-line-title">{project.project_name}</span>
+                          <span className="project-line-leader">Team leader: <b>{project.team_leader || 'N/A'}</b></span>
+                        </div>
+                        <div className="project-line-center">
+                          <span className="project-line-active">
+                            <span className="dot dot-green"></span>
+                            {project.active_users ?? 0} <span className="project-line-label"></span>
+                          </span>
+                          <span className="project-line-inactive">
+                            <span className="dot dot-red"></span>
+                            {project.inactive_users ?? 0} <span className="project-line-label"></span>
+                          </span>
+                        </div>
+                        <div className="project-line-status">
+                          Status: <b>{project.status || 'N/A'}</b>
+                        </div>
+                        <button className="project-line-view-btn" title="View Project">
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                      </nav>
+                    ))}
                   </div>
-                )}
-              </>
-            ))}
+                ) : (
+                  <div className="dashboard-projects-grid">
+                    {projects.filter(p => String(p.project_id) === String(selectedProjectId)).map((project) => (
+                      <div key={project.project_id} className="dashboard-project-card project-card-item status-border-ongoing clickable-project-card">
+                        <div className="project-card-header">
+                          <h3>{project.project_name}</h3>
+                        </div>
+                        <p className="project-card-detail"><Shield size={14} className="mr-1" /> Team Leader: {project.team_leader || 'N/A'}</p>
+                        <p className="project-card-detail"><Users size={14} className="mr-1" /> Total Members: {project.total_members || 'N/A'}</p>
+                        <p className="project-card-detail"><CalendarPlus size={14} className="mr-1" /> Created At: {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}</p>
+                        <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
+                        <p className="project-card-detail">
+                          <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
+                          Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
+                          <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
+                        </p>
+                        <div className="project-card-progress">
+                          <div className="progress-bar-container">
+                            <div className="progress-bar-fill" style={{width: `${project.progress || 0}%`, backgroundColor: project.status === 'Ongoing' ? '#6366f1' : '#22c55e'}}></div>
+                          </div>
+                          <span className="progress-text">{project.progress || 0}%</span>
+                        </div>
+                        <div className="project-card-footer">
+                          <span className={`status-badge status-${project.status?.toLowerCase()}`}>{project.status}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              )
+            )}
           </div>
         )}
         <div className="analytics-section">

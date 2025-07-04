@@ -1322,7 +1322,16 @@ body {
 }
 .view-toggle-btn svg {
   display: block;
+  stroke: #e2e8f0;
+  /* Default icon color for better contrast on blue banner */
 }
+.view-toggle-btn.active svg {
+  stroke: #6366f1;
+  /* Indigo for active */
+  background: #e0e7ff;
+  border-radius: 6px;
+}
+
 .dashboard-projects-list {
   display: flex;
   flex-direction: column;
@@ -1555,4 +1564,104 @@ body {
   opacity: 0.6 !important;
   border-radius: 50% !important;
   pointer-events: none;
+}
+
+/* Projects Banner Styles */
+.projects-banner {
+  background: #633976;
+  /* Softer, more visible background for the banner */
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem 1.5rem; /* Increased vertical padding for more height */
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(30,41,59,0.04);
+  gap: 1.5rem;
+  min-height: 110px; /* Ensures a minimum height */
+}
+.projects-banner-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-right: 2rem;
+}
+.projects-banner-title u {
+  text-decoration: none;
+  color: #ffffff;
+ 
+}
+.projects-status-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.projects-status-info span {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #334155;
+  font-size: 1.5rem;
+}
+.projects-status-info span:first-child {
+  color: #fff;
+}
+.status-pill {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-block;
+}
+.status-pill.ongoing {
+  background-color: #e0e7ff;
+  color: #6366f1;
+}
+.status-pill.completed {
+  background-color: #dcfce7;
+  color: #22c55e;
+}
+.projects-banner-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.projects-filter {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+}
+.projects-view-toggle {
+  display: flex;
+  gap: 0.25rem;
+}
+.projects-view-toggle button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 6px;
+}
+.projects-view-toggle svg {
+  stroke: #64748b;
+}
+.projects-view-toggle .active svg {
+  stroke: #6366f1;
+}
+@media (max-width: 900px) {
+  .projects-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .projects-banner-title {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+  .projects-banner-controls {
+    gap: 0.5rem;
+  }
 }
