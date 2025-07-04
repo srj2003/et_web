@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    #map { width: 100vw; height: 100vh; }
+    .gm-ui-hover-effect { display: none !important; }
+    .map-controls {
+      position: fixed;
+      top: 18px;
+      right: 30px;
+      z-index: 1000;
+      display: flex;
+      gap: 1.5rem;
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.08);
+      padding: 1rem 2rem;
+      align-items: center;
+    }
+    .map-controls label {
+      font-weight: 600;
+      margin-right: 0.5rem;
+      color: #34254e;
+    }
+    .map-controls button {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.07);
+    }
+    .map-controls button:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    }
+    .user-select-section {
+      margin-top: 2.2rem;
+      position: fixed;
+      top: 80px;
+      right: 30px;
+      z-index: 1000;
+      background: rgba(255,255,255,0.97);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.07);
+      padding: 1rem 2rem 1.2rem 2rem;
+      min-width: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .user-select-section label {
+      font-weight: 600;
+      color: #34254e;
+      margin-bottom: 0.3rem;
+    }
+    .user-select-section select {
+      min-width: 220px;
+      padding: 0.7rem 2.5rem 0.7rem 1.2rem;
+      border-radius: 10px;
+      border: 1.5px solid #c7d2fe;
+      font-size: 1.08rem;
+      background: #f1f5fd;
+      color: #1e293b;
+      font-weight: 500;
+      height: 25.7rem;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.07);
+      transition: border 0.2s, box-shadow 0.2s;
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg fill="%236366f1" height="18" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.2em;
+    }
+    .user-select-section select:focus {
+      outline: none;
+      border: 2px solid #6366f1;
+      box-shadow: 0 0 0 2px #6366f133;
+      background-color: #fff;
+    }
+    #userSelectHeading{
+      font-family: Inter, sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #34254e;
+      margin-bottom: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="map-controls">
+    <button id="viewAllBtn">View All Users</button>
+  </div>
+  <div class="user-select-section">
+    <label for="userSelect" id="userSelectHeading">Select User:</label>
+    <select id="userSelect" multiple></select>
+  </div>
+  <div id="map"></div>
+  <script>
+    let map, infoWindow, allCoords = [], allAttendance = [], allMarkers = [], allNameLabels = [], allInfoWindows = [];
+    function renderMap(attendanceData, filterUserIds) {
+      if (!attendanceData || attendanceData.length === 0) return;
+      if (typeof attendanceData === 'string') attendanceData = JSON.parse(attendanceData);
+      allAttendance = attendanceData;
+      allCoords = attendanceData
+        .map(user => {
+          if (user.login_lat_long) {
+            const [lat, lng] = user.login_lat_long.split(',').map(Number);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              const name = [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ');
+              return { lat, lng, name, user };
+            }
+          }
+          return null;
+        })
+        .filter(Boolean);
+      let coords = allCoords;
+      if (Array.isArray(filterUserIds) && filterUserIds.length > 0) {
+        coords = allCoords.filter(c => filterUserIds.includes(String(c.user.u_id)));
+      }
+      if (coords.length === 0) return;
+      document.getElementById('map').innerHTML = '';
+      const mapCenter = { lat: coords[0].lat, lng: coords[0].lng };
+      map = new window.google.maps.Map(document.getElementById('map'), {
+        zoom: 6,
+        center: mapCenter,
+        mapTypeId: 'terrain',
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true
+      });
+      infoWindow = new window.google.maps.InfoWindow();
+      allMarkers = [];
+      allNameLabels = [];
+      allInfoWindows = [];
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+      coords.forEach(({ lat, lng, name, user }) => {
+        let markerIcon = {
+          url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+          scaledSize: new window.google.maps.Size(40, 40)
+        };
+        if (user.is_logged_out === 1) {
+          markerIcon = {
+            url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            scaledSize: new window.google.maps.Size(40, 40)
+          };
+        }
+        const marker = new window.google.maps.Marker({
+          position: { lat, lng },
+          map: map,
+          title: name || 'User',
+          animation: window.google.maps.Animation.DROP,
+          icon: markerIcon
+        });
+        allMarkers.push(marker);
+        const nameLabel = new window.google.maps.InfoWindow({
+          content: `<div style='font-family:Inter,sans-serif;font-size:0.98em;font-weight:600;padding:2px 8px;background:#fff;border-radius:6px;box-shadow:0 2px 6px rgba(99,102,241,0.08);border:1px solid #e0e7ff;'>${name || ''}</div>`,
+          disableAutoPan: true,
+          pixelOffset: new window.google.maps.Size(0, -38)
+        });
+        nameLabel.open(map, marker);
+        allNameLabels.push(nameLabel);
+        const fullName = [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ');
+        const status = user.is_logged_out === 0 ? 'Punched-In' : 'Punched-Out';
+        const statusColor = user.is_logged_out === 0 ? '#16a34a' : '#dc2626';
+        const content = `
+          <div style='font-family:Inter,sans-serif;min-width:180px;'>
+            <div style='font-weight:700;font-size:1.1em;margin-bottom:2px;'>${fullName}</div>
+            <div style='font-size:0.95em;'><b>Status:</b> <span style='color:${statusColor};font-weight:200;'>${status}</span></div>
+          </div>
+        `;
+        const infoWin = new window.google.maps.InfoWindow();
+        allInfoWindows.push(infoWin);
+        marker.addListener('mouseover', () => {
+          nameLabel.close();
+          infoWin.setContent(content);
+          infoWin.open(map, marker);
+        });
+        marker.addListener('mouseout', () => {
+          infoWin.close();
+          nameLabel.open(map, marker);
+        });
+      });
+    }
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'ATTENDANCE_MAP_DATA') {
+        renderMap(event.data.payload);
+        const select = document.getElementById('userSelect');
+        select.innerHTML = '';
+        const users = (typeof event.data.payload === 'string' ? JSON.parse(event.data.payload) : event.data.payload)
+          .map(u => ({
+            id: u.u_id,
+            name: [u.u_fname, u.u_mname, u.u_lname].filter(Boolean).join(' ')
+          }))
+          .filter((u, idx, arr) => u.id && arr.findIndex(x => x.id === u.id) === idx);
+        users.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.id;
+          opt.textContent = u.name;
+          select.appendChild(opt);
+        });
+      }
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('userSelect').addEventListener('change', function() {
+        const selected = Array.from(this.selectedOptions).map(opt => opt.value);
+        renderMap(allAttendance, selected);
+      });
+      document.getElementById('viewAllBtn').addEventListener('click', function() {
+        renderMap(allAttendance, []);
+        document.getElementById('userSelect').selectedIndex = -1;
+      });
+    });
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAgIVtPj9I-jXY3fOUkV8k9CArQRQ7dkhc&callback=initMap&v=weekly"></script>
+</body>
+</html> 
