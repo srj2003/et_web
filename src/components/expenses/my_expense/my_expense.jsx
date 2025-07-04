@@ -18,6 +18,7 @@ const ExpenseDetailsWeb = () => {
   const [filter, setFilter] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [expenseTypeItems, setExpenseTypeItems] = useState([]);
+  const [headItems, setHeadItems] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
     approved: 0,
@@ -26,6 +27,8 @@ const ExpenseDetailsWeb = () => {
   });
   const itemsPerPage = 12;
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState("card"); // "card" or "table"
+  const [selectedStatus, setSelectedStatus] = useState("All");
 
   const fetchExpenses = useCallback(async () => {
     const userId = localStorage.getItem("userid");
@@ -95,80 +98,15 @@ const ExpenseDetailsWeb = () => {
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
-  useEffect(() => {
-    const fetchDropdownData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-
-        const headsResponse = await fetch(
-          "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_heads=true",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const headsData = await headsResponse.json();
-        console.log(headsData);
-        if (headsData.status === "success") {
-          setExpenseTypeItems(headsData.data);
-        }
-      } catch (error) {
-        console.error("Error fetching dropdown data:", error);
-      }
-    };
-    fetchDropdownData();
-  }, []);
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "Approved":
-        return <CheckCircle size={20} color="#10b981" />;
-      case "Unattended":
-        return <Clock size={20} color="#f59e0b" />;
-      case "Rejected":
-        return <XCircle size={20} color="#ef4444" />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "Approved":
-        return "status-approved";
-      case "Unattended":
-        return "status-Unattended";
-      case "Rejected":
-        return "status-rejected";
-      default:
-        return "";
-    }
-  };
-
-  // Helper to get expense type name from ID
-  const getExpenseTypeName = (typeId) => {
-    const found = expenseTypeItems.find(
-      (item) =>
-        item.id === typeId ||
-        item.value === typeId ||
-        item.expense_type_id === typeId ||
-        String(item.id) === String(typeId) ||
-        String(item.value) === String(typeId) ||
-        String(item.expense_type_id) === String(typeId)
-    );
-    return found
-      ? found.label || found.name || found.expense_type_name
-      : typeId;
-  };
 
   const filteredExpenses = expenses.filter((expense) => {
+    const matchesStatus =
+      selectedStatus === "All" || expense.expense_status === selectedStatus;
     const matchesFilter = filter ? expense.expense_status === filter : true;
     const matchesSearch = expense.expense_title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+    return matchesStatus && matchesFilter && matchesSearch;
   });
 
   // Pagination logic
@@ -204,201 +142,368 @@ const ExpenseDetailsWeb = () => {
       <h1 className="myexpenses-myexpensepage-title">My Expense</h1>
       <div className="myexpenses-stats-grid">
         <div className="myexpenses-stat-card">
-          <div className="myexpenses-stat-icon">
-            <DollarSign size={24} color="#6366f1" />
+          <div
+            className="myexpenses-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              color: "#fff",
+            }}
+          >
+            <DollarSign size={28} />
           </div>
           <div className="myexpenses-stat-info">
             <h3>Total Expenses</h3>
-            <p className="myexpenses-stat-value">{stats.total}</p>
+            <div className="myexpenses-stat-value">{stats.total}</div>
           </div>
         </div>
         <div className="myexpenses-stat-card">
-          <div className="myexpenses-stat-icon">
-            <CheckCircle size={24} color="#10b981" />
+          <div
+            className="myexpenses-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+              color: "#fff",
+            }}
+          >
+            <CheckCircle size={28} />
           </div>
           <div className="myexpenses-stat-info">
             <h3>Approved</h3>
-            <p className="myexpenses-stat-value">{stats.approved}</p>
+            <div className="myexpenses-stat-value">{stats.approved}</div>
           </div>
         </div>
         <div className="myexpenses-stat-card">
-          <div className="myexpenses-stat-icon">
-            <Clock size={24} color="#f59e0b" />
+          <div
+            className="myexpenses-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #64748b 0%, #334155 100%)",
+              color: "#fff",
+            }}
+          >
+            <Clock size={28} />
           </div>
           <div className="myexpenses-stat-info">
             <h3>Unattended</h3>
-            <p className="myexpenses-stat-value">{stats.Unattended}</p>
+            <div className="myexpenses-stat-value">{stats.Unattended}</div>
           </div>
         </div>
         <div className="myexpenses-stat-card">
-          <div className="myexpenses-stat-icon">
-            <XCircle size={24} color="#ef4444" />
+          <div
+            className="myexpenses-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+              color: "#fff",
+            }}
+          >
+            <XCircle size={28} />
           </div>
           <div className="myexpenses-stat-info">
             <h3>Rejected</h3>
-            <p className="myexpenses-stat-value">{stats.rejected}</p>
+            <div className="myexpenses-stat-value">{stats.rejected}</div>
           </div>
         </div>
       </div>
-
-      {/* Filters Section - Like Leaves */}
-      <div className="myleavesfilters-section">
-        <div className="myleavessearch-container">
+      <div className="requestedexpensesfilters-section">
+        <div className="requestedexpensessearch-container">
           <Search size={20} color="#64748b" />
           <input
             type="text"
             placeholder="Search expenses..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="myleavessearch-input"
+            className="requestedexpensessearch-input"
           />
         </div>
         <select
-          value={filter || "All"}
-          onChange={(e) =>
-            setFilter(e.target.value === "All" ? null : e.target.value)
-          }
-          className="myleavesfilter-button"
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="requestedexpensesfilter-button"
         >
           <option>All</option>
-          <option>Approved</option>
           <option>Unattended</option>
+          <option>Approved</option>
           <option>Rejected</option>
         </select>
       </div>
-
-      <div className="myexpenses-expenses-grid">
-        {paginatedExpenses.map((expense) => (
-          <div
-            key={expense.expense_id}
-            className="myexpenses-leave-card"
-            data-status={expense.expense_status}
-            style={{ position: "relative" }}
-          >
-            <div className="myexpenses-leave-header">
-              <div className="myexpenses-leave-header-content">
-                <h3 className="myexpenses-employee-name">
-                  {expense.expense_title}
-                </h3>
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "card" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "table" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
+      </div>
+      {viewMode === "card" ? (
+        <div className="myexpenses-expenses-grid">
+          {paginatedExpenses.map((expense) => (
+            <div
+              key={expense.expense_id}
+              className="myexpensescard"
+              data-status={expense.expense_status}
+              style={{ position: "relative" }}
+            >
+              <div className="myexpensesheader">
+                <div
+                  className="myexpensesheader-content"
+                  style={{ minHeight: 24 }}
+                >
+                  <h1 className="myexpenses-title-name">
+                    {expense.expense_type_name}
+                  </h1>
+                  {/* Always reserve space for the header, even if title is null */}
+                  <h3
+                    className="myexpenses-title-name"
+                    style={{ minHeight: 24 }}
+                  >
+                    {expense.expense_title || (
+                      <span style={{ visibility: "hidden" }}>.</span>
+                    )}
+                  </h3>
+                </div>
+                <span
+                  className={`myexpenses-status-badge myexpenses-status-${expense.expense_status.toLowerCase()}`}
+                >
+                  {expense.expense_status}
+                </span>
               </div>
-              <span
-                className={`myexpenses-status-badge myexpenses-status-${expense.expense_status.toLowerCase()}`}
-              >
-                {expense.expense_status}
-              </span>
-            </div>
-            <div className="myexpenses-leave-details">
-              <div className="myexpenses-leave-title-section">
-                {expense.expense_comment && (
-                  <p className="myexpenses-leave-comment">
-                    {expense.expense_comment}
-                  </p>
-                )}
-              </div>
-              <div className="myexpenses-leave-dates">
-                <div className="myexpenses-date-item">
-                  <span className="myexpenses-date-label">Date:</span>
-                  <span className="myexpenses-date-value">
-                    {expense.expense_date}
-                  </span>
+              <div className="myexpensesdetails">
+                <div className="myexpensestitle-section">
+                  {expense.expense_comment && (
+                    <p className="myexpensescomment">
+                      {expense.expense_comment}
+                    </p>
+                  )}
                 </div>
-                <div className="myexpenses-date-item">
-                  <span className="myexpenses-date-label">Amount:</span>
-                  <span className="myexpenses-date-value">
-                    ₹{expense.expense_amount}
-                  </span>
-                </div>
-                <div className="myexpenses-date-item">
-                  <span className="myexpenses-date-label">Status:</span>
-                  <span className="myexpenses-date-value">
-                    {expense.expense_status}
-                  </span>
-                </div>
-                {expense.expense_id && (
+                <div className="myexpensesdates">
                   <div className="myexpenses-date-item">
-                    <span className="myexpenses-date-label">Expense ID:</span>
+                    <span className="myexpenses-date-label">Date:</span>
                     <span className="myexpenses-date-value">
-                      {expense.expense_id}
+                      {expense.expense_date}
                     </span>
                   </div>
-                )}
-                {expense.expense_created_at && (
                   <div className="myexpenses-date-item">
-                    <span className="myexpenses-date-label">Created At:</span>
+                    <span className="myexpenses-date-label">Amount:</span>
                     <span className="myexpenses-date-value">
-                      {expense.expense_created_at}
+                      ₹{expense.expense_amount}
                     </span>
                   </div>
-                )}
-                {expense.expense_approved_by && (
                   <div className="myexpenses-date-item">
-                    <span className="myexpenses-date-label">Approved By:</span>
+                    <span className="myexpenses-date-label">Status:</span>
                     <span className="myexpenses-date-value">
-                      {expense.expense_approved_by}
+                      {expense.expense_status}
                     </span>
                   </div>
-                )}
-                {expense.expense_rejected_by && (
-                  <div className="myexpenses-date-item">
-                    <span className="myexpenses-date-label">Rejected By:</span>
-                    <span className="myexpenses-date-value">
-                      {expense.expense_rejected_by}
-                    </span>
-                  </div>
-                )}
-                {expense.expense_submitted_to && (
-                  <div className="myexpenses-date-item">
-                    <span className="myexpenses-date-label">Submitted To:</span>
-                    <span className="myexpenses-date-value">
-                      {expense.expense_submitted_to}
-                    </span>
-                  </div>
-                )}
-                {expense.expense_documents &&
-                  expense.expense_documents.length > 0 && (
+                  {expense.expense_id && (
                     <div className="myexpenses-date-item">
-                      <span className="myexpenses-date-label">Documents:</span>
+                      <span className="myexpenses-date-label">Expense ID:</span>
                       <span className="myexpenses-date-value">
-                        {expense.expense_documents.map((doc, idx) => (
-                          <a
-                            key={idx}
-                            href={doc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ marginRight: 8 }}
-                          >
-                            {doc.name || `Document ${idx + 1}`}
-                          </a>
-                        ))}
+                        {expense.expense_id}
                       </span>
                     </div>
                   )}
-              </div>
-            </div>
-            {/* Amount breakdown badge at bottom right */}
-            {Array.isArray(expense.expense_details) &&
-              expense.expense_details.length > 0 && (
-                <div className="myexpenses-breakdown-badge myexpenses-breakdown-bottom">
-                  <span className="myexpenses-breakdown-equation">
-                    {expense.expense_details
-                      .map((detail) => `₹${detail.expense_product_amount}`)
-                      .join(" + ")}
-                    {expense.expense_details.length > 1 && (
-                      <>
-                        {" = "}₹
-                        {expense.expense_details.reduce(
-                          (sum, detail) =>
-                            sum + Number(detail.expense_product_amount),
-                          0
-                        )}
-                      </>
+                  {expense.expense_created_at && (
+                    <div className="myexpenses-date-item">
+                      <span className="myexpenses-date-label">Created At:</span>
+                      <span className="myexpenses-date-value">
+                        {expense.expense_created_at}
+                      </span>
+                    </div>
+                  )}
+                  {expense.expense_approved_by && (
+                    <div className="myexpenses-date-item">
+                      <span className="myexpenses-date-label">
+                        Approved By:
+                      </span>
+                      <span className="myexpenses-date-value">
+                        {expense.expense_approved_by}
+                      </span>
+                    </div>
+                  )}
+                  {expense.expense_rejected_by && (
+                    <div className="myexpenses-date-item">
+                      <span className="myexpenses-date-label">
+                        Rejected By:
+                      </span>
+                      <span className="myexpenses-date-value">
+                        {expense.expense_rejected_by}
+                      </span>
+                    </div>
+                  )}
+                  {expense.expense_submitted_to && (
+                    <div className="myexpenses-date-item">
+                      <span className="myexpenses-date-label">
+                        Submitted To:
+                      </span>
+                      <span className="myexpenses-date-value">
+                        {expense.expense_submitted_to}
+                      </span>
+                    </div>
+                  )}
+                  {expense.expense_documents &&
+                    expense.expense_documents.length > 0 && (
+                      <div className="myexpenses-date-item">
+                        <span className="myexpenses-date-label">
+                          Documents:
+                        </span>
+                        <span className="myexpenses-date-value">
+                          {expense.expense_documents.map((doc, idx) => (
+                            <a
+                              key={idx}
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ marginRight: 8 }}
+                            >
+                              {doc.name || `Document ${idx + 1}`}
+                            </a>
+                          ))}
+                        </span>
+                      </div>
                     )}
-                  </span>
                 </div>
-              )}
-          </div>
-        ))}
-      </div>
+              </div>
+              {/* Amount breakdown badge at bottom right */}
+              {Array.isArray(expense.expense_details) &&
+                expense.expense_details.length > 0 &&
+                (() => {
+                  // Group by expense_head_name and sum amounts
+                  const categoryMap = {};
+                  expense.expense_details.forEach((detail) => {
+                    const head =
+                      detail.expense_head_name ||
+                      detail.expense_head_title ||
+                      "Other";
+                    const amt = Number(detail.expense_product_amount) || 0;
+                    if (!categoryMap[head]) categoryMap[head] = 0;
+                    categoryMap[head] += amt;
+                  });
+                  const categories = Object.keys(categoryMap);
+                  const values = categories.map(
+                    (cat) => `₹${categoryMap[cat]}`
+                  );
+                  const total =
+                    values.length > 1
+                      ? `= ₹${Object.values(categoryMap).reduce(
+                          (a, b) => a + Number(b),
+                          0
+                        )}`
+                      : "";
+                  return (
+                    <div
+                      className="myexpenses-breakdown-badge myexpenses-breakdown-bottom"
+                      style={{
+                        "--breakdown-cols": categories.length + 1,
+                      }}
+                    >
+                      <div className="myexpenses-breakdown-categories">
+                        {categories.map((cat, idx) => (
+                          <span
+                            key={cat}
+                            className="myexpenses-breakdown-category-label"
+                          >
+                            {cat}
+                          </span>
+                        ))}
+                        <span className="myexpenses-breakdown-category-label myexpenses-breakdown-category-total">
+                          Total
+                        </span>
+                      </div>
+                      <div className="myexpenses-breakdown-category-amounts">
+                        {values.map((val, idx) => (
+                          <span
+                            key={idx}
+                            className="myexpenses-breakdown-category-amount"
+                          >
+                            {val}
+                          </span>
+                        ))}
+                        <span className="myexpenses-breakdown-category-amount myexpenses-breakdown-category-total">{`₹${Object.values(
+                          categoryMap
+                        ).reduce((a, b) => a + Number(b), 0)}`}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="myexpenses-table-container">
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Expense ID</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Submitted To</th>
+                <th>Approved By</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedExpenses.map((expense) => (
+                <tr key={expense.expense_id}>
+                  <td>{expense.expense_id}</td>
+                  <td>{expense.expense_title}</td>
+                  <td>{expense.expense_type_name}</td>
+                  <td>{expense.expense_date}</td>
+                  <td>{expense.expense_status}</td>
+                  <td>₹{expense.expense_amount}</td>
+                  <td>{expense.expense_submitted_to}</td>
+                  <td>{expense.expense_approved_by || "-"}</td>
+                  <td>
+                    <details>
+                      <summary>Show</summary>
+                      <table className="myexpenses-details-table">
+                        <thead>
+                          <tr>
+                            <th>Head</th>
+                            <th>Amount</th>
+                            <th>Qty</th>
+                            <th>Unit</th>
+                            <th>Name</th>
+                            <th>Desc</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {expense.expense_details &&
+                            expense.expense_details.map((d, i) => (
+                              <tr key={d.expense_id || i}>
+                                <td title={d.expense_head_name}>
+                                  {d.expense_head_name &&
+                                  d.expense_head_name.length > 8
+                                    ? d.expense_head_name.slice(0, 8) + "..."
+                                    : d.expense_head_name}
+                                </td>
+                                <td>₹{d.expense_product_amount}</td>
+                                <td>{d.expense_product_qty}</td>
+                                <td>{d.expense_product_unit}</td>
+                                <td>{d.expense_product_name}</td>
+                                <td>{d.expense_product_desc}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </details>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {totalPages > 0 && (
         <div className="allexpense-pagination-container">
