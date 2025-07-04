@@ -24,7 +24,7 @@ const Attendance = () => {
   const [loadingModalProjects, setLoadingModalProjects] = useState(false);
   const [modalProjectsError, setModalProjectsError] = useState("");
   const [mapModalOpen, setMapModalOpen] = useState(false);
-  const [mapModalCoords, setMapModalCoords] = useState(null);
+  const [mapModalCoords, setMapModalCoords] = useState(null); // can be single or array
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const navigate = useNavigate();
@@ -187,25 +187,40 @@ const Attendance = () => {
       );
     });
 
+  // Handler for showing all users on map
+  const handleShowAllUsersOnMap = () => {
+    if (!attendanceData || attendanceData.length === 0) return;
+    const mapWindow = window.open('/attendance_map.html', '_blank');
+    // Wait for the new window to load, then send data
+    const sendData = () => {
+      if (mapWindow && mapWindow.postMessage) {
+        mapWindow.postMessage({ type: 'ATTENDANCE_MAP_DATA', payload: attendanceData }, '*');
+      }
+    };
+    // Try to send after a short delay (in case the new tab is not ready yet)
+    setTimeout(sendData, 500);
+  };
+
   // Map modal effect (initialize Google Map)
   useEffect(() => {
     if (mapModalOpen && mapRef.current) {
       if (!window.google || !window.google.maps) {
-        // Google Maps API not loaded
         if (mapRef.current) {
           mapRef.current.innerHTML = `<div class='map-error'>Google Maps API not loaded.</div>`;
         }
         return;
       }
       try {
-        let lat = 28.6119, lng = 77.2070; // Default: India Gate, Delhi
-        if (mapModalCoords && mapModalCoords.lat && mapModalCoords.lng) {
-          lat = parseFloat(mapModalCoords.lat);
-          lng = parseFloat(mapModalCoords.lng);
+        let mapCenter = { lat: 28.6119, lng: 77.2070 }; // Default: India Gate, Delhi
+        let zoom = 15;
+        if (Array.isArray(mapModalCoords) && mapModalCoords.length > 0) {
+          mapCenter = { lat: mapModalCoords[0].lat, lng: mapModalCoords[0].lng };
+          zoom = 6;
+        } else if (mapModalCoords && mapModalCoords.lat && mapModalCoords.lng) {
+          mapCenter = { lat: parseFloat(mapModalCoords.lat), lng: parseFloat(mapModalCoords.lng) };
         }
-        const mapCenter = { lat, lng };
         const map = new window.google.maps.Map(mapRef.current, {
-          zoom: 15,
+          zoom,
           center: mapCenter,
           mapTypeId: 'terrain',
           mapTypeControl: true,
@@ -213,7 +228,89 @@ const Attendance = () => {
           fullscreenControl: true
         });
         mapInstanceRef.current = map;
-        if (mapModalCoords && mapModalCoords.lat && mapModalCoords.lng) {
+        if (Array.isArray(mapModalCoords)) {
+          // Build a lookup for user details by lat/lng
+          const userLookup = {};
+          attendanceData.forEach(user => {
+            if (user.login_lat_long) {
+              const [lat, lng] = user.login_lat_long.split(',').map(Number);
+              if (!isNaN(lat) && !isNaN(lng)) {
+                userLookup[`${lat},${lng}`] = user;
+              }
+            }
+          });
+          // Get today's date in YYYY-MM-DD
+          const today = new Date();
+          const yyyy = today.getFullYear();
+          const mm = String(today.getMonth() + 1).padStart(2, '0');
+          const dd = String(today.getDate()).padStart(2, '0');
+          const todayStr = `${yyyy}-${mm}-${dd}`;
+          // InfoWindow for details on hover
+          const infoWindow = new window.google.maps.InfoWindow();
+          mapModalCoords.forEach(({ lat, lng, name }) => {
+            // Find the user for this marker
+            const user = userLookup[`${lat},${lng}`];
+            // Default: green marker
+            let markerIcon = {
+              url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+              scaledSize: new window.google.maps.Size(40, 40)
+            };
+            if (user) {
+              // Check if today's attendance has logout_lat_long
+              let isToday = false;
+              let hasLogout = false;
+              if (user.attendance_date === todayStr) {
+                isToday = true;
+                if (user.logout_lat_long) hasLogout = true;
+              }
+              // If today and logout_lat_long present, use red marker
+              if (isToday && hasLogout) {
+                markerIcon = {
+                  url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                  scaledSize: new window.google.maps.Size(40, 40)
+                };
+              }
+            }
+            const marker = new window.google.maps.Marker({
+              position: { lat, lng },
+              map: map,
+              title: name || 'User',
+              animation: window.google.maps.Animation.DROP,
+              icon: markerIcon
+            });
+            // Always show name label above marker
+            const nameLabel = new window.google.maps.InfoWindow({
+              content: `<div style='font-family:Inter,sans-serif;font-size:0.98em;font-weight:600;padding:2px 8px;background:#fff;border-radius:6px;box-shadow:0 2px 6px rgba(99,102,241,0.08);border:1px solid #e0e7ff;'>${name || ''}</div>`,
+              disableAutoPan: true,
+              pixelOffset: new window.google.maps.Size(0, -38)
+            });
+            nameLabel.open(map, marker);
+            if (user) {
+              const fullName = [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ');
+              const email = user.u_email || '';
+              const phone = user.u_mob || '';
+              const status = user.is_logged_out === 0 ? 'Present' : 'Absent';
+              const statusColor = user.is_logged_out === 0 ? '#16a34a' : '#dc2626';
+              const content = `
+                <div style='font-family:Inter,sans-serif;min-width:180px;'>
+                  <div style='font-weight:700;font-size:1.1em;margin-bottom:2px;'>${fullName}</div>
+                  <div style='font-size:0.95em;margin-bottom:2px;'><b>Email:</b> ${email}</div>
+                  <div style='font-size:0.95em;margin-bottom:2px;'><b>Phone:</b> ${phone}</div>
+                  <div style='font-size:0.95em;'><b>Status:</b> <span style='color:${statusColor};font-weight:600;'>${status}</span></div>
+                </div>
+              `;
+              marker.addListener('mouseover', () => {
+                nameLabel.close();
+                infoWindow.setContent(content);
+                infoWindow.open(map, marker);
+              });
+              marker.addListener('mouseout', () => {
+                infoWindow.close();
+                nameLabel.open(map, marker);
+              });
+            }
+          });
+        } else if (mapModalCoords && mapModalCoords.lat && mapModalCoords.lng) {
           new window.google.maps.Marker({
             position: mapCenter,
             map: map,
@@ -227,7 +324,7 @@ const Attendance = () => {
         }
       }
     }
-  }, [mapModalOpen, mapModalCoords]);
+  }, [mapModalOpen, mapModalCoords, attendanceData]);
 
   return (
     <div className="users-container">
@@ -280,6 +377,7 @@ const Attendance = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+        <button className="map-view-btn" onClick={handleShowAllUsersOnMap}>View Attendance in Map</button>
       </div>
 
       {activeTab === "all" ? (
@@ -499,21 +597,7 @@ const Attendance = () => {
         </div>
       )}
 
-      {mapModalOpen && (
-        <div className="modal-overlay" onClick={() => setMapModalOpen(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">User Location</h2>
-              <button className="close-button" onClick={() => setMapModalOpen(false)}>×</button>
-            </div>
-            <div className="modal-content" style={{ minHeight: 300, minWidth: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div ref={mapRef} className="map-canvas" style={{ width: '100%', height: 300, borderRadius: 12, minHeight: 300, minWidth: 300 }}>
-                {/* Map will be rendered here */}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Map modal removed; map now opens in a new tab */}
     </div>
   );
 };
