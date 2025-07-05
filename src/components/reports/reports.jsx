@@ -88,7 +88,7 @@ const Reports = () => {
       setLoadingAllUsers(true);
       try {
         const token = localStorage.getItem("authToken");
-        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/user_details.php", {
+        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/attendance_under_user.php", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         });

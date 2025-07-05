@@ -80,6 +80,148 @@
       background-position: right 1rem center;
       background-size: 1.2em;
     }
+    
+    /* Multi-select styling */
+    .user-select-section select[multiple] {
+      background-image: none;
+      padding: 0.5rem;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #6366f1 #f1f5fd;
+    }
+    
+    .user-select-section select[multiple]::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .user-select-section select[multiple]::-webkit-scrollbar-track {
+      background: #f1f5fd;
+      border-radius: 3px;
+    }
+    
+    .user-select-section select[multiple]::-webkit-scrollbar-thumb {
+      background: #6366f1;
+      border-radius: 3px;
+    }
+    
+    .user-select-section select[multiple]::-webkit-scrollbar-thumb:hover {
+      background: #4f46e5;
+    }
+    
+    .user-select-section select[multiple] option {
+      padding: 0.75rem 1rem;
+      margin: 0.25rem 0;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .user-select-section select[multiple] option:hover {
+      background: #f8fafc;
+      border-color: #c7d2fe;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(99,102,241,0.1);
+    }
+    
+    .user-select-section select[multiple] option:checked {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+      transform: translateY(-1px);
+    }
+    
+    .user-select-section select[multiple] option:checked:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    }
+    
+    /* Special styling for Select All option */
+    .user-select-section select[multiple] option[value="__select_all__"] {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border-color: #10b981;
+      font-weight: 600;
+    }
+    
+    .user-select-section select[multiple] option[value="__select_all__"]:hover {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      box-shadow: 0 2px 8px rgba(16,185,129,0.3);
+    }
+    
+    .user-select-section select[multiple] option[value="__select_all__"]:checked {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      box-shadow: 0 4px 12px rgba(16,185,129,0.4);
+    }
+    
+    /* Special styling for All Users option */
+    .user-select-section select[multiple] option[value=""] {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      border-color: #f59e0b;
+      font-weight: 600;
+    }
+    
+    .user-select-section select[multiple] option[value=""]:hover {
+      background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+      box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+    }
+    
+    .user-select-section select[multiple] option[value=""]:checked {
+      background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+      box-shadow: 0 4px 12px rgba(245,158,11,0.4);
+    }
+    
+    /* Status-based styling for user options */
+    .user-select-section select[multiple] option[data-status="Punched In"] {
+      border-left: 4px solid #16a34a;
+      background: linear-gradient(90deg, #f0fdf4 0%, #fff 100%);
+    }
+    
+    .user-select-section select[multiple] option[data-status="Punched In"]:hover {
+      background: linear-gradient(90deg, #dcfce7 0%, #f8fafc 100%);
+    }
+    
+    .user-select-section select[multiple] option[data-status="Punched In"]:checked {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      color: white;
+      border-color: #16a34a;
+    }
+    
+    .user-select-section select[multiple] option[data-status="Punched Out"] {
+      border-left: 4px solid #dc2626;
+      background: linear-gradient(90deg, #fef2f2 0%, #fff 100%);
+    }
+    
+    .user-select-section select[multiple] option[data-status="Punched Out"]:hover {
+      background: linear-gradient(90deg, #fee2e2 0%, #f8fafc 100%);
+    }
+    
+    .user-select-section select[multiple] option[data-status="Punched Out"]:checked {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: white;
+      border-color: #dc2626;
+    }
+    
+    .user-select-section select[multiple] option[data-status="Absent"] {
+      border-left: 4px solid #6b7280;
+      background: linear-gradient(90deg, #f9fafb 0%, #fff 100%);
+      color: #6b7280;
+    }
+    
+    .user-select-section select[multiple] option[data-status="Absent"]:hover {
+      background: linear-gradient(90deg, #f3f4f6 0%, #f8fafc 100%);
+    }
+    
+    .user-select-section select[multiple] option[data-status="Absent"]:checked {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+      color: white;
+      border-color: #6b7280;
+    }
     .user-select-section select:focus {
       outline: none;
       border: 2px solid #6366f1;
@@ -100,8 +242,10 @@
     <button id="viewAllBtn">View All Users</button>
   </div>
   <div class="user-select-section">
-    <label for="userSelect" id="userSelectHeading">Select User:</label>
-    <select id="userSelect" multiple></select>
+    <label for="userSelect" id="userSelectHeading">Select Users:</label>
+    <select id="userSelect" multiple>
+      <option value="">All Users</option>
+    </select>
   </div>
   <div id="map"></div>
   <script>
@@ -198,29 +342,57 @@
       if (event.data && event.data.type === 'ATTENDANCE_MAP_DATA') {
         renderMap(event.data.payload);
         const select = document.getElementById('userSelect');
-        select.innerHTML = '';
+        select.innerHTML = '<option value="__select_all__">Select All Users</option>';
         const users = (typeof event.data.payload === 'string' ? JSON.parse(event.data.payload) : event.data.payload)
           .map(u => ({
             id: u.u_id,
-            name: [u.u_fname, u.u_mname, u.u_lname].filter(Boolean).join(' ')
+            name: [u.u_fname, u.u_mname, u.u_lname].filter(Boolean).join(' '),
+            status: u.login_lat_long ? (u.is_logged_out === 0 ? 'Punched In' : 'Punched Out') : 'Absent'
           }))
           .filter((u, idx, arr) => u.id && arr.findIndex(x => x.id === u.id) === idx);
         users.forEach(u => {
           const opt = document.createElement('option');
           opt.value = u.id;
-          opt.textContent = u.name;
+          opt.textContent = `${u.name} (${u.status})`;
+          opt.setAttribute('data-status', u.status);
           select.appendChild(opt);
         });
       }
     });
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('userSelect').addEventListener('change', function() {
-        const selected = Array.from(this.selectedOptions).map(opt => opt.value);
+        const selectedOptions = Array.from(this.selectedOptions);
+        const hasSelectAll = selectedOptions.some(opt => opt.value === '__select_all__');
+        const hasAllUsers = selectedOptions.some(opt => opt.value === '');
+        
+        if (hasSelectAll) {
+          // Select all user options (excluding special options)
+          Array.from(this.options).forEach(option => {
+            if (option.value !== '' && option.value !== '__select_all__') {
+              option.selected = true;
+            }
+          });
+        } else if (hasAllUsers) {
+          // Clear all selections except "All Users"
+          Array.from(this.options).forEach(option => {
+            if (option.value !== '') {
+              option.selected = false;
+            }
+          });
+        }
+        
+        const selected = Array.from(this.selectedOptions)
+          .map(opt => opt.value)
+          .filter(val => val !== '' && val !== '__select_all__');
+        
         renderMap(allAttendance, selected);
       });
+      
       document.getElementById('viewAllBtn').addEventListener('click', function() {
         renderMap(allAttendance, []);
-        document.getElementById('userSelect').selectedIndex = -1;
+        // Clear all selections
+        const select = document.getElementById('userSelect');
+        Array.from(select.options).forEach(option => option.selected = false);
       });
     });
   </script>

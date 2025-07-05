@@ -418,18 +418,28 @@ const Attendance = () => {
                             title="Location"
                             onClick={e => {
                               e.stopPropagation();
+                              let lat = null, lng = null;
                               if (item.latitude && item.longitude) {
-                                setMapModalCoords({ lat: item.latitude, lng: item.longitude });
+                                lat = item.latitude;
+                                lng = item.longitude;
                               } else if (item.u_latitude && item.u_longitude) {
-                                setMapModalCoords({ lat: item.u_latitude, lng: item.u_longitude });
+                                lat = item.u_latitude;
+                                lng = item.u_longitude;
                               } else if (item.login_lat_long) {
-                                // Parse 'lat,long' string
-                                const [lat, lng] = item.login_lat_long.split(',').map(Number);
-                                setMapModalCoords({ lat, lng });
-                              } else {
-                                setMapModalCoords(null);
+                                const parts = item.login_lat_long.split(',').map(Number);
+                                lat = parts[0];
+                                lng = parts[1];
                               }
-                              setMapModalOpen(true);
+                              if (lat !== null && lng !== null) {
+                                const mapWindow = window.open('/attendance_map.html', '_blank');
+                                const userData = [{ ...item, login_lat_long: `${lat},${lng}` }];
+                                const sendData = () => {
+                                  if (mapWindow && mapWindow.postMessage) {
+                                    mapWindow.postMessage({ type: 'ATTENDANCE_MAP_DATA', payload: userData }, '*');
+                                  }
+                                };
+                                setTimeout(sendData, 500);
+                              }
                             }}
                           />
                         )}
