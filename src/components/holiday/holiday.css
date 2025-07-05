@@ -300,3 +300,60 @@
 .card-with-bg:hover .MuiCardContent-root {
   transform: translateY(-2px) !important;
 }
+
+body, .MuiContainer-root {
+  background: linear-gradient(135deg, #e0eafc 0%, #f9f6ff 100%) !important;
+  min-height: 100vh !important;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Decorative floating blobs */
+.holiday-bg-blob1, .holiday-bg-blob2 {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+  filter: blur(60px);
+  opacity: 0.18;
+  pointer-events: none;
+}
+.holiday-bg-blob1 {
+  width: 600px;
+  height: 600px;
+  top: -180px;
+  left: -180px;
+  background: linear-gradient(135deg, #a5b4fc 0%, #fbc2eb 100%);
+  animation: floatBlob1 16s ease-in-out infinite;
+}
+.holiday-bg-blob2 {
+  width: 700px;
+  height: 700px;
+  bottom: -220px;
+  right: -220px;
+  background: linear-gradient(135deg, #fbc2eb 0%, #a5b4fc 100%);
+  animation: floatBlob2 18s ease-in-out infinite reverse;
+}
+@keyframes floatBlob1 {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.04); }
+}
+@keyframes floatBlob2 {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(30px) scale(1.03); }
+}
+
+/* Oceanic wavy effect at the bottom */
+.holiday-ocean {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 160px;
+  z-index: 0;
+  pointer-events: none;
+  background: none;
+}
+.holiday-ocean svg {
+  width: 100vw;
+  height: 160px;
+  display: block;
+}

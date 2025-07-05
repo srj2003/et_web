@@ -435,6 +435,23 @@
   box-shadow: 0 4px 16px rgba(99,102,241,0.10);
 }
 
+.download-report-button[disabled], .download-report-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.download-report-button.loading {
+  background: #ede9fe;
+  color: #bbb;
+  cursor: wait;
+}
+.download-error-message {
+  color: #e74c3c;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
 /* Financial year selector uses the same styles as other react-select dropdowns */
 #financial-year-select {
   min-width: 220px;

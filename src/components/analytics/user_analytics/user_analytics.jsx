@@ -37,6 +37,20 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './user_analytics.css';
 
+// Color palette for the light theme
+const colors = {
+    primary: '#4361ee',
+    secondary: '#3a0ca3',
+    accent: '#f72585',
+    success: '#4cc9f0',
+    warning: '#f8961e',
+    error: '#ef233c',
+    background: '#f8f9fa',
+    card: '#ffffff',
+    text: '#212529',
+    muted: '#6c757d'
+};
+
 const fetchAttendanceData = async (userId, startDate, endDate) => {
     try {
         const authToken = localStorage.getItem('authToken');
@@ -100,21 +114,28 @@ const fetchAttendanceData = async (userId, startDate, endDate) => {
 };
 
 const StatCard = ({ icon, title, value, subValue, color }) => (
-    <div className="stat-card" style={{ backgroundColor: color }}>
+    <div className="stat-card" style={{ 
+        backgroundColor: color || colors.card,
+        borderLeft: `4px solid ${colors.primary}`
+    }}>
         <div className="stat-card-header">
-            {icon}
+            <div className="stat-icon" style={{ color: colors.primary }}>
+                {icon}
+            </div>
             {subValue && (
-                <div className="trend-container">
-                    <TrendingUpIcon fontSize="small" sx={{ color: '#059669' }} />
+                <div className="trend-container" style={{ 
+                    backgroundColor: subValue.startsWith('+') ? 'rgba(76, 201, 240, 0.1)' : 'rgba(239, 35, 60, 0.1)',
+                    color: subValue.startsWith('+') ? colors.success : colors.error
+                }}>
+                    <TrendingUpIcon fontSize="small" />
                     <span className="trend-text">{subValue}</span>
                 </div>
             )}
         </div>
         <div>
-            <h3 className="stat-card-title">{title}</h3>
-            <p className="stat-card-value">{value}</p>
+            <h3 className="stat-card-title" style={{ color: colors.muted }}>{title}</h3>
+            <p className="stat-card-value" style={{ color: colors.text }}>{value}</p>
         </div>
-
     </div>
 );
 
@@ -200,7 +221,7 @@ const Analytics = ({ selectedPeriod, userId, startDate, endDate }) => {
     if (isLoading) {
         return (
             <div className="work-hours-grid">
-                <div className="loading-spinner" />
+                <div className="loading-spinner" style={{ borderColor: `${colors.primary} transparent transparent transparent` }} />
             </div>
         );
     }
@@ -208,7 +229,9 @@ const Analytics = ({ selectedPeriod, userId, startDate, endDate }) => {
     if (analyticsError) {
         return (
             <div className="work-hours-grid">
-                <div className="error-message">{analyticsError}</div>
+                <div className="error-message" style={{ backgroundColor: 'rgba(239, 35, 60, 0.1)', color: colors.error }}>
+                    {analyticsError}
+                </div>
             </div>
         );
     }
@@ -216,9 +239,9 @@ const Analytics = ({ selectedPeriod, userId, startDate, endDate }) => {
     if (!hasData && !isLoading) {
         return (
             <div className="work-hours-grid">
-                <div className="no-data-card">
-                    <ClockIcon size={32} color="#64748b" />
-                    <p className="no-data-text">No work hours data available</p>
+                <div className="no-data-card" style={{ backgroundColor: colors.card }}>
+                    <ClockIcon style={{ fontSize: 32, color: colors.muted }} />
+                    <p className="no-data-text" style={{ color: colors.muted }}>No work hours data available</p>
                 </div>
             </div>
         );
@@ -226,26 +249,26 @@ const Analytics = ({ selectedPeriod, userId, startDate, endDate }) => {
 
     return (
         <div className="work-hours-grid">
-            <div className="work-hours-card">
+            <div className="work-hours-card" style={{ backgroundColor: colors.card }}>
                 <div className="icon-container">
-                    <ClockIcon size={32} color="#0891b2" />
+                    <ClockIcon style={{ fontSize: 32, color: colors.primary }} />
                 </div>
-                <h3 className="card-label">Total Hours</h3>
-                <p className="card-value">
+                <h3 className="card-label" style={{ color: colors.muted }}>Total Hours</h3>
+                <p className="card-value" style={{ color: colors.text }}>
                     {workHours !== null ? workHours.toFixed(1) : '--'}
                 </p>
-                <p className="card-unit">hours</p>
+                <p className="card-unit" style={{ color: colors.muted }}>hours</p>
             </div>
 
-            <div className="work-hours-card">
+            <div className="work-hours-card" style={{ backgroundColor: colors.card }}>
                 <div className="icon-container">
-                    <TimerIcon size={32} color="#059669" />
+                    <TimerIcon style={{ fontSize: 32, color: colors.primary }} />
                 </div>
-                <h3 className="card-label">Daily Average</h3>
-                <p className="card-value">
+                <h3 className="card-label" style={{ color: colors.muted }}>Daily Average</h3>
+                <p className="card-value" style={{ color: colors.text }}>
                     {averageWorkHours !== null ? averageWorkHours.toFixed(1) : '--'}
                 </p>
-                <p className="card-unit">hours/day</p>
+                <p className="card-unit" style={{ color: colors.muted }}>hours/day</p>
             </div>
         </div>
     );
@@ -390,18 +413,34 @@ const AnalyticsScreen = () => {
     };
 
     if (isLoadingUser) {
-        return <div className="loading-spinner" />;
+        return <div className="loading-spinner" style={{ borderColor: `${colors.primary} transparent transparent transparent` }} />;
     }
 
     return (
-        <div className="analytics-container">
-            <div className="header-container">
-                <h1 className="title">Analytics Overview</h1>
+        <div className="analytics-container" style={{ backgroundColor: colors.background }}>
+            <div className="header-container" style={{ 
+                backgroundColor: colors.card,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
+            }}>
+                <h1 className="title" style={{ 
+                    color: colors.text,
+                    background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`,
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    color: 'transparent'
+                }}>
+                    Analytics Overview
+                </h1>
                 <div className="header-buttons">
                     {[1, 2, 3, 4, 8].includes(roleId) && (
                         <Button
                             variant="outlined"
-                            color="primary"
+                            style={{ 
+                                borderColor: colors.primary,
+                                color: colors.primary,
+                                borderRadius: '12px',
+                                fontWeight: 600
+                            }}
                             component={Link}
                             to="/analytics/adminanalytics"
                             className="admin-button"
@@ -411,7 +450,12 @@ const AnalyticsScreen = () => {
                     )}
                     <Button
                         variant="outlined"
-                        color="primary"
+                        style={{ 
+                            borderColor: colors.muted,
+                            color: colors.muted,
+                            borderRadius: '12px',
+                            fontWeight: 600
+                        }}
                         onClick={resetSelections}
                         className="reset-button"
                         startIcon={<ArrowBackIcon />}
@@ -421,10 +465,12 @@ const AnalyticsScreen = () => {
                 </div>
             </div>
 
-            <div className="filter-container">
+            <div className="filter-container" style={{ 
+                backgroundColor: colors.card,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
+            }}>
                 <FormControl fullWidth>
-                    <InputLabel classname ='period-label-title
-                    ' >Select Period</InputLabel>
+                    <InputLabel style={{ color: colors.muted }}>Select Period</InputLabel>
                     <Select
                         value={selectedPeriod}
                         onChange={(e) => {
@@ -432,6 +478,7 @@ const AnalyticsScreen = () => {
                             loadData(e.target.value);
                         }}
                         label="Select Period"
+                        style={{ color: colors.text }}
                     >
                         <MenuItem value="Last Week">Last Week</MenuItem>
                         <MenuItem value="Last Month">Last Month</MenuItem>
@@ -440,79 +487,98 @@ const AnalyticsScreen = () => {
                     </Select>
                 </FormControl>
                 <div className='date-picker-container'>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
-                        label="Start Date"
-                        value={startDate}
-                        onChange={(newValue) => {
-                            setStartDate(newValue);
-                            if (endDate) {
-                                handleDateSelect([newValue, endDate]);
-                            }
-                        }}
-                        renderInput={(params) => <TextField {...params} fullWidth />}
-                    />
-                    <DatePicker
-                        label="End Date"
-                        value={endDate}
-                        onChange={(newValue) => {
-                            setEndDate(newValue);
-                            if (startDate) {
-                                handleDateSelect([startDate, newValue]);
-                            }
-                        }}
-                        renderInput={(params) => <TextField {...params} fullWidth />}
-                    />
-                </LocalizationProvider>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                            label="Start Date"
+                            value={startDate}
+                            onChange={(newValue) => {
+                                setStartDate(newValue);
+                                if (endDate) {
+                                    handleDateSelect([newValue, endDate]);
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField 
+                                    {...params} 
+                                    fullWidth 
+                                    style={{ color: colors.text }}
+                                />
+                            )}
+                        />
+                        <DatePicker
+                            label="End Date"
+                            value={endDate}
+                            onChange={(newValue) => {
+                                setEndDate(newValue);
+                                if (startDate) {
+                                    handleDateSelect([startDate, newValue]);
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField 
+                                    {...params} 
+                                    fullWidth 
+                                    style={{ color: colors.text }}
+                                />
+                            )}
+                        />
+                    </LocalizationProvider>
                 </div>
             </div>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && (
+                <div className="error-message" style={{ 
+                    backgroundColor: 'rgba(239, 35, 60, 0.1)',
+                    color: colors.error
+                }}>
+                    {error}
+                </div>
+            )}
 
             <div className="stats-grid">
                 <StatCard
-                    icon={<CalendarIcon sx={{ fontSize: 34, color: '#0891b2' }} />}
+                    icon={<CalendarIcon style={{ fontSize: 34 }} />}
                     title="Total Working Days"
                     value={stats.totalDays}
                     subValue={stats.trend}
-                    color="#f0f9ff"
                 />
                 <StatCard
-                    icon={<UserCheckIcon sx={{ fontSize: 24, color: '#059669' }} />}
+                    icon={<UserCheckIcon style={{ fontSize: 24 }} />}
                     title="Present Days"
                     value={stats.presentDays}
                     subValue={null}
-                    color="#f0fdf4"
                 />
                 <StatCard
-                    icon={<UserXIcon sx={{ fontSize: 24, color: '#dc2626' }} />}
+                    icon={<UserXIcon style={{ fontSize: 24 }} />}
                     title="Absent Days"
                     value={stats.absentDays}
                     subValue={null}
-                    color="#fef2f2"
                 />
                 <StatCard
-                    icon={<ClockIcon sx={{ fontSize: 24, color: '#0891b2' }} />}
+                    icon={<ClockIcon style={{ fontSize: 24 }} />}
                     title="Attendance Rate"
                     value={stats.attendanceRate}
                     subValue={null}
-                    color="#f0f9ff"
                 />
             </div>
 
-            <h2 className="section-title">Time Analysis</h2>
+            <h2 className="section-title" style={{ color: colors.text }}>
+                Time Analysis
+            </h2>
             <div className="time-stats">
-                <div className="time-card">
-                    <h3 className="time-label">Average Check-in</h3>
-                    <p className="time-value">{stats.averageCheckIn}</p>
+                <div className="time-card" style={{ backgroundColor: colors.card }}>
+                    <h3 className="time-label" style={{ color: colors.muted }}>Average Check-in</h3>
+                    <p className="time-value" style={{ color: colors.text }}>{stats.averageCheckIn}</p>
                 </div>
-                <div className="time-card">
-                    <h3 className="time-label">Average Check-out</h3>
-                    <p className="time-value">{stats.averageCheckOut}</p>
+                <div className="time-card" style={{ backgroundColor: colors.card }}>
+                    <h3 className="time-label" style={{ color: colors.muted }}>Average Check-out</h3>
+                    <p className="time-value" style={{ color: colors.text }}>{stats.averageCheckOut}</p>
                 </div>
             </div>
 
-            <h2 className="section-title">Work Hours</h2>
+            <h2 className="section-title" style={{ color: colors.text }}>
+                Work Hours
+            </h2>
             <Analytics
                 selectedPeriod={selectedPeriod}
                 userId={userId}

@@ -177,6 +177,62 @@ const Reports = () => {
     setShowResults(false);
   };
 
+  const handleDownload = async () => {
+    if (!selectedUsers.length || !dateFrom || !dateTo) {
+      alert("Select at least one user and date range.");
+      return;
+    }
+  
+    const token = localStorage.getItem("authToken");
+    const userIds = selectedUsers.map(u => u.value);
+  
+    try {
+      const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/download_report.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          start_date: dateFrom + " 00:00:00",
+          end_date: dateTo + " 23:59:59",
+          user_ids: userIds
+        })
+      });
+      const text = await response.text();
+        console.log("Raw response:", text);
+        try {
+          const result = JSON.parse(text);
+          if (result.status === "success") {
+            // proceed with download
+          } else {
+            alert("Download failed: " + result.message);
+          }
+        } catch (err) {
+          console.error("Failed to parse JSON:", err);
+          alert("Invalid response from server");
+        }
+
+  
+      if (result.status === "success") {
+        const blob = new Blob([atob(result.file)], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", result.file_name || "attendance_report.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert("Download failed: " + result.message);
+      }
+    } catch (err) {
+      console.error("Download error:", err);
+      alert("An error occurred while downloading the report.");
+    }
+  };
+  
+  
+
   const handleFetch = async () => {
     setShowResults(true);
     setAttendanceTable(null);
@@ -513,9 +569,9 @@ const Reports = () => {
         <section className="form-section">
           <h2 className="section-title">Results</h2>
           <div className="results-download-topright">
-            <button className="download-report-button" onClick={() => alert('Download coming soon!')}>
-              <FaDownload style={{ marginRight: '0.5rem' }} /> Download Report
-            </button>
+          <button className="download-report-button" onClick={handleDownload}>
+            <FaDownload style={{ marginRight: '0.5rem' }} /> Download Report
+          </button>
           </div>
           {selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Work Report" ? (
             workReportLoading ? (

@@ -83,8 +83,22 @@ $attendanceQuery = "
     AND DATE(ad.login_timestamp) BETWEEN :start_date AND :end_date
 ";
 
+// Work Reports Query
+$workQuery = "
+    SELECT 
+        wr.user_id,
+        DATE(wr.date) AS work_date,
+        wr.project_name,
+        wr.work_details
+    FROM work_reports wr
+    JOIN user_details ud ON wr.user_id = ud.u_id
+    WHERE wr.date BETWEEN :start_date AND :end_date
+    AND ud.u_is_del = 0
+";
+
 if ($filter_user_id && strtolower($filter_user_id) !== 'all') {
     $attendanceQuery .= " AND ad.user_id = :user_id";
+    $workQuery .= " AND wr.user_id = :user_id";
     $params[":user_id"] = $filter_user_id;
 }
 
@@ -101,6 +115,18 @@ try {
         exit();
     }
 
+    // Get work report data
+    $workStmt = $pdo->prepare($workQuery);
+    $workStmt->execute($params);
+    $workData = $workStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Index work data by user_id and date
+    $workIndex = [];
+    foreach ($workData as $work) {
+        $key = $work['user_id'] . '_' . $work['work_date'];
+        $workIndex[$key][] = $work;
+    }
+
     // Group records by user
     $users = [];
     foreach ($rows as $r) {
@@ -110,14 +136,27 @@ try {
     }
 
     // Start building CSV
-    $csv = "Attendance Calendar Format Report\n\n";
+    $csv = "Attendance Calendar Format Report with Work Details\n\n";
 
     foreach ($users as $uid => $user) {
         $records = $user['records'];
         $attnStatusByDate = [];
+        $workDetailsByDate = [];
 
         foreach ($records as $r) {
+            $key = $uid . '_' . $r['attendance_date'];
             $attnStatusByDate[$r['attendance_date']] = $r['attn_status'];
+            
+            // Get work details for this date
+            if (isset($workIndex[$key])) {
+                $workDetails = [];
+                foreach ($workIndex[$key] as $work) {
+                    $workDetails[] = $work['project_name'] . ': ' . str_replace(["\r", "\n"], ' ', $work['work_details']);
+                }
+                $workDetailsByDate[$r['attendance_date']] = implode(" | ", $workDetails);
+            } else {
+                $workDetailsByDate[$r['attendance_date']] = '';
+            }
         }
 
         $calendar = [];
@@ -155,11 +194,32 @@ try {
         $csv .= implode(",", $headers) . ",Attendance,Extra,Holiday,Absent,Total Day of\n";
         $csv .= implode(",", $dayLabels) . "\n";
         $csv .= implode(",", $calendar) . "," . $present . "," . $extra . "," . $holidays . "," . $absent . "," . $totalDays . "\n\n";
+
+        // Add work details section
+        $csv .= "Work Details by Date:\n";
+        $csv .= "Date,Status,Work Details\n";
+        
+        $start = strtotime($start_date);
+        $end = strtotime($end_date);
+        
+        while ($start <= $end) {
+            $dateStr = date("Y-m-d", $start);
+            $key = $uid . '_' . $dateStr;
+            $dow = date("N", $start);
+            
+            $status = $attnStatusByDate[$dateStr] ?? ($dow >= 6 ? 'H' : 'A');
+            $workDetails = $workDetailsByDate[$dateStr] ?? '';
+            
+            $csv .= "{$dateStr},{$status},\"{$workDetails}\"\n";
+            $start = strtotime("+1 day", $start);
+        }
+        
+        $csv .= "\n";
     }
 
     echo json_encode([
         "status" => "success",
-        "file_name" => "attendance_report_{$start_date}_to_{$end_date}.csv",
+        "file_name" => "attendance_calendar_report_{$start_date}_to_{$end_date}.csv",
         "file" => base64_encode($csv)
     ]);
 
