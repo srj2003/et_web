@@ -339,14 +339,6 @@ const ExpenseFormWeb = () => {
       alert("Please add at least one expense before submitting");
       return;
     }
-    if (expenseType) {
-      alert("Please add the expense form before submitting");
-      return;
-    }
-    if (!expenseHeadValue) {
-      alert("Please select an expense head");
-      return;
-    }
     if (!selectedUser || !selectedRole) {
       alert("Please select who to submit to");
       return;
