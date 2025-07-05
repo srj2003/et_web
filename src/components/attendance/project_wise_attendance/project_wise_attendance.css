@@ -1580,3 +1580,32 @@ body {
   color: #fff;
   box-shadow: 0 4px 16px rgba(99,102,241,0.10);
 }
+
+.map-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2),
+    0 2px 4px -1px rgba(99, 102, 241, 0.1);
+  font-size: 1rem;
+}
+
+.map-view-btn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px -1px rgba(99, 102, 241, 0.3),
+    0 4px 6px -1px rgba(99, 102, 241, 0.2);
+}
+
+/* Hide the close (cross) button in Google Maps InfoWindow */
+.gm-ui-hover-effect {
+  display: none !important;
+}

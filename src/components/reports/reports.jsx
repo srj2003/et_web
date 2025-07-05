@@ -699,8 +699,8 @@ const Reports = () => {
                                   <td key={i} className="custom-expense-entry-cell">
                                     {details[i] ? (<><b>{details[i].amount}/-</b> [{(() => { const d = new Date(details[i].date); return `${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(-2)}`; })()}]</>) : ''}
                                   </td>
-                                ))}
-                              </tr>
+                          ))}
+                        </tr>
                             );
                             projectRendered = true;
                             userRendered = true;

@@ -41,6 +41,7 @@ const ManageExpenseWeb = () => {
     approved: 0,
     rejected: 0,
   });
+  const [viewMode, setViewMode] = useState("card"); // "card" or "table"
 
   const ITEMS_PER_PAGE = 10;
 
@@ -96,7 +97,7 @@ const ManageExpenseWeb = () => {
         expense_id: item.expense_track_id,
         employee: item.created_by_full_name,
         expense_title: item.expense_track_title,
-        expense_type: getExpenseType(item.expense_type_id),
+        expense_type: item.expense_type_name,
         amount: item.expense_total_amount,
         date: formatDate(item.expense_track_created_at),
         status: getStatus(item.expense_track_status),
@@ -171,6 +172,7 @@ const ManageExpenseWeb = () => {
       }
 
       const apiData = await response.json();
+      console.log("API Data:", apiData);
       const filteredData = apiData.filter(
         (expense) => expense.expense_track_submitted_to === parseInt(userId, 10)
       );
@@ -478,88 +480,278 @@ const ManageExpenseWeb = () => {
         </div>
       </div>
 
-      <div className="requestedexpenses-grid">
-        {paginatedExpenses.map((expense) => (
-          <div
-            key={expense.id}
-            className="requestedexpenses-card"
-            data-status={expense.status}
-            onClick={() => {
-              setSelectedExpense(expense);
-              setShowExpenseDetails(true);
-            }}
-          >
-            <div className="requestedexpenses-header">
-              <div className="requestedexpenses-header-content">
-                <h3 className="requestedexpenses-employee-name">
-                  {expense.employee}
-                </h3>
-                <span className="requestedexpenses-type">
-                  {expense.expense_type}
-                </span>
-              </div>
-              <span
-                className={`requestedexpenses-status-badge requestedexpenses-status-${expense.status.toLowerCase()}`}
-              >
-                {expense.status}
-              </span>
-            </div>
-            <div className="requestedexpenses-details">
-              <div className="requestedexpenses-title-section">
-                <h4 className="requestedexpenses-title">
-                  {expense.expense_title}
-                </h4>
-                {expense.remarks && (
-                  <p className="requestedexpenses-comment">
-                    {expense.remarks}
-                  </p>
-                )}
-              </div>
-              <div className="requestedexpenses-dates">
-                <div className="requestedexpenses-date-item">
-                  <span className="requestedexpenses-date-label">Date:</span>
-                  <span className="requestedexpenses-date-value">
-                    {expense.date}
-                  </span>
-                </div>
-                <div className="requestedexpenses-date-item">
-                  <span className="requestedexpenses-date-label">Amount:</span>
-                  <span className="requestedexpenses-date-value">
-                    ₹{expense.amount.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            </div>
-            {expense.status === "Unattended" &&
-              roleId !== null &&
-              (roleId < 5 || roleId === 8) && (
-                <div className="requestedexpenses-actions">
-                  <button
-                    className="requestedexpenses-action-button requestedexpenses-approve"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAction(expense.expense_id, "approve");
-                    }}
-                  >
-                    <Check size={16} />
-                    Approve
-                  </button>
-                  <button
-                    className="requestedexpenses-action-button requestedexpenses-reject"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAction(expense.expense_id, "reject");
-                    }}
-                  >
-                    <X size={16} />
-                    Reject
-                  </button>
-                </div>
-              )}
-          </div>
-        ))}
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "card" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "table" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
       </div>
 
+      {viewMode === "card" ? (
+        <div className="myexpenses-expenses-grid">
+          {paginatedExpenses.map((expense) => (
+            <div
+              key={expense.id}
+              className="myexpensescard"
+              data-status={expense.status}
+              style={{ position: "relative" }}
+              onClick={() => {
+                setSelectedExpense(expense);
+                setShowExpenseDetails(true);
+              }}
+            >
+              <div className="myexpensesheader">
+                <div
+                  className="myexpensesheader-content"
+                  style={{ minHeight: 24 }}
+                >
+                  <h1 className="myexpenses-title-name">
+                    {expense.expense_type_name || expense.expense_type}
+                  </h1>
+                  <h3
+                    className="myexpenses-title-name"
+                    style={{ minHeight: 24 }}
+                  >
+                    {expense.expense_title || (
+                      <span style={{ visibility: "hidden" }}>.</span>
+                    )}
+                  </h3>
+                </div>
+                <span
+                  className={`myexpenses-status-badge myexpenses-status-${expense.status.toLowerCase()}`}
+                >
+                  {expense.status}
+                </span>
+              </div>
+              <div className="myexpensesdetails">
+                <div className="myexpensestitle-section">
+                  {expense.remarks && (
+                    <p className="myexpensescomment">{expense.remarks}</p>
+                  )}
+                </div>
+                <div className="myexpensesdates">
+                  <div className="myexpenses-date-item">
+                    <span className="myexpenses-date-label">Date:</span>
+                    <span className="myexpenses-date-value">
+                      {expense.date}
+                    </span>
+                  </div>
+                  <div className="myexpenses-date-item">
+                    <span className="myexpenses-date-label">Amount:</span>
+                    <span className="myexpenses-date-value">
+                      ₹{expense.amount}
+                    </span>
+                  </div>
+                  <div className="myexpenses-date-item">
+                    <span className="myexpenses-date-label">Status:</span>
+                    <span className="myexpenses-date-value">
+                      {expense.status}
+                    </span>
+                  </div>
+                  {expense.expense_id && (
+                    <div className="myexpenses-date-item">
+                      <span className="myexpenses-date-label">Expense ID:</span>
+                      <span className="myexpenses-date-value">
+                        {expense.expense_id}
+                      </span>
+                    </div>
+                  )}
+                  {expense.submitted_to && (
+                    <div className="myexpenses-date-item">
+                      <span className="myexpenses-date-label">
+                        Submitted To:
+                      </span>
+                      <span className="myexpenses-date-value">
+                        {expense.submitted_to}
+                      </span>
+                    </div>
+                  )}
+                  {expense.approved_by && (
+                    <div className="myexpenses-date-item">
+                      <span className="myexpenses-date-label">
+                        Approved By:
+                      </span>
+                      <span className="myexpenses-date-value">
+                        {expense.approved_by}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Amount breakdown badge at bottom right */}
+              {Array.isArray(expense.expense_details) &&
+                expense.expense_details.length > 0 &&
+                (() => {
+                  const categoryMap = {};
+                  expense.expense_details.forEach((detail) => {
+                    const head =
+                      detail.expense_head_name ||
+                      detail.expense_head_title ||
+                      "Other";
+                    const amt = Number(detail.expense_product_amount) || 0;
+                    if (!categoryMap[head]) categoryMap[head] = 0;
+                    categoryMap[head] += amt;
+                  });
+                  const categories = Object.keys(categoryMap);
+                  const values = categories.map(
+                    (cat) => `₹${categoryMap[cat]}`
+                  );
+                  return (
+                    <div
+                      className="myexpenses-breakdown-badge myexpenses-breakdown-bottom"
+                      style={{ "--breakdown-cols": categories.length + 1 }}
+                    >
+                      <div className="myexpenses-breakdown-categories">
+                        {categories.map((cat, idx) => (
+                          <span
+                            key={cat}
+                            className="myexpenses-breakdown-category-label"
+                            title={cat}
+                          >
+                            {cat && cat.length > 8
+                              ? cat.slice(0, 8) + "..."
+                              : cat}
+                          </span>
+                        ))}
+                        <span className="myexpenses-breakdown-category-label myexpenses-breakdown-category-total">
+                          Total
+                        </span>
+                      </div>
+                      <div className="myexpenses-breakdown-category-amounts">
+                        {values.map((val, idx) => (
+                          <span
+                            key={idx}
+                            className="myexpenses-breakdown-category-amount"
+                          >
+                            {val}
+                          </span>
+                        ))}
+                        <span className="myexpenses-breakdown-category-amount myexpenses-breakdown-category-total">{`₹${Object.values(
+                          categoryMap
+                        ).reduce((a, b) => a + Number(b), 0)}`}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              {expense.status === "Unattended" &&
+                roleId !== null &&
+                (roleId < 5 || roleId === 8) && (
+                  <div className="requestedexpenses-actions">
+                    <button
+                      className="requestedexpenses-action-button requestedexpenses-approve"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction(expense.expense_id, "approve");
+                      }}
+                    >
+                      <Check size={16} />
+                      Approve
+                    </button>
+                    <button
+                      className="requestedexpenses-action-button requestedexpenses-reject"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction(expense.expense_id, "reject");
+                      }}
+                    >
+                      <X size={16} />
+                      Reject
+                    </button>
+                  </div>
+                )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="myexpenses-table-container">
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Expense ID</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Submitted To</th>
+                <th>Approved By</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedExpenses.map((expense) => (
+                <tr key={expense.expense_id}>
+                  <td>{expense.expense_id}</td>
+                  <td>{expense.expense_title}</td>
+                  <td>{expense.expense_type_name || expense.expense_type}</td>
+                  <td>{expense.date}</td>
+                  <td>{expense.status}</td>
+                  <td>₹{expense.amount}</td>
+                  <td>{expense.submitted_to}</td>
+                  <td>{expense.approved_by || "-"}</td>
+                  <td>
+                    <details>
+                      <summary>Show</summary>
+                      <table className="myexpenses-details-table">
+                        <thead>
+                          <tr>
+                            <th>Head</th>
+                            <th>Amount</th>
+                            <th>Qty</th>
+                            <th>Unit</th>
+                            <th>Name</th>
+                            <th>Desc</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {expense.expense_details &&
+                            expense.expense_details.map((d, i) => (
+                              <tr key={d.expense_id || i}>
+                                <td
+                                  title={
+                                    d.expense_head_name || d.expense_head_title
+                                  }
+                                >
+                                  {(d.expense_head_name ||
+                                    d.expense_head_title) &&
+                                  (d.expense_head_name || d.expense_head_title)
+                                    .length > 8
+                                    ? (
+                                        d.expense_head_name ||
+                                        d.expense_head_title
+                                      ).slice(0, 8) + "..."
+                                    : d.expense_head_name ||
+                                      d.expense_head_title}
+                                </td>
+                                <td>₹{d.expense_product_amount}</td>
+                                <td>{d.expense_product_qty}</td>
+                                <td>{d.expense_product_unit}</td>
+                                <td>{d.expense_product_name}</td>
+                                <td>{d.expense_product_desc}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </details>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {totalPages > 0 && (
         <div className="allexpense-pagination-container">
           <button
@@ -570,11 +762,9 @@ const ManageExpenseWeb = () => {
             <ChevronLeft size={20} />
             Previous
           </button>
-
           <div className="allexpense-pagination-number">
             Page {currentPage} of {totalPages}
           </div>
-
           <button
             className="allexpense-pagination-button"
             onClick={() => handlePageChange(currentPage + 1)}
