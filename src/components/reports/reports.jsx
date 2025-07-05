@@ -43,6 +43,9 @@ const Reports = () => {
   const [expenseReportTable, setExpenseReportTable] = useState([]);
   const [expenseReportLoading, setExpenseReportLoading] = useState(false);
   const [expenseReportError, setExpenseReportError] = useState("");
+  const [requisitionReportTable, setRequisitionReportTable] = useState([]);
+  const [requisitionReportLoading, setRequisitionReportLoading] = useState(false);
+  const [requisitionReportError, setRequisitionReportError] = useState("");
   const location = useLocation();
 
   useEffect(() => {
@@ -88,7 +91,7 @@ const Reports = () => {
       setLoadingAllUsers(true);
       try {
         const token = localStorage.getItem("authToken");
-        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/attendance_under_user.php", {
+        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/user_details.php", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         });
@@ -177,62 +180,6 @@ const Reports = () => {
     setShowResults(false);
   };
 
-  const handleDownload = async () => {
-    if (!selectedUsers.length || !dateFrom || !dateTo) {
-      alert("Select at least one user and date range.");
-      return;
-    }
-  
-    const token = localStorage.getItem("authToken");
-    const userIds = selectedUsers.map(u => u.value);
-  
-    try {
-      const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/download_report.php", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          start_date: dateFrom + " 00:00:00",
-          end_date: dateTo + " 23:59:59",
-          user_ids: userIds
-        })
-      });
-      const text = await response.text();
-        console.log("Raw response:", text);
-        try {
-          const result = JSON.parse(text);
-          if (result.status === "success") {
-            // proceed with download
-          } else {
-            alert("Download failed: " + result.message);
-          }
-        } catch (err) {
-          console.error("Failed to parse JSON:", err);
-          alert("Invalid response from server");
-        }
-
-  
-      if (result.status === "success") {
-        const blob = new Blob([atob(result.file)], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", result.file_name || "attendance_report.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        alert("Download failed: " + result.message);
-      }
-    } catch (err) {
-      console.error("Download error:", err);
-      alert("An error occurred while downloading the report.");
-    }
-  };
-  
-  
-
   const handleFetch = async () => {
     setShowResults(true);
     setAttendanceTable(null);
@@ -241,6 +188,8 @@ const Reports = () => {
     setWorkReportError("");
     setExpenseReportTable([]);
     setExpenseReportError("");
+    setRequisitionReportTable([]);
+    setRequisitionReportError("");
     if (selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Attendance") {
       if (!selectedUsers.length || !dateFrom || !dateTo) {
         setAttendanceError("Please select at least one user, start date, and end date.");
@@ -349,6 +298,36 @@ const Reports = () => {
         setExpenseReportError("Network error or invalid response");
       } finally {
         setExpenseReportLoading(false);
+      }
+    }
+    else if (selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Requisition") {
+      if (!selectedUsers.length || !dateFrom || !dateTo) {
+        setRequisitionReportError("Please select at least one user, start date, and end date.");
+        return;
+      }
+      setRequisitionReportLoading(true);
+      try {
+        const token = localStorage.getItem("authToken");
+        const userIds = selectedUsers.map(user => user.value);
+        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/requisition_in_range.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({
+            start_date: dateFrom,
+            end_date: dateTo,
+            user_ids: userIds
+          })
+        });
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          setRequisitionReportTable(data.data);
+        } else {
+          setRequisitionReportError(data.message || "No requisition data found.");
+        }
+      } catch (err) {
+        setRequisitionReportError("Network error or invalid response");
+      } finally {
+        setRequisitionReportLoading(false);
       }
     }
   };
@@ -569,9 +548,9 @@ const Reports = () => {
         <section className="form-section">
           <h2 className="section-title">Results</h2>
           <div className="results-download-topright">
-          <button className="download-report-button" onClick={handleDownload}>
-            <FaDownload style={{ marginRight: '0.5rem' }} /> Download Report
-          </button>
+            <button className="download-report-button" onClick={() => alert('Download coming soon!')}>
+              <FaDownload style={{ marginRight: '0.5rem' }} /> Download Report
+            </button>
           </div>
           {selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Work Report" ? (
             workReportLoading ? (
@@ -709,6 +688,57 @@ const Reports = () => {
                       });
                       return rows;
                     })()}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="results-placeholder">
+                <p className="results-text">No data to display. Please use the filters above and click <b>Fetch Data</b> to view your report.</p>
+              </div>
+            )
+          ) : selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Requisition" ? (
+            requisitionReportLoading ? (
+              <div className="results-placeholder"><p className="results-text">Loading requisition report data...</p></div>
+            ) : requisitionReportError ? (
+              <div className="results-placeholder"><p className="results-text" style={{color: 'red'}}>{requisitionReportError}</p></div>
+            ) : requisitionReportTable && requisitionReportTable.length > 0 ? (
+              <div className="attendance-table-wrapper">
+                <table className="attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Title</th>
+                      <th>Description</th>
+                      <th>Requested Amount</th>
+                      <th>Approved Amount</th>
+                      <th>Status</th>
+                      <th>Created By</th>
+                      <th>Submitted To</th>
+                      <th>Approved/Rejected By</th>
+                      <th>Remarks</th>
+                      <th>Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {requisitionReportTable.map((requisition, index) => (
+                      <tr key={requisition.requisition_id || index}>
+                        <td>{requisition.requisition_date}</td>
+                        <td>{requisition.requisition_title}</td>
+                        <td>{requisition.requisition_desc || '-'}</td>
+                        <td>₹{requisition.requisition_req_amount}</td>
+                        <td>₹{requisition.requisition_app_amount}</td>
+                        <td>
+                          <span className={`status-badge status-${requisition.status_text?.toLowerCase()}`}>
+                            {requisition.status_text}
+                          </span>
+                        </td>
+                        <td>{requisition.requisition_created_by}</td>
+                        <td>{requisition.requisition_submitted_to}</td>
+                        <td>{requisition.requisition_approved_rejected_by || '-'}</td>
+                        <td>{requisition.requisition_app_rej_remarks || '-'}</td>
+                        <td>{requisition.requisition_created_at}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
