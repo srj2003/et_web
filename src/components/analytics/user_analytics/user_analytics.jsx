@@ -249,7 +249,7 @@ const Analytics = ({ selectedPeriod, userId, startDate, endDate }) => {
 
     return (
         <div className="work-hours-grid">
-            <div className="work-hours-card" style={{ backgroundColor: colors.card }}>
+            <div className="work-hour-card" style={{ backgroundColor: colors.card }}>
                 {/* <div className="icon-container">
                     <ClockIcon style={{ fontSize: 32, color: colors.primary }} />
                 </div> */}
@@ -260,7 +260,7 @@ const Analytics = ({ selectedPeriod, userId, startDate, endDate }) => {
                 <p className="card-unit" style={{ color: colors.muted }}>hours</p>
             </div>
 
-            <div className="work-hours-card" style={{ backgroundColor: colors.card }}>
+            <div className="work-hour-card" style={{ backgroundColor: colors.card }}>
                 {/* <div className="icon-container">
                     <TimerIcon style={{ fontSize: 32, color: colors.primary }} />
                 </div> */}
@@ -545,62 +545,67 @@ const AnalyticsScreen = () => {
                     {error}
                 </div>
             )}
-
-            <div className="stats-grid">
-                <StatCard className ='stat-card-container'
-                    icon={<CalendarIcon style={{ fontSize: 34 }} />}
-                    title="Total Working Days"
-                    value={stats.totalDays}
-                    subValue={stats.trend}
-                />
-                <StatCard
-                    icon={<UserCheckIcon style={{ fontSize: 24 }} />}
-                    title="Present Days"
-                    value={stats.presentDays}
-                    subValue={null}
-                />
-                <StatCard
-                    icon={<UserXIcon style={{ fontSize: 24 }} />}
-                    title="Absent Days"
-                    value={stats.absentDays}
-                    subValue={null}
-                />
-                <StatCard
-                    icon={<ClockIcon style={{ fontSize: 24 }} />}
-                    title="Attendance Rate"
-                    value={stats.attendanceRate}
-                    subValue={null}
-                />
-            </div>
-        <div className='time-work-title'>
-            <h2 className="section-title" style={{ color: colors.text }}>
-                Time Analysis
-            </h2>
-            <h2 className="section-title" style={{ color: colors.text }}>
-                Work Hours
-            </h2>
-        </div>
-        <div className='time-work-container'>
-            <div className="time-stats">
-                <div className="analytics-time-card" style={{ backgroundColor: colors.card }}>
-                    <h3 className="time-label" style={{ color: colors.muted }}>Average Check-in</h3>
-                    <p className="time-value" style={{ color: colors.text }}>{stats.averageCheckIn}</p>
+            <div className="analytics-main-row">
+                {/* Left: Stat Cards 2x2 grid */}
+                <div className="analytics-stat-cards-col">
+                    <div className="analytics-stat-cards-grid">
+                        <StatCard
+                            icon={<CalendarIcon style={{ fontSize: 34 }} />}
+                            title="Total Working Days"
+                            value={stats.totalDays}
+                            subValue={stats.trend}
+                        />
+                        <StatCard
+                            icon={<UserCheckIcon style={{ fontSize: 24 }} />}
+                            title="Present Days"
+                            value={stats.presentDays}
+                            subValue={null}
+                        />
+                        <StatCard
+                            icon={<UserXIcon style={{ fontSize: 24 }} />}
+                            title="Absent Days"
+                            value={stats.absentDays}
+                            subValue={null}
+                        />
+                        <StatCard
+                            icon={<ClockIcon style={{ fontSize: 24 }} />}
+                            title="Attendance Rate"
+                            value={stats.attendanceRate}
+                            subValue={null}
+                        />
+                    </div>
                 </div>
-                <div className="analytics-time-card" style={{ backgroundColor: colors.card }}>
-                    <h3 className="time-label" style={{ color: colors.muted }}>Average Check-out</h3>
-                    <p className="time-value" style={{ color: colors.text }}>{stats.averageCheckOut}</p>
+                {/* Right: Time Analysis and Work Hours in the same container */}
+                <div className="analytics-timework-col">
+                    <div className="analytics-timework-combined-section">
+                        <div className="analytics-timework-titles-row">
+                            <h2 className="section-title" style={{ color: colors.text }}>Time Analysis</h2>
+                            <h2 className="section-title" style={{ color: colors.text }}>Work Hours</h2>
+                        </div>
+                        <div className="analytics-timework-content-row">
+                            <div className="time-stats">
+                                <div className="analytics-time-card" style={{ backgroundColor: colors.card }}>
+                                    <h3 className="time-label" style={{ color: colors.muted }}>Average Check-in</h3>
+                                    <p className="time-value" style={{ color: colors.text }}>{stats.averageCheckIn}</p>
+                                </div>
+                                <div className="analytics-time-card" style={{ backgroundColor: colors.card }}>
+                                    <h3 className="time-label" style={{ color: colors.muted }}>Average Check-out</h3>
+                                    <p className="time-value" style={{ color: colors.text }}>{stats.averageCheckOut}</p>
+                                </div>
+                            </div>
+                            <div >
+                                <Analytics
+                                    selectedPeriod={selectedPeriod}
+                                    userId={userId}
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            {/* <div className='work-hours'> */}
-            <Analytics
-                selectedPeriod={selectedPeriod}
-                userId={userId}
-                startDate={startDate}
-                endDate={endDate}
-            />
-            {/* </div> */}
         </div>
-    </div>
     );
 };
 
