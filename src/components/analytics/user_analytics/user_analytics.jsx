@@ -114,15 +114,15 @@ const fetchAttendanceData = async (userId, startDate, endDate) => {
 };
 
 const StatCard = ({ icon, title, value, subValue, color }) => (
-    <div className="stat-card" style={{ 
+    <div className="analytics-stat-card" style={{ 
         backgroundColor: color || colors.card,
-        borderLeft: `4px solid ${colors.primary}`
+        borderLeft: `6px solid ${colors.primary}`
     }}>
-        <div className="stat-card-header">
+        <div className="analytics-stat-card-header">
             <div className="stat-icon" style={{ color: colors.primary }}>
                 {icon}
             </div>
-            {subValue && (
+            {/* {subValue && (
                 <div className="trend-container" style={{ 
                     backgroundColor: subValue.startsWith('+') ? 'rgba(76, 201, 240, 0.1)' : 'rgba(239, 35, 60, 0.1)',
                     color: subValue.startsWith('+') ? colors.success : colors.error
@@ -130,10 +130,10 @@ const StatCard = ({ icon, title, value, subValue, color }) => (
                     <TrendingUpIcon fontSize="small" />
                     <span className="trend-text">{subValue}</span>
                 </div>
-            )}
-        </div>
-        <div>
+            )} */}
             <h3 className="stat-card-title" style={{ color: colors.muted }}>{title}</h3>
+        </div>    
+        <div>    
             <p className="stat-card-value" style={{ color: colors.text }}>{value}</p>
         </div>
     </div>
@@ -250,9 +250,9 @@ const Analytics = ({ selectedPeriod, userId, startDate, endDate }) => {
     return (
         <div className="work-hours-grid">
             <div className="work-hours-card" style={{ backgroundColor: colors.card }}>
-                <div className="icon-container">
+                {/* <div className="icon-container">
                     <ClockIcon style={{ fontSize: 32, color: colors.primary }} />
-                </div>
+                </div> */}
                 <h3 className="card-label" style={{ color: colors.muted }}>Total Hours</h3>
                 <p className="card-value" style={{ color: colors.text }}>
                     {workHours !== null ? workHours.toFixed(1) : '--'}
@@ -261,9 +261,9 @@ const Analytics = ({ selectedPeriod, userId, startDate, endDate }) => {
             </div>
 
             <div className="work-hours-card" style={{ backgroundColor: colors.card }}>
-                <div className="icon-container">
+                {/* <div className="icon-container">
                     <TimerIcon style={{ fontSize: 32, color: colors.primary }} />
-                </div>
+                </div> */}
                 <h3 className="card-label" style={{ color: colors.muted }}>Daily Average</h3>
                 <p className="card-value" style={{ color: colors.text }}>
                     {averageWorkHours !== null ? averageWorkHours.toFixed(1) : '--'}
@@ -469,22 +469,33 @@ const AnalyticsScreen = () => {
                 backgroundColor: colors.card,
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
             }}>
-                <FormControl fullWidth>
-                    <InputLabel style={{ color: colors.muted }}>Select Period</InputLabel>
+                <FormControl fullWidth className='range-selection'>
+                    <InputLabel style={{ color: colors.muted}}>Select Period</InputLabel>
                     <Select
-                        value={selectedPeriod}
-                        onChange={(e) => {
-                            setSelectedPeriod(e.target.value);
-                            loadData(e.target.value);
-                        }}
-                        label="Select Period"
-                        style={{ color: colors.text }}
-                    >
-                        <MenuItem value="Last Week">Last Week</MenuItem>
-                        <MenuItem value="Last Month">Last Month</MenuItem>
-                        <MenuItem value="Last Year">Last Year</MenuItem>
-                        <MenuItem value="Custom">Custom Range</MenuItem>
-                    </Select>
+                            className="selection-dropdown"
+                            value={selectedPeriod}
+                            onChange={(e) => {
+                                setSelectedPeriod(e.target.value);
+                                loadData(e.target.value);
+                            }}
+                            label="Select Period"
+                            style={{ color: colors.text }}
+                            MenuProps={{
+                                PaperProps: {
+                                style: {
+                                    borderRadius: 12,
+                                    backgroundColor: '#1e1b2e',
+                                    color: '#fff',
+                                },
+                                },
+                            }}
+                            >
+                            <MenuItem value="Last Week">🗓️ Last Week</MenuItem>
+                            <MenuItem value="Last Month">📆 Last Month</MenuItem>
+                            <MenuItem value="Last Year">📅 Last Year</MenuItem>
+                            <MenuItem value="Custom">✨ Custom Range</MenuItem>
+                            </Select>
+
                 </FormControl>
                 <div className='date-picker-container'>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -536,7 +547,7 @@ const AnalyticsScreen = () => {
             )}
 
             <div className="stats-grid">
-                <StatCard
+                <StatCard className ='stat-card-container'
                     icon={<CalendarIcon style={{ fontSize: 34 }} />}
                     title="Total Working Days"
                     value={stats.totalDays}
@@ -561,31 +572,35 @@ const AnalyticsScreen = () => {
                     subValue={null}
                 />
             </div>
-
+        <div className='time-work-title'>
             <h2 className="section-title" style={{ color: colors.text }}>
                 Time Analysis
             </h2>
+            <h2 className="section-title" style={{ color: colors.text }}>
+                Work Hours
+            </h2>
+        </div>
+        <div className='time-work-container'>
             <div className="time-stats">
-                <div className="time-card" style={{ backgroundColor: colors.card }}>
+                <div className="analytics-time-card" style={{ backgroundColor: colors.card }}>
                     <h3 className="time-label" style={{ color: colors.muted }}>Average Check-in</h3>
                     <p className="time-value" style={{ color: colors.text }}>{stats.averageCheckIn}</p>
                 </div>
-                <div className="time-card" style={{ backgroundColor: colors.card }}>
+                <div className="analytics-time-card" style={{ backgroundColor: colors.card }}>
                     <h3 className="time-label" style={{ color: colors.muted }}>Average Check-out</h3>
                     <p className="time-value" style={{ color: colors.text }}>{stats.averageCheckOut}</p>
                 </div>
             </div>
-
-            <h2 className="section-title" style={{ color: colors.text }}>
-                Work Hours
-            </h2>
+            {/* <div className='work-hours'> */}
             <Analytics
                 selectedPeriod={selectedPeriod}
                 userId={userId}
                 startDate={startDate}
                 endDate={endDate}
             />
+            {/* </div> */}
         </div>
+    </div>
     );
 };
 

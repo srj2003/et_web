@@ -206,9 +206,9 @@ const AdminAnalytics = () => {
 
     return (
         <div className="admin-analytics-container">
-            <div className="header">
+            <div className="admin-analytics-header">
                 <h1>Admin Analytics</h1>
-                <div className="header-buttons">
+                <div className="admin-analytics-header-buttons">
                     <Button
                         variant="outlined"
                         color="primary"
