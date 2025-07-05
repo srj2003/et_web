@@ -33,6 +33,7 @@ const AddLeaves = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false);
+  const [showLeavePolicy, setShowLeavePolicy] = useState(false);
   const [roles, setRoles] = useState([]);
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -229,7 +230,60 @@ const AddLeaves = () => {
 
   return (
     <div className="expense-form-container">
-      <h1 className="form-title">Apply for Leave</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+        <h1 className="form-title">Apply for Leave</h1>
+        <button
+          className="leave-policy-btn"
+          onClick={() => setShowLeavePolicy(true)}
+          style={{ minWidth: 120 }}
+        >
+          Leave Policy
+        </button>
+      </div>
+
+      {/* Leave Policy Modal */}
+      {showLeavePolicy && (
+        <div className="modal-overlay">
+          <div className="leave-policy-card">
+            <div className="leave-policy-header">
+              <span className="leave-policy-logo">
+                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="19" cy="19" r="19" fill="#6366f1"/>
+                  <path d="M19 8L27 30H11L19 8Z" fill="#fff"/>
+                  <circle cx="19" cy="19" r="5" fill="#4f46e5"/>
+                </svg>
+              </span>
+              <h3 className="leave-policy-title">Leave Policy</h3>
+              <button className="modal-close" onClick={() => setShowLeavePolicy(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="leave-policy-body">
+              <ol>
+                <li>On confirmation, you will be entitled to earn <b>12 Privilege Leaves (PL)</b> and <b>9 Sick Leaves (SL)</b>.<br/>
+                  <ul>
+                    <li>Privilege Leaves (PL): 12 per year</li>
+                    <li>Sick Leaves (SL): 9 per year (0.75 per month)</li>
+                  </ul>
+                </li>
+                <li>No other holiday / leave / off will be clubbed or considered with any of the confirmed financial year holidays by the company.</li>
+                <li>Any PL need to be applied a week before or at least 3 days in advance (proper email/ official WhatsApp/ET App communication should be maintained).</li>
+                <li>Any long leave needs to be applied one month in advance and is subject to approval.</li>
+                <li>Long leaves and/or absence from work would also include weekend. For example: if an employee is on leave from Mon to Sat then the following weekend (Sunday) would be calculated as leave/absence.</li>
+                <li>If an employee is absent on last day of the week and the first day of the following week then the weekend will be considered as leave. <b>Sandwich Policy:</b> relaxation allowed up to 5 days (based on the approval).</li>
+                <li>SL application for more than 3 days requires medical certificate for approval / Proper communication with the immediate reporting authority.</li>
+                <li>All the leave approval is on first come first serve basis and can be rejected depending on the work load/pressure.</li>
+                <li>As per the policy, unapproved leaves (without prior information) on the operational date will lead to salary deduction.</li>
+                <li>A maximum of 3 leaves can be carried forward to the next financial year.</li>
+                <li>All applied leaves are subject to Management approval and consideration.</li>
+              </ol>
+              <div className="leave-policy-note">
+                <b>Note:</b> The management reserves the right to modify or update this policy as required.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Personal Information Section */}
       <section className="form-section">

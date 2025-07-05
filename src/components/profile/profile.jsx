@@ -1,6 +1,6 @@
 // profile.jsx
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, Calendar, Edit, Briefcase, Camera, XCircle, User, Award } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, Edit, Briefcase, Camera, XCircle, User, Award, Eye, EyeOff } from 'lucide-react';
 import styles from './Profile.module.css';
 
 const ProfileScreen = () => {
@@ -19,6 +19,19 @@ const ProfileScreen = () => {
 
     // Track which field is being edited
     const [editingField, setEditingField] = useState(null);
+
+     // Change password states
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [changePasswordMessage, setChangePasswordMessage] = useState('');
+    const [changePasswordLoading, setChangePasswordLoading] = useState(false);
+
+    // Password visibility toggles
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -205,6 +218,48 @@ const ProfileScreen = () => {
         }
     };
 
+    const handleChangePassword = async () => {
+        setChangePasswordMessage('');
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            setChangePasswordMessage('All fields are required.');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setChangePasswordMessage('New passwords do not match.');
+            return;
+        }
+        setChangePasswordLoading(true);
+        try {
+            const userId = localStorage.getItem('userid');
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/change-password.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword
+                }),
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                setChangePasswordMessage('Password changed successfully!');
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setTimeout(() => setShowChangePasswordModal(false), 1200);
+            } else {
+                setChangePasswordMessage(result.message || 'Failed to change password.');
+            }
+        } catch (error) {
+            setChangePasswordMessage('Failed to change password.');
+        } finally {
+            setChangePasswordLoading(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className={styles.loadingContainer}>
@@ -373,6 +428,106 @@ const ProfileScreen = () => {
                         >
                             Save Changes
                         </button>
+                    </div>
+                )}
+                {/* Change Password Button at the bottom */}
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }}>
+                    <button
+                        className="changePasswordBtn"
+                        style={{ maxWidth: 300 }}
+                        onClick={() => setShowChangePasswordModal(true)}
+                    >
+                        Change Password
+                    </button>
+                </div>
+
+                {/* Change Password Modal */}
+                {showChangePasswordModal && (
+                    <div className="modalOverlay">
+                        <div className="changePasswordCard">
+                            <h2 className="changePasswordTitle">Change Password</h2>
+                            {/* Current Password */}
+                            <div className="passwordInputRow">
+                                <input
+                                    className="passwordInput"
+                                    type={showCurrentPassword ? "text" : "password"}
+                                    placeholder="Current Password"
+                                    value={currentPassword}
+                                    onChange={e => setCurrentPassword(e.target.value)}
+                                    autoComplete="current-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="eyeIcon"
+                                    onClick={() => setShowCurrentPassword(v => !v)}
+                                    tabIndex={-1}
+                                >
+                                    {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                            {/* New Password */}
+                            <div className="passwordInputRow">
+                                <input
+                                    className="passwordInput"
+                                    type={showNewPassword ? "text" : "password"}
+                                    placeholder="New Password"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="eyeIcon"
+                                    onClick={() => setShowNewPassword(v => !v)}
+                                    tabIndex={-1}
+                                >
+                                    {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                            {/* Confirm New Password */}
+                            <div className="passwordInputRow">
+                                <input
+                                    className="passwordInput"
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    placeholder="Confirm New Password"
+                                    value={confirmPassword}
+                                    onChange={e => setConfirmPassword(e.target.value)}
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="eyeIcon"
+                                    onClick={() => setShowConfirmPassword(v => !v)}
+                                    tabIndex={-1}
+                                >
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                            {changePasswordMessage && (
+                                <div className={
+                                  changePasswordMessage === "Password changed successfully!"
+                                    ? "changePasswordSuccess"
+                                    : "changePasswordError"
+                                }>
+                                  {changePasswordMessage}
+                                </div>
+                            )}
+                            <button
+                                className="changePasswordBtn"
+                                style={{ marginTop: 8, opacity: changePasswordLoading ? 0.7 : 1 }}
+                                onClick={handleChangePassword}
+                                disabled={changePasswordLoading}
+                            >
+                                {changePasswordLoading ? "Changing..." : "Change Password"}
+                            </button>
+                            <button
+                                className="modalCancelBtn"
+                                style={{ marginTop: 8 }}
+                                onClick={() => setShowChangePasswordModal(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 )}
             </main>

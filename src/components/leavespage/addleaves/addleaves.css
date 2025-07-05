@@ -302,3 +302,159 @@
 .full-width {
   grid-column: 1 / -1;
 }
+
+/* Leave Policy Button Styles */
+.leave-policy-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.65rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.13);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    letter-spacing: 0.5px;
+    outline: none;
+    margin-left: 1rem;
+    min-width: 120px;
+    display: inline-block;
+}
+
+.leave-policy-btn:hover, .leave-policy-btn:focus {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.18);
+    transform: translateY(-2px) scale(1.03);
+}
+
+@media (max-width: 576px) {
+    .leave-policy-btn {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0.5rem;
+        font-size: 0.98rem;
+        padding: 0.6rem 0.5rem;
+    }
+}
+
+/* Leave Policy Card Styles */
+.leave-policy-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(99,102,241,0.13), 0 1.5px 6px rgba(0,0,0,0.07);
+  max-width: 750px;
+  width: 98vw;
+  min-width: 340px;
+  min-height: 520px;
+  padding: 0 0 2.2rem 0;
+  position: relative;
+  animation: fadeInCard 0.25s;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@keyframes fadeInCard {
+  from { opacity: 0; transform: translateY(30px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.leave-policy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
+  padding: 1.2rem 2rem 1.2rem 1.5rem;
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  position: relative;
+}
+
+.leave-policy-logo {
+  display: flex;
+  align-items: center;
+  margin-right: 0.7rem;
+}
+
+.leave-policy-title {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  letter-spacing: 0.5px;
+}
+
+.leave-policy-header .modal-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  transition: background 0.18s;
+}
+.leave-policy-header .modal-close:hover {
+  background: rgba(255,255,255,0.13);
+}
+
+.leave-policy-body {
+  padding: 2.5rem 2.5rem 1.5rem 2.5rem;
+  color: #333;
+  font-size: 1.12rem;
+  max-height: 520px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.leave-policy-body ol {
+  padding-left: 1.2em;
+  margin: 0 0 0.7em 0;
+}
+.leave-policy-body ul {
+  margin: 0.3em 0 0.7em 1.2em;
+  padding-left: 1.2em;
+}
+.leave-policy-body li {
+  margin-bottom: 0.5em;
+  line-height: 1.6;
+}
+
+.leave-policy-note {
+  margin-top: 1.1em;
+  font-size: 0.99rem;
+  color: #6366f1;
+  background: #f4f6ff;
+  border-left: 4px solid #6366f1;
+  padding: 0.7em 1em;
+  border-radius: 6px;
+}
+
+@media (max-width: 900px) {
+  .leave-policy-card {
+    max-width: 99vw;
+    min-width: 0;
+    padding: 0 0 1.2rem 0;
+  }
+  .leave-policy-body {
+    padding: 1.2rem 1rem 1rem 1rem;
+    font-size: 1.01rem;
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 576px) {
+  .leave-policy-card {
+    padding: 0 0 0.7rem 0;
+    max-width: 99vw;
+  }
+  .leave-policy-header {
+    padding: 0.8rem 1rem 0.8rem 0.7rem;
+  }
+  .leave-policy-body {
+    padding: 1.1rem 0.7rem 0.7rem 0.7rem;
+    font-size: 0.98rem;
+  }
+}
