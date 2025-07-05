@@ -435,23 +435,6 @@
   box-shadow: 0 4px 16px rgba(99,102,241,0.10);
 }
 
-.download-report-button[disabled], .download-report-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.download-report-button.loading {
-  background: #ede9fe;
-  color: #bbb;
-  cursor: wait;
-}
-.download-error-message {
-  color: #e74c3c;
-  font-size: 1rem;
-  margin-top: 0.5rem;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
 /* Financial year selector uses the same styles as other react-select dropdowns */
 #financial-year-select {
   min-width: 220px;
@@ -564,4 +547,42 @@
 }
 .custom-expense-table tr {
   background: #fff !important;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Status badge styles for requisition reports */
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+
+.status-pending {
+  background-color: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fbbf24;
+}
+
+.status-approved {
+  background-color: #d1fae5;
+  color: #059669;
+  border: 1px solid #34d399;
+}
+
+.status-rejected {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #f87171;
+}
+
+.status-cancelled {
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
 }
