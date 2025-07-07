@@ -434,29 +434,29 @@ const AnalyticsScreen = () => {
                     {[1, 2, 3, 4, 8].includes(roleId) && (
                         <Button
                             variant="outlined"
-                            style={{ 
-                                borderColor: colors.primary,
-                                color: colors.primary,
-                                borderRadius: '12px',
-                                fontWeight: 600
-                            }}
+                            // style={{ 
+                            //     borderColor: colors.primary,
+                            //     color: colors.primary,
+                            //     borderRadius: '12px',
+                            //     fontWeight: 600
+                            // }}
                             component={Link}
                             to="/analytics/adminanalytics"
-                            className="admin-button"
+                            className="go-admin-button"
                         >
                             Go to Admin Analytics
                         </Button>
                     )}
                     <Button
                         variant="outlined"
-                        style={{ 
-                            borderColor: colors.muted,
-                            color: colors.muted,
-                            borderRadius: '12px',
-                            fontWeight: 600
-                        }}
+                        // style={{ 
+                        //     borderColor: colors.muted,
+                        //     color: colors.muted,
+                        //     borderRadius: '12px',
+                        //     fontWeight: 600
+                        // }}
                         onClick={resetSelections}
-                        className="reset-button"
+                        className="analytics-reset-button"
                         startIcon={<ArrowBackIcon />}
                     >
                         Reset

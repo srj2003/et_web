@@ -520,9 +520,9 @@ const ProjectManagementDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="dashboard-loading-state">
-        <div className="loader"></div>
-        <p>Loading Project Dashboard...</p>
+      <div className="project-loading-container">
+        <div className="project-animate-spin"></div>
+        <pre className='loading-text'>  Loading Project Dashboard...</pre>
       </div>
     );
   }
@@ -934,8 +934,8 @@ const ProjectManagementDashboard = () => {
             </div>
             <div className="modal-content">
               {isLoadingUserProjects ? (
-                <div className="loading-container">
-                  <Loader2 size={30} className="animate-spin" />
+                <div className="project-loading-container">
+                  <Loader2 size={30} className="project-animate-spin" />
                   <p>Loading your projects...</p>
                 </div>
               ) : userProjects.length === 0 ? (

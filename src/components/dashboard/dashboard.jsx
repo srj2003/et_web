@@ -68,7 +68,7 @@ const AttendanceDetails = ({ attendance }) => {
           </span>
         </div>
         <div className="attendance-row">
-          <span className="attendance-label">PunchIn Location:</span>
+          <span className="attendance-label">Punch In Location:</span>
           <span className="attendance-value">
             {formatLocation(attendance?.login_lat_long)}
           </span>
@@ -79,19 +79,20 @@ const AttendanceDetails = ({ attendance }) => {
         <div className="attendance-card">
           {/* <h3 className="attendance-card-title">PunchOut Details</h3> */}
           <div className="attendance-row">
-            <span className="attendance-label">PunchOut Time:</span>
+            <span className="attendance-label">Punch Out Time:</span>
             <span className="attendance-value">
               {new Date(
                 attendance?.logout_timestamp || ""
               ).toLocaleTimeString()}
             </span>
+            </div>
             <div className="attendance-row">
-              <span className="attendance-label">PunchOut Location:</span>
+              <span className="attendance-label">Punch Out Location:</span>
               <span className="attendance-value">
                 {formatLocation(attendance?.logout_lat_long)}
               </span>
             </div>
-          </div>
+          
         </div>
       )}
     </div>
@@ -300,6 +301,8 @@ export default function DashboardWeb() {
     { id: "3", text: "Server maintenance scheduled" },
   ];
 
+  const [projectExpenses, setProjectExpenses] = useState([]);
+
   const fetchQuote = async () => {
     try {
       if (!loadingQuote) {
@@ -497,7 +500,52 @@ export default function DashboardWeb() {
     }
   }, []);
 
+  const fetchProjectExpenses = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
 
+      const response = await fetch(
+        'https://demo-expense.geomaticxevs.in/ET-api/get_project_expense.php',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ token }),
+        }
+      );
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to fetch project expenses");
+      }
+
+      if (result.status === 'success') {
+        setProjectExpenses(result.data);
+        setProjects(prevProjects => 
+          prevProjects.map(project => {
+            const expenseData = result.data.find(
+              exp => exp.project_id == project.project_id
+            );
+            return {
+              ...project,
+              total_expense: expenseData ? expenseData.total_expense : 0
+            };
+          })
+        );
+      } else {
+        console.error("API Error:", result.message);
+      }
+    } catch (error) {
+      console.error("Network/API Error:", error.message);
+    }
+  }, []);
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -523,6 +571,7 @@ export default function DashboardWeb() {
         fetchQuote(),
         fetchAnalytics(),
         fetchAttendanceStats(),
+        fetchProjectExpenses(),
       ]);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
@@ -534,6 +583,7 @@ export default function DashboardWeb() {
     fetchQuote,
     fetchAnalytics,
     fetchAttendanceStats,
+    fetchProjectExpenses,
   ]);
 
   useEffect(() => {
@@ -1015,8 +1065,9 @@ export default function DashboardWeb() {
 
   if (loading || checkingAttendance) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className="dash-loading-container">
+        <div className="dash-loading-spinner"></div>
+        <pre className='dash-loading-text'>  Loading Project Dashboard...</pre>
       </div>
     );
   }
@@ -1116,7 +1167,7 @@ export default function DashboardWeb() {
                 </div>
                 <span className="projects-banner-title" style={{ fontSize: "2rem" }}>My Projects</span>
               </div>
-              <div className="projects-status-info" style={{ gap: "1.2rem" }}>
+              <div className="projects-status-info">
                 <div style={{
                   background: "#fff",
                   borderRadius: "12px",
@@ -1165,6 +1216,23 @@ export default function DashboardWeb() {
                     {projects.filter(p => (p.status || '').toLowerCase() === 'completed').length}
                   </span>
                   <span style={{ marginLeft: "0.5rem", fontWeight: 600, fontSize: "1rem" }}>Completed</span>
+                </div>
+                <div style={{
+                  background: "#fff",
+                  borderRadius: "12px",
+                  padding: "0.7rem 1.2rem",
+                  display: "flex",
+                  alignItems: "center",
+                  minWidth: "120px",
+                  boxShadow: "0 2px 8px rgba(30,41,59,0.04)"
+                }}>
+                  <svg width="22" height="22" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1v3m0 16v3m9-9h-3M4 12H1m15.364 6.364l-2.12-2.12M6.344 6.344l-2.12-2.12m12.728 0l-2.12 2.12M6.344 17.656l-2.12 2.12M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  <div style={{ marginLeft: "0.7rem" }}>
+                    <div style={{ color: "#64748b", fontWeight: 600, fontSize: "1rem" }}>Total Expenses</div>
+                    <div style={{ color: "#6366f1", fontWeight: 700, fontSize: "1.5rem" }}>
+                      ₹{projects.reduce((sum, p) => sum + (parseFloat(p.total_expense) || 0), 0).toLocaleString()}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="projects-banner-controls">
@@ -1293,7 +1361,9 @@ export default function DashboardWeb() {
                           <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
                           <p className="project-card-detail">
                             <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
-                            Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
+                            Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>
+                              ₹{project.total_expense ? project.total_expense.toLocaleString() : '0'}
+                            </span>
                             <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
                           </p>
                           <div className="project-card-progress">
@@ -1380,7 +1450,9 @@ export default function DashboardWeb() {
                       <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
                       <p className="project-card-detail">
                         <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
-                        Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
+                        Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>
+                          ₹{project.total_expense ? project.total_expense.toLocaleString() : '0'}
+                        </span>
                         <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
                       </p>
                       <div className="project-card-progress">
