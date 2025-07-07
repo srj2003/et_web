@@ -423,11 +423,10 @@ const AnalyticsScreen = () => {
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
             }}>
                 <h1 className="title" style={{ 
-                    color: colors.text,
+                    color: 'transparent',
                     background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`,
                     WebkitBackgroundClip: 'text',
                     backgroundClip: 'text',
-                    color: 'transparent'
                 }}>
                     Analytics Overview
                 </h1>
