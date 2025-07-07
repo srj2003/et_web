@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Calendar, Edit, Briefcase, Camera, XCircle, User, Award, Eye, EyeOff } from 'lucide-react';
 import styles from './Profile.module.css';
 
+
 const ProfileScreen = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState(null);
@@ -411,6 +412,16 @@ const ProfileScreen = () => {
                                 </span>
                             </div>
                         </div>
+                        {/* Change Password Button at the bottom */}
+                       <div style={{ display: 'flex', justifyContent: 'left'}}>
+                            <button
+                                className={styles.changePasswordButton}
+                                style={{ maxWidth: 300 }}
+                                onClick={() => setShowChangePasswordModal(true)}
+                            >
+                                Change Password
+                            </button>
+                        </div>
                     </section>
                 </div>
 
@@ -430,16 +441,7 @@ const ProfileScreen = () => {
                         </button>
                     </div>
                 )}
-                {/* Change Password Button at the bottom */}
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }}>
-                    <button
-                        className="changePasswordBtn"
-                        style={{ maxWidth: 300 }}
-                        onClick={() => setShowChangePasswordModal(true)}
-                    >
-                        Change Password
-                    </button>
-                </div>
+                
 
                 {/* Change Password Modal */}
                 {showChangePasswordModal && (
@@ -513,7 +515,7 @@ const ProfileScreen = () => {
                                 </div>
                             )}
                             <button
-                                className="changePasswordBtn"
+                                className={styles.changePasswordButton}
                                 style={{ marginTop: 8, opacity: changePasswordLoading ? 0.7 : 1 }}
                                 onClick={handleChangePassword}
                                 disabled={changePasswordLoading}

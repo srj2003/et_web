@@ -385,6 +385,11 @@ body {
     margin-top: auto; /* Pushes it to the bottom */
 }
 
+.changePasswordBtn{
+    border:none;
+    
+}
+
 .save-button,
 .cancel-button {
     padding: 1rem 2.5rem;
