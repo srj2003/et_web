@@ -324,6 +324,28 @@ const AllExpensesWeb = () => {
           </div>
         </div>
       </div>
+      <div className="requestedexpensesfilters-section">
+        <div className="requestedexpensessearch-container">
+          <Search size={20} color="#64748b" />
+          <input
+            type="text"
+            placeholder="Search expenses..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="requestedexpensessearch-input"
+          />
+        </div>
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="requestedexpensesfilter-button"
+        >
+          <option>All</option>
+          <option>Unattended</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+        </select>
+      </div>
       <div className="myexpenses-view-toggle">
         <button
           className={`myexpenses-view-btn${

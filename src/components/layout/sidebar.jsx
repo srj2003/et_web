@@ -41,7 +41,7 @@ const ROLE_ACCESS = {
   },
   project: {
     manage_project_expense: [1, 3, 8],
-    my_projects: 'all',
+    my_projects: "all",
   },
   workreport: {
     add_workreport: "all",
@@ -51,7 +51,7 @@ const ROLE_ACCESS = {
   requisition: {
     add_requisition: "all", // Available to everyone
     my_requisitions: "all", // Available to everyone
-    all_requisitions: "all",
+    all_requisitions: [1, 2, 3, 4, 5, 6, 8], // Assuming these roles can view all requisitions
     manage_requisitions: [1, 2, 3, 4, 5, 6, 8], // Assuming these roles can manage requisitions
   },
   accounts: {
@@ -72,9 +72,7 @@ const menuItemsData = [
     title: "Attendances",
     icon: CalendarCheck,
     subItems: [
-      { id: "my_attendance", 
-        title: "My Attendance", 
-        path: "/attendance/my" },
+      { id: "my_attendance", title: "My Attendance", path: "/attendance/my" },
       {
         id: "user_attendance",
         title: "User Attendance",
@@ -157,7 +155,7 @@ const menuItemsData = [
         id: "all_work_report",
         title: "All Work Reports",
         path: "/workreport/all",
-      }
+      },
     ],
   },
   {
@@ -209,10 +207,9 @@ const menuItemsData = [
   {
     id: "reports",
     title: "Reports",
-    icon: FileText, 
+    icon: FileText,
     path: "/reports",
-  }
-  
+  },
 ];
 
 const Sidebar = () => {
@@ -222,7 +219,8 @@ const Sidebar = () => {
   const [roleId, setRoleId] = useState(null);
   const [filteredMenuItems, setFilteredMenuItems] = useState([]);
   const [activeItem, setActiveItem] = useState("");
-  const [showProjectWiseAttendance, setShowProjectWiseAttendance] = useState(false);
+  const [showProjectWiseAttendance, setShowProjectWiseAttendance] =
+    useState(false);
   const [showUserAttendance, setshowUserAttendance] = useState(true);
 
   const storedRoleId = parseInt(localStorage.getItem("roleId"), 10);
@@ -237,11 +235,13 @@ const Sidebar = () => {
           let filteredSubItems = item.subItems.filter((subItem) => {
             // Only filter project_wise_attendance based on API and role
             if (subItem.id === "project_wise_attendance") {
-              const allowed = ROLE_ACCESS.attendance.user_attendance.includes(storedRoleId);
+              const allowed =
+                ROLE_ACCESS.attendance.user_attendance.includes(storedRoleId);
               return showProjectWiseAttendance && allowed;
             }
             if (subItem.id === "user_attendance") {
-              const allowed = ROLE_ACCESS.attendance.user_attendance.includes(storedRoleId);
+              const allowed =
+                ROLE_ACCESS.attendance.user_attendance.includes(storedRoleId);
               return showUserAttendance && allowed;
             }
             const access = ROLE_ACCESS[item.id]?.[subItem.id];
@@ -265,7 +265,7 @@ const Sidebar = () => {
   // Add effect to handle active menu based on current path
   useEffect(() => {
     const currentPath = location.pathname;
-    
+
     // Find and set active menu item
     filteredMenuItems.forEach((item) => {
       if (item.subItems) {
@@ -292,43 +292,58 @@ const Sidebar = () => {
       const userId = localStorage.getItem("userid");
       if (!userId) return;
       try {
-        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/project_role_fetcher.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-        });
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/project_role_fetcher.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+          }
+        );
         const data = await response.json();
         console.log("[API Response]", data);
-        if (
-          data.status === "success" &&
-          Array.isArray(data.data)
-        ) {
+        if (data.status === "success" && Array.isArray(data.data)) {
           if (data.data.length === 0) {
             // Empty array: show User Attendance as per user_attendance roles
             setShowProjectWiseAttendance(false);
             setshowUserAttendance(true);
-            console.log("[Debug] API returned empty array, setshowUserAttendance(true)");
-          } else if (data.data.some((item) => item.proj_role_id === 1 || item.proj_role_id === 3)) {
+            console.log(
+              "[Debug] API returned empty array, setshowUserAttendance(true)"
+            );
+          } else if (
+            data.data.some(
+              (item) => item.proj_role_id === 1 || item.proj_role_id === 3
+            )
+          ) {
             // Has project roles 1 or 3: show Project Wise Attendance
             setShowProjectWiseAttendance(true);
             setshowUserAttendance(false);
-            console.log("[Debug] API returned proj_role_id 1 or 3, setShowProjectWiseAttendance(true), setshowUserAttendance(false)");
+            console.log(
+              "[Debug] API returned proj_role_id 1 or 3, setShowProjectWiseAttendance(true), setshowUserAttendance(false)"
+            );
           } else {
             // Has other roles: show User Attendance
             setShowProjectWiseAttendance(false);
             setshowUserAttendance(true);
-            console.log("[Debug] API returned other roles, setshowUserAttendance(true)");
+            console.log(
+              "[Debug] API returned other roles, setshowUserAttendance(true)"
+            );
           }
         } else {
           // API did not return success: show User Attendance
           setShowProjectWiseAttendance(false);
           setshowUserAttendance(true);
-          console.log("[Debug] API did not return success, setshowUserAttendance(true)");
+          console.log(
+            "[Debug] API did not return success, setshowUserAttendance(true)"
+          );
         }
       } catch (err) {
         setShowProjectWiseAttendance(false);
         setshowUserAttendance(true);
-        console.log("[Debug] API call failed, setshowUserAttendance(true)", err);
+        console.log(
+          "[Debug] API call failed, setshowUserAttendance(true)",
+          err
+        );
       }
     };
     fetchProjectRoles();
@@ -348,7 +363,7 @@ const Sidebar = () => {
       await fetch("https://demo-expense.geomaticxevs.in/ET-api/logout.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, authToken })
+        body: JSON.stringify({ userId, authToken }),
       });
     } catch (err) {
       alert("Can not logout.");
@@ -366,7 +381,7 @@ const Sidebar = () => {
   const isMenuActive = (item) => {
     if (item.path === activeItem) return true;
     if (item.subItems) {
-      return item.subItems.some(subItem => subItem.path === activeItem);
+      return item.subItems.some((subItem) => subItem.path === activeItem);
     }
     return false;
   };
@@ -390,7 +405,7 @@ const Sidebar = () => {
           if (item.subItems && item.subItems.length > 0) {
             return (
               <li key={item.id} className={`menu-item ${isOpen ? "open" : ""}`}>
-                <div 
+                <div
                   className={`menu-link ${isActive ? "active" : ""}`}
                   onClick={() => toggleMenu(item.id)}
                 >

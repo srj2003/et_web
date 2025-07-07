@@ -500,7 +500,7 @@
   background: #fff;
 }
 .custom-expense-table th, .custom-expense-table td {
-  border: 1.5px solid #fff !important;
+  border: 1.5px solid #c7d2fe !important;
   padding: 0.7rem 1rem;
   text-align: left;
   vertical-align: top;
@@ -514,44 +514,15 @@
   font-size: 1.1rem;
   font-weight: 700;
   text-align: left;
-  border-bottom: 2px solid #e0e7ff !important;
-}
-.custom-project-cell {
-  font-weight: 700;
-  font-size: 1.1rem;
-  background: #f4f3ff;
-  min-width: 120px;
-  vertical-align: middle;
-}
-.custom-user-cell {
-  font-weight: 600;
-  font-size: 1.05rem;
-  background: #fff;
-  min-width: 100px;
-  vertical-align: middle;
-}
-.custom-expense-type-cell {
-  font-weight: 400;
-  background: #fff;
-  min-width: 180px;
-}
-.custom-expense-type-cell b {
-  display: block;
-  margin-bottom: 0.2rem;
-}
-.custom-expense-entry-cell {
-  min-width: 120px;
-  font-size: 1rem;
-  text-align: left;
-  background: #fff;
+  border-bottom: 2.5px solid #6552f7 !important;
 }
 .custom-expense-table tr {
   background: #fff !important;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 2px solid #c7d2fe !important;
 }
 
 /* Status badge styles for requisition reports */
-.status-badge {
+.status-report {
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.85rem;

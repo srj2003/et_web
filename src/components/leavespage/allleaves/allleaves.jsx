@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  DollarSign,
 } from "lucide-react";
 
 const getStatusColor = (status) => {
@@ -153,45 +154,68 @@ export default function AllLeaves() {
       <h1 className="allleavespage-title">All Leaves</h1>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Calendar size={24} color="#6366f1" />
+      <div className="allexpense-stats-grid">
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              color: "#fff",
+            }}
+          >
+            <DollarSign size={28} />
           </div>
-          <div className="stat-info">
-            <h3>Total Leaves</h3>
-            <p className="stat-value">{stats.total}</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Clock size={24} color="#64748b" />
-          </div>
-          <div className="stat-info">
-            <h3>Unattended</h3>
-            <p className="stat-value">{stats.unattended}</p>
+          <div className="allexpense-stat-info">
+            <h3>Total Expenses</h3>
+            <div className="allexpense-stat-value">{stats.total}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <CheckCircle size={24} color="#10b981" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+              color: "#fff",
+            }}
+          >
+            <CheckCircle size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
             <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
+            <div className="allexpense-stat-value">{stats.approved}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <XCircle size={24} color="#ef4444" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #64748b 0%, #334155 100%)",
+              color: "#fff",
+            }}
+          >
+            <Clock size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
+            <h3>Unattended</h3>
+            <div className="allexpense-stat-value">{stats.Unattended}</div>
+          </div>
+        </div>
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+              color: "#fff",
+            }}
+          >
+            <X size={28} />
+          </div>
+          <div className="allexpense-stat-info">
             <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
+            <div className="allexpense-stat-value">{stats.rejected}</div>
           </div>
         </div>
       </div>
-
       {/* Search and Filters */}
       <div className="myleavesfilters-section">
         <div className="myleavessearch-container">
@@ -370,7 +394,11 @@ export default function AllLeaves() {
             </thead>
             <tbody>
               {paginated.map((leave, idx) => (
-                <tr key={leave.leave_id || idx}>
+                <tr
+                  key={leave.leave_id || idx}
+                  onClick={() => setSelectedLeave(leave)}
+                  style={{ cursor: "pointer" }}
+                >
                   <td>{leave.leave_id}</td>
                   <td>{leave.leave_title}</td>
                   <td>{leave.leave_ground_text}</td>
@@ -404,7 +432,10 @@ export default function AllLeaves() {
                       : "-"}
                   </td>
                   <td>
-                    <div className="requestedexpenses-details-menu-wrapper">
+                    <div
+                      className="requestedexpenses-details-menu-wrapper"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         className="requestedexpenses-details-menu-btn"
                         onClick={(e) => {

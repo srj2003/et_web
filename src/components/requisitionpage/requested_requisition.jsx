@@ -8,6 +8,8 @@ import {
   X,
   Clock,
   AlertCircle,
+  DollarSign,
+  CheckCircle,
 } from "lucide-react";
 
 const RequisitionsWeb = () => {
@@ -20,13 +22,15 @@ const RequisitionsWeb = () => {
   const [showRequisitionDetails, setShowRequisitionDetails] = useState(false);
   const [approvedAmount, setApprovedAmount] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [openMenuRow, setOpenMenuRow] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
-    Unattended: 0,
+    unattended: 0,
     approved: 0,
     rejected: 0,
     partiallyApproved: 0,
   });
+  const [viewMode, setViewMode] = useState("card");
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -91,7 +95,7 @@ const RequisitionsWeb = () => {
           // Calculate stats
           setStats({
             total: transformedData.length,
-            Unattended: transformedData.filter(
+            unattended: transformedData.filter(
               (req) => req.requisition_status === "Unattended"
             ).length,
             approved: transformedData.filter(
@@ -117,7 +121,7 @@ const RequisitionsWeb = () => {
 
   const handleAction = async (requisition_id, action, amount) => {
     try {
-      if ((action === "approve" || action === "partial") && !amount) {
+      if (action === "partial" && !amount) {
         alert("Please enter the amount to approve");
         return;
       }
@@ -227,50 +231,83 @@ const RequisitionsWeb = () => {
     <>
       <div className="leaves-container">
         <h1 className="requisition-page-title">Requested Requisitions</h1>
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">
-              <AlertCircle size={24} color="#6366f1" />
+        <div className="allexpense-stats-grid">
+          <div className="allexpense-stat-card">
+            <div
+              className="allexpense-stat-icon"
+              style={{
+                background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+                color: "#fff",
+              }}
+            >
+              <DollarSign size={28} />
             </div>
-            <div className="stat-info">
-              <h3>Total Requisitions</h3>
-              <p className="stat-value">{stats.total}</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Clock size={24} color="#f59e0b" />
-            </div>
-            <div className="stat-info">
-              <h3>Unattended</h3>
-              <p className="stat-value">{stats.Unattended}</p>
+            <div className="allexpense-stat-info">
+              <h3>Total Expenses</h3>
+              <div className="allexpense-stat-value">{stats.total}</div>
             </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Check size={24} color="#10b981" />
+          <div className="allexpense-stat-card">
+            <div
+              className="allexpense-stat-icon"
+              style={{
+                background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                color: "#fff",
+              }}
+            >
+              <CheckCircle size={28} />
             </div>
-            <div className="stat-info">
+            <div className="allexpense-stat-info">
               <h3>Approved</h3>
-              <p className="stat-value">{stats.approved}</p>
+              <div className="allexpense-stat-value">{stats.approved}</div>
             </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">
-              <X size={24} color="#ef4444" />
+          <div className="allexpense-stat-card">
+            <div
+              className="allexpense-stat-icon"
+              style={{
+                background:
+                  "linear-gradient(135deg,rgb(255, 106, 0) 0%, #334155 100%)",
+                color: "#fff",
+              }}
+            >
+              <CheckCircle size={28} />
             </div>
-            <div className="stat-info">
-              <h3>PartiallyApproved</h3>
-              <p className="stat-value">{stats.partiallyApproved}</p>
+            <div className="allexpense-stat-info">
+              <h3>Partially Approved</h3>
+              <div className="allexpense-stat-value">
+                {stats.partiallyApproved}
+              </div>
             </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">
-              <X size={24} color="#ef4444" />
+          <div className="allexpense-stat-card">
+            <div
+              className="allexpense-stat-icon"
+              style={{
+                background: "linear-gradient(135deg, #64748b 0%, #334155 100%)",
+                color: "#fff",
+              }}
+            >
+              <Clock size={28} />
             </div>
-            <div className="stat-info">
+            <div className="allexpense-stat-info">
+              <h3>Unattended</h3>
+              <div className="allexpense-stat-value">{stats.unattended}</div>
+            </div>
+          </div>
+          <div className="allexpense-stat-card">
+            <div
+              className="allexpense-stat-icon"
+              style={{
+                background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+                color: "#fff",
+              }}
+            >
+              <X size={28} />
+            </div>
+            <div className="allexpense-stat-info">
               <h3>Rejected</h3>
-              <p className="stat-value">{stats.rejected}</p>
+              <div className="allexpense-stat-value">{stats.rejected}</div>
             </div>
           </div>
         </div>
@@ -297,117 +334,230 @@ const RequisitionsWeb = () => {
             <option value="Rejected">Rejected</option>
           </select>
         </div>
-        <div className="requisitions-grid">
-          {paginatedRequisitions.map((requisition) => (
-            <div
-              key={requisition.requisition_id}
-              className="requisition-card"
-              onClick={() => {
-                setSelectedRequisition(requisition);
-                setShowRequisitionDetails(true);
-              }}
-            >
-              <div className="requisition-header">
-                <h3 className="requisition-title">
-                  {requisition.requisition_title}
-                </h3>
-                <span
-                  className="requisition-status-badge"
-                  style={{
-                    backgroundColor:
-                      requisition.requisition_status === "Approved"
-                        ? "#10b981"
-                        : requisition.requisition_status ===
-                          "Partially Approved"
-                        ? "#fbbf24"
-                        : requisition.requisition_status === "Rejected"
-                        ? "#ef4444"
-                        : requisition.requisition_status === "Unattended"
-                        ? "#64748b"
-                        : "#64748b",
-                    color: "#fff",
-                  }}
-                >
-                  {requisition.requisition_status}
-                </span>
-              </div>
-              <div className="requisition-details">
-                <div className="requisition-info">
-                  <span className="info-label">Employee:</span>
-                  <span className="info-value">{requisition.employee}</span>
-                </div>
-                <div className="requisition-info">
-                  <span className="info-label">Amount:</span>
-                  <span className="info-value amount">
-                    ₹{requisition.requested_amount.toFixed(2)}
+        {/* Card/Table View Toggle */}
+        <div className="myexpenses-view-toggle">
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "card" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("card")}
+          >
+            Card View
+          </button>
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "table" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("table")}
+          >
+            Table View
+          </button>
+        </div>
+        {viewMode === "card" ? (
+          <div className="requisitions-grid">
+            {paginatedRequisitions.map((requisition) => (
+              <div
+                key={requisition.requisition_id}
+                className="requisition-card"
+                onClick={() => {
+                  setSelectedRequisition(requisition);
+                  setShowRequisitionDetails(true);
+                }}
+              >
+                <div className="requisition-header">
+                  <h3 className="requisition-title">
+                    {requisition.requisition_title}
+                  </h3>
+                  <span
+                    className="requisitiion-status-badge"
+                    style={{
+                      backgroundColor:
+                        requisition.requisition_status === "Approved"
+                          ? "#10b981"
+                          : requisition.requisition_status ===
+                            "Partially Approved"
+                          ? "#fbbf24"
+                          : requisition.requisition_status === "Rejected"
+                          ? "#ef4444"
+                          : requisition.requisition_status === "Unattended"
+                          ? "#64748b"
+                          : "#64748b",
+                      color: "#fff",
+                    }}
+                  >
+                    {requisition.requisition_status}
                   </span>
                 </div>
-                <div className="requisition-info">
-                  <span className="info-label">Type:</span>
-                  <span className="info-value">
-                    {requisition.requisition_type}
-                  </span>
-                </div>
-                <div className="requisition-info">
-                  <span className="info-label">Date:</span>
-                  <span className="info-value">
-                    {requisition.requisition_date}
-                  </span>
-                </div>
-                {requisition.requisition_status !== "Unattended" && (
+                <div className="requisition-details">
                   <div className="requisition-info">
-                    <span className="info-label">Approved Amount:</span>
+                    <span className="info-label">Employee:</span>
+                    <span className="info-value">{requisition.employee}</span>
+                  </div>
+                  <div className="requisition-info">
+                    <span className="info-label">Amount:</span>
                     <span className="info-value amount">
-                      ₹{(requisition.approved_amount || 0).toFixed(2)}
+                      ₹{requisition.requested_amount.toFixed(2)}
                     </span>
                   </div>
-                )}
-              </div>
-              {requisition.requisition_status === "Unattended" ? (
-                <div className="requisition-actions">
-                  <button
-                    className="action-button approve"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAction(
-                        requisition.requisition_id,
-                        "approve",
-                        requisition.approved_amount
-                      );
-                    }}
-                  >
-                    <Check size={16} />
-                    Approve
-                  </button>
-                  <button
-                    className="action-button partial"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAction(
-                        requisition.requisition_id,
-                        "partial",
-                        requisition.approved_amount
-                      );
-                    }}
-                  >
-                    <Check size={16} />
-                    Partial
-                  </button>
-                  <button
-                    className="action-button reject"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAction(requisition.requisition_id, "reject");
-                    }}
-                  >
-                    <X size={16} />
-                    Reject
-                  </button>
+                  <div className="requisition-info">
+                    <span className="info-label">Type:</span>
+                    <span className="info-value">
+                      {requisition.requisition_type}
+                    </span>
+                  </div>
+                  <div className="requisition-info">
+                    <span className="info-label">Date:</span>
+                    <span className="info-value">
+                      {requisition.requisition_date}
+                    </span>
+                  </div>
+                  {requisition.requisition_status !== "Unattended" && (
+                    <div className="requisition-info">
+                      <span className="info-label">Approved Amount:</span>
+                      <span className="info-value amount">
+                        ₹{(requisition.approved_amount || 0).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              ) : null}
-            </div>
-          ))}
-        </div>
+                {requisition.requisition_status === "Unattended" ? (
+                  <div className="requisition-actions">
+                    <button
+                      className="action-button approve"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction(
+                          requisition.requisition_id,
+                          "approve",
+                          requisition.requested_amount // Approve full requested amount
+                        );
+                      }}
+                    >
+                      <Check size={16} />
+                      Approve
+                    </button>
+                    <button
+                      className="action-button partial"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction(
+                          requisition.requisition_id,
+                          "partial",
+                          requisition.approved_amount
+                        );
+                      }}
+                    >
+                      <Check size={16} />
+                      Partial
+                    </button>
+                    <button
+                      className="action-button reject"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction(requisition.requisition_id, "reject");
+                      }}
+                    >
+                      <X size={16} />
+                      Reject
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="myexpenses-table-container">
+            <table className="myexpenses-table">
+              <thead>
+                <tr>
+                  <th>Requisition ID</th>
+                  <th>Title</th>
+                  <th>Employee</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Approved Amount</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedRequisitions.map((requisition, idx) => (
+                  <tr
+                    key={requisition.requisition_id || idx}
+                    onClick={() => {
+                      setSelectedRequisition(requisition);
+                      setShowRequisitionDetails(true);
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <td>{requisition.requisition_id}</td>
+                    <td>{requisition.requisition_title}</td>
+                    <td>{requisition.employee}</td>
+                    <td>₹{requisition.requested_amount.toFixed(2)}</td>
+                    <td>{requisition.requisition_status}</td>
+                    <td>{requisition.requisition_date}</td>
+                    <td>{requisition.requisition_type}</td>
+                    <td>
+                      {requisition.requisition_status !== "Unattended"
+                        ? `₹${(requisition.approved_amount || 0).toFixed(2)}`
+                        : "-"}
+                    </td>
+                    <td>
+                      <div
+                        className="requestedexpenses-details-menu-wrapper"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          className="requestedexpenses-details-menu-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuRow((prev) =>
+                              prev === requisition.requisition_id
+                                ? null
+                                : requisition.requisition_id
+                            );
+                          }}
+                          aria-label="More options"
+                        >
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <circle cx="12" cy="6" r="1" />
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="12" cy="18" r="1" />
+                          </svg>
+                        </button>
+                        {openMenuRow === requisition.requisition_id && (
+                          <div className="requestedexpenses-details-menu-dropdown">
+                            <button
+                              className="requestedexpenses-details-menu-item"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedRequisition(requisition);
+                                setShowRequisitionDetails(true);
+                                setOpenMenuRow(null);
+                              }}
+                            >
+                              View
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         {totalPages > 0 && (
           <div className="requisition-pagination-container">
             <button

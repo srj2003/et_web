@@ -11,6 +11,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
+  CheckCircle,
 } from "lucide-react";
 import { MoreVertical } from "lucide-react";
 
@@ -380,45 +382,68 @@ const ManageExpenseWeb = () => {
   return (
     <div className="leaves-container">
       <h1 className="requestedexpensespage-title">Requested Expenses</h1>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
-            <AlertCircle size={24} color="#6366f1" />
+      <div className="allexpense-stats-grid">
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              color: "#fff",
+            }}
+          >
+            <DollarSign size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
             <h3>Total Expenses</h3>
-            <p className="stat-value">{stats.total}</p>
+            <div className="allexpense-stat-value">{stats.total}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Clock size={24} color="#f59e0b" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+              color: "#fff",
+            }}
+          >
+            <CheckCircle size={28} />
           </div>
-          <div className="stat-info">
-            <h3>Unattended</h3>
-            <p className="stat-value">{stats.Unattended}</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Check size={24} color="#10b981" />
-          </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
             <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
+            <div className="allexpense-stat-value">{stats.approved}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <X size={24} color="#ef4444" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #64748b 0%, #334155 100%)",
+              color: "#fff",
+            }}
+          >
+            <Clock size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
+            <h3>Unattended</h3>
+            <div className="allexpense-stat-value">{stats.Unattended}</div>
+          </div>
+        </div>
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+              color: "#fff",
+            }}
+          >
+            <X size={28} />
+          </div>
+          <div className="allexpense-stat-info">
             <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
+            <div className="allexpense-stat-value">{stats.rejected}</div>
           </div>
         </div>
       </div>
-
       {/* Filters Section - Like Leaves */}
       <div className="requestedexpensesfilters-section">
         <div className="requestedexpensessearch-container">
@@ -438,48 +463,9 @@ const ManageExpenseWeb = () => {
         >
           <option>All</option>
           <option>Unattended</option>
-          <option>Unattended</option>
           <option>Approved</option>
           <option>Rejected</option>
         </select>
-      </div>
-
-      <div className="date-filter-container">
-        <div className="date-filter-buttons">
-          <button
-            className={`date-filter-button ${
-              dateRangeType === "today" ? "active" : ""
-            }`}
-            onClick={() => handleDateRangeSelect("today")}
-          >
-            Today
-          </button>
-          <button
-            className={`date-filter-button ${
-              dateRangeType === "lastMonth" ? "active" : ""
-            }`}
-            onClick={() => handleDateRangeSelect("lastMonth")}
-          >
-            Last Month
-          </button>
-          <button
-            className={`date-filter-button ${
-              dateRangeType === "custom" ? "active" : ""
-            }`}
-            onClick={() => handleDateRangeSelect("custom")}
-          >
-            <Calendar size={16} />
-            Custom
-          </button>
-          {dateRangeType && (
-            <button
-              className="clear-button"
-              onClick={() => handleDateRangeSelect(null)}
-            >
-              Clear
-            </button>
-          )}
-        </div>
       </div>
 
       <div className="myexpenses-view-toggle">
@@ -668,114 +654,123 @@ const ManageExpenseWeb = () => {
         </div>
       ) : (
         <div className="myexpenses-table-container">
-  <table className="myexpenses-table">
-    <thead>
-      <tr>
-        <th>Expense ID</th>
-        <th>Title</th>
-        <th>Type</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Amount</th>
-        <th>Created By</th>
-        <th>Submitted To</th>
-        <th>Approved By</th>
-        <th>Details</th>
-      </tr>
-    </thead>
-    <tbody>
-      {paginatedExpenses.map((expense) => (
-        <tr key={expense.expense_id}>
-          <td>{expense.expense_id}</td>
-          <td>{expense.expense_title}</td>
-          <td>{expense.expense_type_name || expense.expense_type}</td>
-          <td>{expense.date}</td>
-          <td>{expense.status}</td>
-          <td>₹{expense.amount}</td>
-          <td>{expense.employee}</td>
-          <td>{expense.submitted_to}</td>
-          <td>{expense.approved_by || "-"}</td>
-          <td style={{ whiteSpace: "nowrap" }}>
-            <details className="requestedexpenses-details-table-details">
-              <summary className="requestedexpenses-details-table-summary">
-                Show
-              </summary>
-              <table className="myexpenses-details-table">
-                <thead>
-                  <tr>
-                    <th style={{ maxWidth: 120 }}>Head</th>
-                    <th>Amount</th>
-                    <th>Qty</th>
-                    <th>Unit</th>
-                    <th>Name</th>
-                    <th>Desc</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {expense.expense_details &&
-                    expense.expense_details.map((d, i) => (
-                      <tr key={`${expense.expense_id}-${i}`}>
-                        <td
-                          title={d.expense_head_name || d.expense_head_title}
-                          style={{
-                            maxWidth: 120,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {(d.expense_head_name || d.expense_head_title)?.length > 8
-                            ? (d.expense_head_name || d.expense_head_title).slice(0, 8) + "..."
-                            : d.expense_head_name || d.expense_head_title}
-                        </td>
-                        <td>₹{d.expense_product_amount}</td>
-                        <td>{d.expense_product_qty}</td>
-                        <td>{d.expense_product_unit}</td>
-                        <td>{d.expense_product_name}</td>
-                        <td>{d.expense_product_desc}</td>
-                        <td>
-                          <div className="requestedexpenses-details-menu-wrapper">
-                            <button
-                              className="requestedexpenses-details-menu-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenMenuRow((prev) =>
-                                  prev === expense.expense_id ? null : expense.expense_id
-                                );
-                              }}
-                              aria-label="More options"
-                            >
-                              <MoreVertical size={20} />
-                            </button>
-                            {openMenuRow === expense.expense_id && (
-                              <div className="requestedexpenses-details-menu-dropdown">
-                                <button
-                                  className="requestedexpenses-details-menu-item"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedExpense(expense);
-                                    setShowExpenseDetails(true);
-                                    setOpenMenuRow(null);
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Expense ID</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Created By</th>
+                <th>Submitted To</th>
+                <th>Approved By</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedExpenses.map((expense) => (
+                <tr key={expense.expense_id}>
+                  <td>{expense.expense_id}</td>
+                  <td>{expense.expense_title}</td>
+                  <td>{expense.expense_type_name || expense.expense_type}</td>
+                  <td>{expense.date}</td>
+                  <td>{expense.status}</td>
+                  <td>₹{expense.amount}</td>
+                  <td>{expense.employee}</td>
+                  <td>{expense.submitted_to}</td>
+                  <td>{expense.approved_by || "-"}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>
+                    <details className="requestedexpenses-details-table-details">
+                      <summary className="requestedexpenses-details-table-summary">
+                        Show
+                      </summary>
+                      <table className="myexpenses-details-table">
+                        <thead>
+                          <tr>
+                            <th style={{ maxWidth: 120 }}>Head</th>
+                            <th>Amount</th>
+                            <th>Qty</th>
+                            <th>Unit</th>
+                            <th>Name</th>
+                            <th>Desc</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {expense.expense_details &&
+                            expense.expense_details.map((d, i) => (
+                              <tr key={`${expense.expense_id}-${i}`}>
+                                <td
+                                  title={
+                                    d.expense_head_name || d.expense_head_title
+                                  }
+                                  style={{
+                                    maxWidth: 120,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                   }}
                                 >
-                                  View
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </details>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+                                  {(d.expense_head_name || d.expense_head_title)
+                                    ?.length > 8
+                                    ? (
+                                        d.expense_head_name ||
+                                        d.expense_head_title
+                                      ).slice(0, 8) + "..."
+                                    : d.expense_head_name ||
+                                      d.expense_head_title}
+                                </td>
+                                <td>₹{d.expense_product_amount}</td>
+                                <td>{d.expense_product_qty}</td>
+                                <td>{d.expense_product_unit}</td>
+                                <td>{d.expense_product_name}</td>
+                                <td>{d.expense_product_desc}</td>
+                                <td>
+                                  <div className="requestedexpenses-details-menu-wrapper">
+                                    <button
+                                      className="requestedexpenses-details-menu-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenMenuRow((prev) =>
+                                          prev === expense.expense_id
+                                            ? null
+                                            : expense.expense_id
+                                        );
+                                      }}
+                                      aria-label="More options"
+                                    >
+                                      <MoreVertical size={20} />
+                                    </button>
+                                    {openMenuRow === expense.expense_id && (
+                                      <div className="requestedexpenses-details-menu-dropdown">
+                                        <button
+                                          className="requestedexpenses-details-menu-item"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedExpense(expense);
+                                            setShowExpenseDetails(true);
+                                            setOpenMenuRow(null);
+                                          }}
+                                        >
+                                          View
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </details>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {totalPages > 0 && (
         <div className="allexpense-pagination-container">
