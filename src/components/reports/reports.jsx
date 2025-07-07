@@ -46,6 +46,7 @@ const Reports = () => {
   const [requisitionReportTable, setRequisitionReportTable] = useState([]);
   const [requisitionReportLoading, setRequisitionReportLoading] = useState(false);
   const [requisitionReportError, setRequisitionReportError] = useState("");
+  const [expenseCsvTable, setExpenseCsvTable] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
@@ -270,14 +271,18 @@ const Reports = () => {
         // Fetch for each user
         const userFetches = selectedUsers.map(userOption => {
           const userId = userOption.value;
+          // Extract month and year from dateFrom
+          const fromDate = new Date(dateFrom);
+          const month = fromDate.getMonth() + 1; // JS months are 0-based
+          const year = fromDate.getFullYear();
           const body = {
             user_id: userId,
-            start_date: dateFrom,
-            end_date: dateTo,
+            month: month,
+            year: year,
           };
           if (selectedProject) body.expense_type_id = selectedProject;
           if (selectedExpenseType) body.expense_head_id = selectedExpenseType;
-          return fetch("https://demo-expense.geomaticxevs.in/ET-api/expense_report_fetcher.php", {
+          return fetch("https://demo-expense.geomaticxevs.in/ET-api/export_expense_calendar_format.php", {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             body: JSON.stringify(body)
@@ -286,14 +291,68 @@ const Reports = () => {
             .then(data => ({ userId, data, userLabel: userOption.label }));
         });
         const results = await Promise.all(userFetches);
-        // Flatten all results, add userLabel to each row
-        const allRows = [];
-        results.forEach(({ userId, data, userLabel }) => {
-          if (data.status === "success" && Array.isArray(data.data)) {
-            data.data.forEach(row => allRows.push({ ...row, userLabel }));
+        // If any result has a base64 CSV, decode and parse it and merge all users
+        let allDateSet = new Set();
+        let userRows = [];
+        let staticHeaders = [];
+        let staticColCount = 0;
+        results.forEach(({ data, userLabel }) => {
+          if (data.status === "success" && data.file) {
+            try {
+              const csvString = atob(data.file);
+              const rows = csvString.split(/\r?\n/).filter(Boolean).map(row => row.split(','));
+              if (rows.length > 1) {
+                const header = rows[0];
+                // Find where date columns start (first col matching YYYY-MM-DD)
+                let dateStartIdx = header.findIndex(h => /^\d{4}-\d{2}-\d{2}$/.test(h));
+                if (dateStartIdx === -1) dateStartIdx = header.length; // fallback: no date columns
+                if (staticHeaders.length === 0) {
+                  staticHeaders = header.slice(0, dateStartIdx);
+                  staticColCount = staticHeaders.length;
+                }
+                const dateCols = header.slice(dateStartIdx);
+                dateCols.forEach(date => allDateSet.add(date));
+                const dataRow = rows[1] || [];
+                userRows.push({
+                  userLabel,
+                  staticData: dataRow.slice(0, staticColCount),
+                  dateData: dataRow.slice(staticColCount),
+                  dateCols
+                });
+              }
+            } catch (e) { /* ignore */ }
           }
         });
-        setExpenseReportTable(allRows);
+        // Merge all dates
+        const allDates = Array.from(allDateSet);
+        allDates.sort();
+        // Remove 'Sl No' from static headers if present
+        let mergedStaticHeaders = staticHeaders;
+        let slNoIdx = staticHeaders.findIndex(h => h.toLowerCase().includes('sl no'));
+        if (slNoIdx === 0) {
+          mergedStaticHeaders = staticHeaders.slice(1);
+        }
+        // Build merged table: add our own Sl No column
+        const mergedTable = [
+          ["Sl No", ...mergedStaticHeaders, ...allDates],
+          ...userRows.map((user, idx) => {
+            // Map: date -> value
+            const dateToVal = {};
+            user.dateCols.forEach((date, i) => {
+              dateToVal[date] = user.dateData[i] || "";
+            });
+            // Remove 'Sl No' from staticData if present
+            let staticData = user.staticData;
+            if (slNoIdx === 0) staticData = staticData.slice(1);
+            return [
+              (idx + 1).toString(),
+              ...staticData,
+              ...allDates.map(date => dateToVal[date] || "")
+            ];
+          })
+        ];
+        setExpenseCsvTable(mergedTable);
+        setExpenseReportTable([]); // Hide old table if any
       } catch (err) {
         setExpenseReportError("Network error or invalid response");
       } finally {
@@ -361,6 +420,29 @@ const Reports = () => {
     selectedUsers.length === userOptions.length && userOptions.length > 0
       ? [selectAllOption, ...userOptions]
       : selectedUsers;
+
+  // Add Select All option for expense types
+  const expenseTypeSelectAllOption = { value: '__all__', label: 'Select All' };
+  const expenseTypeOptionsWithSelectAll = [expenseTypeSelectAllOption, ...expenseTypes];
+
+  // Handle multi-select for expense types
+  const [selectedExpenseTypes, setSelectedExpenseTypes] = useState([]);
+
+  const handleExpenseTypeChange = (selected) => {
+    if (!selected) {
+      setSelectedExpenseTypes([]);
+      setSelectedExpenseType(null);
+      return;
+    }
+    // If Select All is selected
+    if (selected.some(option => option.value === '__all__')) {
+      setSelectedExpenseTypes(expenseTypes);
+      setSelectedExpenseType(null);
+    } else {
+      setSelectedExpenseTypes(selected);
+      setSelectedExpenseType(selected.length === 1 ? selected[0].value : null);
+    }
+  };
 
   // Helper to get financial year options (current year +/- 5 years)
   const getFinancialYearOptions = () => {
@@ -484,11 +566,12 @@ const Reports = () => {
               <div style={{ position: 'relative' }}>
                 <Select
                   id="expense-type-select"
+                  isMulti
                   isLoading={loadingExpenseTypes}
-                  options={expenseTypes}
-                  value={expenseTypes.find(t => t.value === selectedExpenseType) || null}
-                  onChange={option => setSelectedExpenseType(option ? option.value : null)}
-                  placeholder="Select expense type"
+                  options={expenseTypeOptionsWithSelectAll}
+                  value={selectedExpenseTypes.length === expenseTypes.length && expenseTypes.length > 0 ? [expenseTypeSelectAllOption, ...expenseTypes] : selectedExpenseTypes}
+                  onChange={handleExpenseTypeChange}
+                  placeholder="Select expense type(s)"
                   isClearable
                   classNamePrefix="react-select"
                   styles={{ container: base => ({ ...base, minWidth: 220 }) }}
@@ -604,90 +687,38 @@ const Reports = () => {
               <div className="results-placeholder"><p className="results-text">Loading expense report data...</p></div>
             ) : expenseReportError ? (
               <div className="results-placeholder"><p className="results-text" style={{color: 'red'}}>{expenseReportError}</p></div>
-            ) : expenseReportTable && expenseReportTable.length > 0 ? (
+            ) : expenseCsvTable && expenseCsvTable.length > 0 ? (
               <div className="attendance-table-wrapper">
                 <table className="attendance-table expense-report-table custom-expense-table">
                   <thead>
                     <tr>
-                      <th>projects</th>
-                      <th>user</th>
-                      <th>expense types</th>
-                      {/* Dynamically add maxEntryCount columns for expense entries */}
-                      {(() => {
-                        // Build nested structure to find maxEntryCount
-                        const grouped = {};
-                        let maxEntryCount = 0;
-                        expenseReportTable.forEach(row => {
-                          const project = row.expense_type_name || '-';
-                          const user = row.userLabel;
-                          const head = row.expense_head_title;
-                          const dateKey = row.expense_track_created_at?.split('T')[0] || row.expense_track_created_at?.split(' ')[0];
-                          const amount = Number(row.expense_total_amount) || 0;
-                          if (!grouped[project]) grouped[project] = {};
-                          if (!grouped[project][user]) grouped[project][user] = {};
-                          if (!grouped[project][user][head]) grouped[project][user][head] = [];
-                          grouped[project][user][head].push({ amount, date: dateKey });
-                          if (grouped[project][user][head].length > maxEntryCount) maxEntryCount = grouped[project][user][head].length;
-                        });
-                        return Array.from({ length: maxEntryCount }).map((_, i) => (
-                          <th key={i}> </th>
-                        ));
-                      })()}
+                      {expenseCsvTable[0].map((cell, j) => <th key={j}>{cell}</th>)}
+                    </tr>
+                    <tr>
+                      {expenseCsvTable[0].map((cell, j) => {
+                        // If cell matches DD-MMM (e.g., 01-Jun), show weekday
+                        if (/^\d{2}-[A-Za-z]{3}$/.test(cell)) {
+                          // Parse to get weekday
+                          const [day, mon] = cell.split('-');
+                          const monthIdx = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].indexOf(mon);
+                          // Use current year for context (or pick from dateFrom if available)
+                          let year = new Date().getFullYear();
+                          if (dateFrom) year = new Date(dateFrom).getFullYear();
+                          const dateObj = new Date(year, monthIdx, parseInt(day, 10));
+                          const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                          return <th key={j} style={{fontWeight:'normal',color:'#888'}}>{weekday}</th>;
+                        } else {
+                          return <th key={j}></th>;
+                        }
+                      })}
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Group by project, then user, then expense head, and use rowspan for project/user. Each expense type row shows each entry in its own cell. */}
-                    {(() => {
-                      // Build nested structure and find maxEntryCount
-                      const grouped = {};
-                      let maxEntryCount = 0;
-                      expenseReportTable.forEach(row => {
-                        const project = row.expense_type_name || '-';
-                        const user = row.userLabel;
-                        const head = row.expense_head_title;
-                        const dateKey = row.expense_track_created_at?.split('T')[0] || row.expense_track_created_at?.split(' ')[0];
-                        const amount = Number(row.expense_total_amount) || 0;
-                        if (!grouped[project]) grouped[project] = {};
-                        if (!grouped[project][user]) grouped[project][user] = {};
-                        if (!grouped[project][user][head]) grouped[project][user][head] = [];
-                        grouped[project][user][head].push({ amount, date: dateKey });
-                        if (grouped[project][user][head].length > maxEntryCount) maxEntryCount = grouped[project][user][head].length;
-                      });
-                      // Prepare flat rows with rowspan info
-                      const rows = [];
-                      Object.entries(grouped).forEach(([project, users]) => {
-                        const projectRowspan = Object.values(users).reduce((sum, heads) => sum + Object.keys(heads).length, 0);
-                        let projectRendered = false;
-                        Object.entries(users).forEach(([user, heads]) => {
-                          const userRowspan = Object.keys(heads).length;
-                          let userRendered = false;
-                          Object.entries(heads).forEach(([head, details], idx) => {
-                            rows.push(
-                              <tr key={project + '-' + user + '-' + head}>
-                                {!projectRendered && (
-                                  <td rowSpan={projectRowspan} className="custom-project-cell">{project}</td>
-                                )}
-                                {!userRendered && (
-                                  <td rowSpan={userRowspan} className="custom-user-cell">{user}</td>
-                                )}
-                                <td className="custom-expense-type-cell">
-                                  {head}
-                                </td>
-                                {/* Render each entry in its own cell, fill up to maxEntryCount */}
-                                {Array.from({ length: maxEntryCount }).map((_, i) => (
-                                  <td key={i} className="custom-expense-entry-cell">
-                                    {details[i] ? (<><b>{details[i].amount}/-</b> [{(() => { const d = new Date(details[i].date); return `${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(-2)}`; })()}]</>) : ''}
-                                  </td>
-                          ))}
-                        </tr>
-                            );
-                            projectRendered = true;
-                            userRendered = true;
-                          });
-                        });
-                      });
-                      return rows;
-                    })()}
+                    {expenseCsvTable.slice(1).map((row, i) => (
+                      <tr key={i}>
+                        {row.map((cell, j) => <td key={j}>{cell}</td>)}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -728,7 +759,7 @@ const Reports = () => {
                         <td>₹{requisition.requisition_req_amount}</td>
                         <td>₹{requisition.requisition_app_amount}</td>
                         <td>
-                          <span className={`status-badge status-${requisition.status_text?.toLowerCase()}`}>
+                          <span className={`status-report status-${requisition.status_text?.toLowerCase()}`}>
                             {requisition.status_text}
                           </span>
                         </td>
