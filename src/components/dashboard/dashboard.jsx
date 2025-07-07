@@ -1,31 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./dashboard.css";
 import {
-  Bell,
-  Search,
   Users,
-  Settings,
-  LogOut,
-  User,
-  MapPin,
   Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  DollarSign,
   FileCheck,
   ClipboardList,
-  RefreshCw,
   Wallet,
   Receipt,
-  Briefcase,
-  Clock,
-  CheckCircle,
   Shield,
   CalendarPlus,
   CalendarCheck,
   CreditCard,
-  Edit,
 } from "lucide-react";
 import {
   BarChart,
@@ -35,7 +20,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  Legend,
   PieChart,
   Pie,
   Cell,
@@ -44,6 +28,8 @@ import { format } from "date-fns";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../attendance/my_attendance/myattendance.css';
+import { useClickAway } from 'react-use';
+import { createPortal } from 'react-dom';
 
 const initialHolidays = [
   { id: "1", name: "Bengali New Year", date: "2025-04-15", isSunday: false },
@@ -63,56 +49,6 @@ const initialHolidays = [
   { id: "15", name: "Dol Yatra", date: "2026-03-03", isSunday: false },
 ];
 
-function processAttendanceApiResponse(apiData) {
-  const holidayDates = initialHolidays.map((holiday) => holiday.date);
-  return (apiData || [])
-    .map((item) => {
-      if (holidayDates.includes(item.date)) {
-        return { date: item.date, status: "Holiday", reason: "Holiday" };
-      }
-      if (item.isSunday) {
-        return { date: item.date, status: "Sunday", reason: "Sunday" };
-      }
-      if (!item.hasLogin) {
-        return {
-          date: item.date,
-          status: "Absent",
-          reason: "No login recorded",
-        };
-      }
-      if (!item.is_logged_out) {
-        return {
-          date: item.date,
-          status: "Not Punched Out",
-          reason: "Did not Punched out",
-        };
-      }
-      return { date: item.date, status: "Present", reason: "" };
-    })
-    .filter((item) => item.status !== "Sunday");
-}
-
-const StatCard = ({ title, value, icon: Icon, color }) => (
-  <div className={`stat-card ${color}`}>
-    <div className="stat-content">
-      <h3 className="stat-title">{title}</h3>
-      <p className="stat-value">{value}</p>
-    </div>
-    <div className={`icon-container ${color}`}>
-      <Icon size={24} />
-    </div>
-  </div>
-);
-
-const ActiveUserCard = ({ user }) => (
-  <div className="active-user-card">
-    <img src={user.avatar} alt={user.name} className="active-user-avatar" />
-    <div className="active-user-info">
-      <h4 className="active-user-name">{user.name}</h4>
-      <p className="active-user-status">{user.status}</p>
-    </div>
-  </div>
-);
 
 const AttendanceDetails = ({ attendance }) => {
   const formatLocation = (latLongStr) => {
@@ -162,22 +98,7 @@ const AttendanceDetails = ({ attendance }) => {
   );
 };
 
-const QuoteSection = ({ quote, loading }) => (
-  <div className="quote-section">
-    <div className="quote-content">
-      {loading ? (
-        <div className="loading-spinner"></div>
-      ) : quote ? (
-        <>
-          <p className="quote-text">"{quote.quote}"</p>
-          <p className="quote-author">- {quote.author}</p>
-        </>
-      ) : (
-        <p className="error-text">Failed to load quote</p>
-      )}
-    </div>
-  </div>
-);
+
 
 const FinancialCharts = ({ analytics }) => {
   // Prepare data from analytics
@@ -358,15 +279,18 @@ export default function DashboardWeb() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [attendanceDetails, setAttendanceDetails] = useState([]);
-  const [currentMonth, setCurrentMonth] = useState("");
+
   const [filterStatus, setFilterStatus] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [projectView, setProjectView] = useState('list');
-  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedProjectIds, setSelectedProjectIds] = useState([]);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  useClickAway(dropdownRef, () => setDropdownOpen(false));
 
   const initialLoadDone = useRef(false);
 
@@ -375,25 +299,6 @@ export default function DashboardWeb() {
     { id: "2", text: "Order #1234 has been placed" },
     { id: "3", text: "Server maintenance scheduled" },
   ];
-
-  const resetDashboardState = useCallback(() => {
-    setIsLoggedIn(false);
-    setShowNotifications(false);
-    setShowProfile(false);
-    setSearchQuery("");
-    setLocation(null);
-    setErrorMsg(null);
-    setUserData(null);
-    setLoading(true);
-    setError(null);
-    setIsLoggingIn(false);
-    setIsLoggingOut(false);
-    setUserCount(null);
-    setTodayAttendance(null);
-    setCheckingAttendance(true);
-    setQuote(null);
-    setLoadingQuote(true);
-  }, []);
 
   const fetchQuote = async () => {
     try {
@@ -592,23 +497,7 @@ export default function DashboardWeb() {
     }
   }, []);
 
-  const fetchMonthlyAttendance = useCallback(async (monthDate) => {
-    const userId = localStorage.getItem("userid");
-    if (!userId) return;
-    const month = format(monthDate, "yyyy-MM");
-    try {
-      const response = await fetch(
-        `https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php?user_id=${userId}&month=${month}`
-      );
-      const result = await response.json();
-      // Use the same logic as myattendance.jsx
-      const processed = processAttendanceApiResponse(result.data || []);
-      setAttendanceDetails(processed);
-    } catch (error) {
-      console.error("Error fetching monthly attendance:", error);
-      setAttendanceDetails([]);
-    }
-  }, []);
+
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -671,14 +560,7 @@ export default function DashboardWeb() {
     }
   }, [loadDashboardData]);
 
-  useEffect(() => {
-    // On initial load, fetch for current month
-    if (currentMonth) {
-      fetchMonthlyAttendance(currentMonth);
-    } else {
-      fetchMonthlyAttendance(new Date());
-    }
-  }, [currentMonth, fetchMonthlyAttendance]);
+
 
   // Fetch projects for role_id = 3
   useEffect(() => {
@@ -727,12 +609,19 @@ export default function DashboardWeb() {
       const userId = localStorage.getItem("userid");
       const token = localStorage.getItem("authToken");
       if (!userId || !token) return;
+      
       const year = calendarMonth.getFullYear();
       const month = calendarMonth.getMonth();
       const startDate = new Date(year, month, 1);
-      const endDate = new Date(year, month + 1, 0);
+      
+      // Calculate end date as today or last day of month, whichever is earlier
+      const today = new Date();
+      const lastDayOfMonth = new Date(year, month + 1, 0);
+      const endDate = today < lastDayOfMonth ? today : lastDayOfMonth;
+      
       const startDateStr = format(startDate, "yyyy-MM-dd");
       const endDateStr = format(endDate, "yyyy-MM-dd");
+      
       try {
         const response = await fetch(
           "https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php",
@@ -979,7 +868,16 @@ export default function DashboardWeb() {
 
   function processApiResponse(apiData, holidays) {
     const holidayDates = initialHolidays.map((holiday) => holiday.date);
+    
+    // Calculate today's date to filter out future dates
+    const today = new Date();
+    const todayStr = format(today, "yyyy-MM-dd");
+    
     return apiData
+      .filter((item) => {
+        // Only include dates up to today
+        return item.date <= todayStr;
+      })
       .map((item) => {
         if (holidayDates.includes(item.date)) {
           return { date: item.date, status: "Holiday", reason: "Holiday" };
@@ -1039,6 +937,81 @@ export default function DashboardWeb() {
       <span className="count-label">{label}</span>
     </div>
   );
+
+  // Helper: all project ids
+  const allProjectIds = projects.map(p => String(p.project_id));
+  const isAllSelected = selectedProjectIds.length === allProjectIds.length;
+
+  // Handle checkbox change
+  const handleProjectCheckboxChange = (projectId) => {
+    setSelectedProjectIds(prev => {
+      if (prev.includes(projectId)) {
+        return prev.filter(id => id !== projectId);
+      } else {
+        return [...prev, projectId];
+      }
+    });
+  };
+  const handleAllProjectsChange = () => {
+    if (isAllSelected) {
+      setSelectedProjectIds([]);
+    } else {
+      setSelectedProjectIds(allProjectIds);
+    }
+  };
+
+  // Add state for view more/less
+  const [showAllProjectsExpanded, setShowAllProjectsExpanded] = useState(false);
+
+  // Inside DashboardWeb function, add state for modal
+  const [modalProject, setModalProject] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTeamMembers, setModalTeamMembers] = useState([]);
+  const [modalSupervisor, setModalSupervisor] = useState('');
+  const [modalLoading, setModalLoading] = useState(false);
+
+  // Handler to open modal and fetch extra details if needed
+  const handleViewProject = async (project) => {
+    setModalProject(project);
+    setModalOpen(true);
+    setModalLoading(true);
+    // Fetch team members and supervisor if not present
+    try {
+      const token = localStorage.getItem('authToken');
+      // Example API endpoint, adjust as needed
+      const res = await fetch(
+        'https://demo-expense.geomaticxevs.in/ET-api/get_project_details.php',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ project_id: project.project_id }),
+        }
+      );
+      const data = await res.json();
+      if (data.status === 'success') {
+        setModalTeamMembers(data.team_members || []);
+        setModalSupervisor(data.supervisor || 'N/A');
+      } else {
+        setModalTeamMembers([]);
+        setModalSupervisor('N/A');
+      }
+    } catch (e) {
+      setModalTeamMembers([]);
+      setModalSupervisor('N/A');
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalProject(null);
+    setModalTeamMembers([]);
+    setModalSupervisor('');
+  };
 
   if (loading || checkingAttendance) {
     return (
@@ -1129,41 +1102,124 @@ export default function DashboardWeb() {
         {roleId === "3" && (
           <div className="dashboard-projects-section">
             <div className="projects-banner">
-              <div className="projects-banner-title">
-                <span style={{ textDecoration: 'none', color: '#fff', fontWeight: 600, fontSize: '1.3rem' }}>My Projects:-</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+                <div style={{
+                  background: "#fff",
+                  borderRadius: "16px",
+                  padding: "0.7rem",
+                  display: "flex",
+                  alignItems: "center",
+                  boxShadow: "0 2px 8px rgba(30,41,59,0.04)"
+                }}>
+                  {/* Main icon */}
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                </div>
+                <span className="projects-banner-title" style={{ fontSize: "2rem" }}>My Projects</span>
               </div>
-              <div className="projects-status-info">
-                <span style={{ color: '#fff' }}>Total projects: {projects.length}</span>
-                <span className="status-pill ongoing">
-                  Ongoing: {projects.filter(p => (p.status||'').toLowerCase() === 'ongoing').length}
-                </span>
-                <span className="status-pill completed">
-                  Completed: {projects.filter(p => (p.status||'').toLowerCase() === 'completed').length}
-                </span>
+              <div className="projects-status-info" style={{ gap: "1.2rem" }}>
+                <div style={{
+                  background: "#fff",
+                  borderRadius: "12px",
+                  padding: "0.7rem 1.2rem",
+                  display: "flex",
+                  alignItems: "center",
+                  minWidth: "120px",
+                  boxShadow: "0 2px 8px rgba(30,41,59,0.04)"
+                }}>
+                  <svg width="22" height="22" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+                  <div style={{ marginLeft: "0.7rem" }}>
+                    <div style={{ color: "#64748b", fontWeight: 600, fontSize: "1rem" }}>Total Projects</div>
+                    <div style={{ color: "#6366f1", fontWeight: 700, fontSize: "1.5rem" }}>{projects.length}</div>
+                  </div>
+                </div>
+                <div className="status-pill ongoing" style={{
+                  background: "#e0e7ff",
+                  color: "#1e293b",
+                  borderRadius: "12px",
+                  padding: "0.7rem 1.2rem",
+                  minWidth: "100px",
+                  display: "flex",
+                  alignItems: "center"
+                }}>
+                  <span style={{ marginRight: "0.5rem" }}>
+                    <svg className="ongoing-clock-icon" width="18" height="18" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l2 2"/></svg>
+                  </span>
+                  <span style={{ fontWeight: 700, fontSize: "1.2rem" }}>
+                    {projects.filter(p => (p.status || '').toLowerCase() === 'ongoing').length}
+                  </span>
+                  <span style={{ marginLeft: "0.5rem", fontWeight: 600, fontSize: "1rem" }}>Ongoing</span>
+                </div>
+                <div className="status-pill completed" style={{
+                  background: "#dcfce7",
+                  color: "#22c55e",
+                  borderRadius: "12px",
+                  padding: "0.7rem 1.2rem",
+                  minWidth: "100px",
+                  display: "flex",
+                  alignItems: "center"
+                }}>
+                  <span style={{ marginRight: "0.5rem" }}>
+                    <svg width="18" height="18" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                  <span style={{ fontWeight: 700, fontSize: "1.2rem" }}>
+                    {projects.filter(p => (p.status || '').toLowerCase() === 'completed').length}
+                  </span>
+                  <span style={{ marginLeft: "0.5rem", fontWeight: 600, fontSize: "1rem" }}>Completed</span>
+                </div>
               </div>
               <div className="projects-banner-controls">
-                <select
-                  className="projects-filter"
-                  value={selectedProjectId}
-                  onChange={e => setSelectedProjectId(e.target.value)}
-                >
-                  <option value="">Select Project</option>
-                  <option value="ALL">All Projects</option>
-                  {projects.map(project => (
-                    <option key={project.project_id} value={project.project_id}>{project.project_name}</option>
-                  ))}
-                </select>
-                {selectedProjectId && (
+                <div className="custom-multiselect-dropdown" ref={dropdownRef} style={{ position: 'relative', minWidth: 180 }}>
                   <button
+                    className="projects-filter"
+                    style={{ textAlign: 'left', width: '100%', cursor: 'pointer' }}
+                    onClick={() => setDropdownOpen(open => !open)}
                     type="button"
-                    className="projects-clear-btn"
-                    style={{ marginLeft: '0.5rem', background: '#fff', color: '#633976', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 10px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.15s' }}
-                    onClick={() => setSelectedProjectId("")}
-                    title="Clear project selection"
                   >
-                    Clear
+                    {selectedProjectIds.length === 0
+                      ? 'Select'
+                      : isAllSelected
+                        ? 'All Projects'
+                        : `${selectedProjectIds.length} selected`}
+                    <span style={{ float: 'right' }}>&#9662;</span>
                   </button>
-                )}
+                  {dropdownOpen && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      zIndex: 10,
+                      background: '#fff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: 8,
+                      boxShadow: '0 2px 8px rgba(30,41,59,0.08)',
+                      minWidth: 180,
+                      padding: '0.5rem 0',
+                      maxHeight: 260,
+                      overflowY: 'auto',
+                    }}>
+                      <label style={{ display: 'flex', alignItems: 'center', padding: '0.4rem 1rem', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={isAllSelected}
+                          onChange={handleAllProjectsChange}
+                          style={{ marginRight: 8 }}
+                        />
+                        All Projects
+                      </label>
+                      {projects.map(project => (
+                        <label key={project.project_id} style={{ display: 'flex', alignItems: 'center', padding: '0.4rem 1rem', cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            checked={selectedProjectIds.includes(String(project.project_id))}
+                            onChange={() => handleProjectCheckboxChange(String(project.project_id))}
+                            style={{ marginRight: 8 }}
+                          />
+                          {project.project_name}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="projects-view-toggle">
                   <button
                     className={`view-toggle-btn${projectView === 'list' ? ' active' : ''}`}
@@ -1186,125 +1242,162 @@ export default function DashboardWeb() {
               <div className="dashboard-projects-loader">Loading projects...</div>
             ) : projects.length === 0 ? (
               <div className="dashboard-projects-empty">No projects assigned.</div>
+            ) : selectedProjectIds.length === 0 ? (
+              <div className="dashboard-projects-empty">Please select project(s) to view details.</div>
+            ) : isAllSelected ? (
+              // All Projects selected: show 4 most recent, with View More
+              <>
+                {projectView === 'list' ? (
+                  <div className="dashboard-projects-list">
+                    {[...projects]
+                      .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+                      .slice(0, showAllProjectsExpanded ? projects.length : 3)
+                      .map((project) => (
+                        <nav key={project.project_id} className="dashboard-project-line-nav">
+                          <div className="project-line-left">
+                            <span className="project-line-title">{project.project_name}</span>
+                            <span className="project-line-leader">Team leader: <b>{project.team_leader || 'N/A'}</b></span>
+                          </div>
+                          <div className="project-line-center">
+                            <span className="project-line-active">
+                              <span className="dot dot-green"></span>
+                              {project.active_users ?? 0} <span className="project-line-label"></span>
+                            </span>
+                            <span className="project-line-inactive">
+                              <span className="dot dot-red"></span>
+                              {project.inactive_users ?? 0} <span className="project-line-label"></span>
+                            </span>
+                          </div>
+                          <div className="project-line-status">
+                            Status: <b>{project.status || 'N/A'}</b>
+                          </div>
+                          <button className="project-line-view-btn" title="View Project" onClick={() => handleViewProject(project)}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                          </button>
+                        </nav>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="dashboard-projects-grid">
+                    {[...projects]
+                      .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+                      .slice(0, showAllProjectsExpanded ? projects.length : 3)
+                      .map((project) => (
+                        <div key={project.project_id} className="dashboard-project-card project-card-item status-border-ongoing clickable-project-card">
+                          <div className="project-card-header">
+                            <h3>{project.project_name}</h3>
+                          </div>
+                          <p className="project-card-detail"><Shield size={14} className="mr-1" /> Team Leader: {project.team_leader || 'N/A'}</p>
+                          <p className="project-card-detail"><Users size={14} className="mr-1" /> Total Members: {project.total_members || 'N/A'}</p>
+                          <p className="project-card-detail"><CalendarPlus size={14} className="mr-1" /> Created At: {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}</p>
+                          <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
+                          <p className="project-card-detail">
+                            <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
+                            Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
+                            <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
+                          </p>
+                          <div className="project-card-progress">
+                            <div className="progress-bar-container">
+                              <div className="progress-bar-fill" style={{width: `${project.progress || 0}%`, backgroundColor: project.status === 'Ongoing' ? '#6366f1' : '#22c55e'}}></div>
+                            </div>
+                            <span className="progress-text">{project.progress || 0}%</span>
+                          </div>
+                          <div className="project-card-footer">
+                            <span className={`status-badge status-${project.status?.toLowerCase()}`}>{project.status}</span>
+                          </div>
+                          <button className="project-line-view-btn" title="View Project" onClick={() => handleViewProject(project)}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                )}
+                {projects.length > 4 && (
+                  <div style={{ textAlign: 'center', marginTop: 16 }}>
+                    <button
+                      className="view-more-btn"
+                      style={{
+                        background: '#6366f1',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '0.5rem 1.2rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        boxShadow: '0 2px 8px rgba(30,41,59,0.04)'
+                      }}
+                      onClick={() => setShowAllProjectsExpanded(expanded => !expanded)}
+                    >
+                      {showAllProjectsExpanded ? 'View Less' : 'View More'}
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : projectView === 'list' ? (
+              <div className="dashboard-projects-list">
+                {[...projects]
+                  .filter(p => selectedProjectIds.includes(String(p.project_id)))
+                  .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+                  .map((project) => (
+                    <nav key={project.project_id} className="dashboard-project-line-nav">
+                      <div className="project-line-left">
+                        <span className="project-line-title">{project.project_name}</span>
+                        <span className="project-line-leader">Team leader: <b>{project.team_leader || 'N/A'}</b></span>
+                      </div>
+                      <div className="project-line-center">
+                        <span className="project-line-active">
+                          <span className="dot dot-green"></span>
+                          {project.active_users ?? 0} <span className="project-line-label"></span>
+                        </span>
+                        <span className="project-line-inactive">
+                          <span className="dot dot-red"></span>
+                          {project.inactive_users ?? 0} <span className="project-line-label"></span>
+                        </span>
+                      </div>
+                      <div className="project-line-status">
+                        Status: <b>{project.status || 'N/A'}</b>
+                      </div>
+                      <button className="project-line-view-btn" title="View Project" onClick={() => handleViewProject(project)}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </button>
+                    </nav>
+                  ))}
+              </div>
             ) : (
-              selectedProjectId === '' ? (
-                <div className="dashboard-projects-empty">Please select a project or 'All Projects' to view details.</div>
-              ) : selectedProjectId === 'ALL' ? (
-                projectView === 'list' ? (
-                  <div className="dashboard-projects-list">
-                    {[...projects].sort((a, b) => new Date(b.start_date) - new Date(a.start_date)).map((project) => (
-                      <nav key={project.project_id} className="dashboard-project-line-nav">
-                        <div className="project-line-left">
-                          <span className="project-line-title">{project.project_name}</span>
-                          <span className="project-line-leader">Team leader: <b>{project.team_leader || 'N/A'}</b></span>
-                        </div>
-                        <div className="project-line-center">
-                          <span className="project-line-active">
-                            <span className="dot dot-green"></span>
-                            {project.active_users ?? 0} <span className="project-line-label"></span>
-                          </span>
-                          <span className="project-line-inactive">
-                            <span className="dot dot-red"></span>
-                            {project.inactive_users ?? 0} <span className="project-line-label"></span>
-                          </span>
-                        </div>
-                        <div className="project-line-status">
-                          Status: <b>{project.status || 'N/A'}</b>
-                        </div>
-                        <button className="project-line-view-btn" title="View Project">
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </button>
-                      </nav>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="dashboard-projects-grid">
-                    {[...projects].sort((a, b) => new Date(b.start_date) - new Date(a.start_date)).map((project) => (
-                      <div key={project.project_id} className="dashboard-project-card project-card-item status-border-ongoing clickable-project-card">
-                        <div className="project-card-header">
-                          <h3>{project.project_name}</h3>
-                        </div>
-                        <p className="project-card-detail"><Shield size={14} className="mr-1" /> Team Leader: {project.team_leader || 'N/A'}</p>
-                        <p className="project-card-detail"><Users size={14} className="mr-1" /> Total Members: {project.total_members || 'N/A'}</p>
-                        <p className="project-card-detail"><CalendarPlus size={14} className="mr-1" /> Created At: {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}</p>
-                        <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
-                        <p className="project-card-detail">
-                          <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
-                          Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
-                          <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
-                        </p>
-                        <div className="project-card-progress">
-                          <div className="progress-bar-container">
-                            <div className="progress-bar-fill" style={{width: `${project.progress || 0}%`, backgroundColor: project.status === 'Ongoing' ? '#6366f1' : '#22c55e'}}></div>
-                          </div>
-                          <span className="progress-text">{project.progress || 0}%</span>
-                        </div>
-                        <div className="project-card-footer">
-                          <span className={`status-badge status-${project.status?.toLowerCase()}`}>{project.status}</span>
-                        </div>
+              <div className="dashboard-projects-grid">
+                {[...projects]
+                  .filter(p => selectedProjectIds.includes(String(p.project_id)))
+                  .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+                  .map((project) => (
+                    <div key={project.project_id} className="dashboard-project-card project-card-item status-border-ongoing clickable-project-card">
+                      <div className="project-card-header">
+                        <h3>{project.project_name}</h3>
                       </div>
-                    ))}
-                  </div>
-                )
-              ) : (
-                // Show only the selected project
-                projectView === 'list' ? (
-                  <div className="dashboard-projects-list">
-                    {projects.filter(p => String(p.project_id) === String(selectedProjectId)).map((project) => (
-                      <nav key={project.project_id} className="dashboard-project-line-nav">
-                        <div className="project-line-left">
-                          <span className="project-line-title">{project.project_name}</span>
-                          <span className="project-line-leader">Team leader: <b>{project.team_leader || 'N/A'}</b></span>
+                      <p className="project-card-detail"><Shield size={14} className="mr-1" /> Team Leader: {project.team_leader || 'N/A'}</p>
+                      <p className="project-card-detail"><Users size={14} className="mr-1" /> Total Members: {project.total_members || 'N/A'}</p>
+                      <p className="project-card-detail"><CalendarPlus size={14} className="mr-1" /> Created At: {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}</p>
+                      <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
+                      <p className="project-card-detail">
+                        <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
+                        Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
+                        <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
+                      </p>
+                      <div className="project-card-progress">
+                        <div className="progress-bar-container">
+                          <div className="progress-bar-fill" style={{width: `${project.progress || 0}%`, backgroundColor: project.status === 'Ongoing' ? '#6366f1' : '#22c55e'}}></div>
                         </div>
-                        <div className="project-line-center">
-                          <span className="project-line-active">
-                            <span className="dot dot-green"></span>
-                            {project.active_users ?? 0} <span className="project-line-label"></span>
-                          </span>
-                          <span className="project-line-inactive">
-                            <span className="dot dot-red"></span>
-                            {project.inactive_users ?? 0} <span className="project-line-label"></span>
-                          </span>
-                        </div>
-                        <div className="project-line-status">
-                          Status: <b>{project.status || 'N/A'}</b>
-                        </div>
-                        <button className="project-line-view-btn" title="View Project">
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </button>
-                      </nav>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="dashboard-projects-grid">
-                    {projects.filter(p => String(p.project_id) === String(selectedProjectId)).map((project) => (
-                      <div key={project.project_id} className="dashboard-project-card project-card-item status-border-ongoing clickable-project-card">
-                        <div className="project-card-header">
-                          <h3>{project.project_name}</h3>
-                        </div>
-                        <p className="project-card-detail"><Shield size={14} className="mr-1" /> Team Leader: {project.team_leader || 'N/A'}</p>
-                        <p className="project-card-detail"><Users size={14} className="mr-1" /> Total Members: {project.total_members || 'N/A'}</p>
-                        <p className="project-card-detail"><CalendarPlus size={14} className="mr-1" /> Created At: {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}</p>
-                        <p className="project-card-detail"><CalendarCheck size={14} className="mr-1" /> Expected End Date: {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Not set'}</p>
-                        <p className="project-card-detail">
-                          <CreditCard size={14} style={{marginRight: '0.3rem', color: '#6366f1', verticalAlign: 'middle'}} />
-                          Total Expense: <span style={{fontWeight:600, color:'#6366f1', marginLeft:'0.3rem'}}>₹{project.total_expense || 'N/A'}</span>
-                          <span style={{color:'#a5b4fc', margin:'0 0.2rem'}}/>
-                        </p>
-                        <div className="project-card-progress">
-                          <div className="progress-bar-container">
-                            <div className="progress-bar-fill" style={{width: `${project.progress || 0}%`, backgroundColor: project.status === 'Ongoing' ? '#6366f1' : '#22c55e'}}></div>
-                          </div>
-                          <span className="progress-text">{project.progress || 0}%</span>
-                        </div>
-                        <div className="project-card-footer">
-                          <span className={`status-badge status-${project.status?.toLowerCase()}`}>{project.status}</span>
-                        </div>
+                        <span className="progress-text">{project.progress || 0}%</span>
                       </div>
-                    ))}
-                  </div>
-                )
-              )
+                      <div className="project-card-footer">
+                        <span className={`status-badge status-${project.status?.toLowerCase()}`}>{project.status}</span>
+                      </div>
+                      <button className="project-line-view-btn" title="View Project" onClick={() => handleViewProject(project)}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </button>
+                    </div>
+                  ))}
+              </div>
             )}
           </div>
         )}
@@ -1404,93 +1497,10 @@ export default function DashboardWeb() {
           </div>
         </div>
 
-        {/* {userData && userData.not_logged_out_count > 0 && (
-          <div className="warning-container">
-            <p className="warning-text">
-              Warning: you have not logged out for{" "}
-              {userData.not_logged_out_count} day
-              {userData.not_logged_out_count > 1 ? "s" : ""}
-            </p>
-            <button
-              className="info-button"
-              onClick={() =>
-                alert(
-                  "If not logged out for 3 consecutive days, the user will be marked absent on the 3rd day"
-                )
-              }
-            >
-              i
-            </button>
-          </div>
-        )}
-
-        <div className="login-section">{renderLoginSection()}</div> */}
-
-        {/* <div className="location-section">
-          <div className="section-header">
-            <MapPin size={20} />
-            <h2 className="section-title">Your Location</h2>
-          </div>
-          <div className="location-details">
-            <p>{locationText}</p>
-          </div>
-        </div> */}
-
-
-        
-
-        {/* {attendanceStats && (
-          <div className="dashboard-analytics-graph">
-            <h2 className="section-title">Attendance Overview</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={attendanceChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="attendance-stats-summary">
-              <div>Present: <b>{attendanceStats.present_days}</b></div>
-              <div>Absent: <b>{attendanceStats.absent_days}</b></div>
-              <div>Late: <b>{attendanceStats.late_days}</b></div>
-              <div>Half Days: <b>{attendanceStats.half_days}</b></div>
-              <div>Total Working Days: <b>{attendanceStats.total_working_days}</b></div>
-            </div>
-          </div>
-        )}
-
-        {analyticsCards && analyticsCards.length > 0 && (
-          <div className="analytics-cards-flex">
-            {analyticsCards}
-          </div>
-        )}
-
-        {analyticsChartData.length > 0 && (
-          <div className="dashboard-analytics-graph">
-            <h2 className="section-title">Analytics Overview</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analyticsChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )} */}
-
         {/* Add this after your existing analytics section */}
         <FinancialCharts analytics={analytics} />
       </div>
 
-      {/* <div className="dashboard-right-section">
-        <Calendar/>
-      </div> */}
     </div>
   );
 }
