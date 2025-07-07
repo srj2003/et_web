@@ -12,6 +12,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
+  CheckCircle,
 } from "lucide-react";
 
 const getStatusText = (status) => {
@@ -70,6 +72,7 @@ export default function MyRequisitions() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [selected, setSelected] = useState(null);
+  const [viewMode, setViewMode] = useState("card");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -141,9 +144,6 @@ export default function MyRequisitions() {
         // Calculate stats
         setStats({
           total: transformedData.length,
-          pending: transformedData.filter(
-            (r) => r.requisition_status === "Pending"
-          ).length,
           approved: transformedData.filter(
             (r) => r.requisition_status === "Approved"
           ).length,
@@ -228,75 +228,107 @@ export default function MyRequisitions() {
 
   return (
     <div className="leaves-container">
-      <h1 className="requisition-page-title">My Requisitions</h1>
+      <h1 className="allleavespage-title">My Requisitions</h1>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
-            <AlertCircle size={24} color="#6366f1" />
+      <div className="allexpense-stats-grid">
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              color: "#fff",
+            }}
+          >
+            <DollarSign size={28} />
           </div>
-          <div className="stat-info">
-            <h3>Total Requisitions</h3>
-            <p className="stat-value">{stats.total}</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Clock size={24} color="#f59e0b" />
-          </div>
-          <div className="stat-info">
-            <h3>Unattended</h3>
-            <p className="stat-value">{stats.unattended}</p>
+          <div className="allexpense-stat-info">
+            <h3>Total Expenses</h3>
+            <div className="allexpense-stat-value">{stats.total}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Check size={24} color="#10b981" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+              color: "#fff",
+            }}
+          >
+            <CheckCircle size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
             <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
+            <div className="allexpense-stat-value">{stats.approved}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <X size={24} color="#ef4444" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg,rgb(255, 106, 0) 0%, #334155 100%)",
+              color: "#fff",
+            }}
+          >
+            <CheckCircle size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
             <h3>Partially Approved</h3>
-            <p className="stat-value">{stats.partiallyApproved}</p>
+            <div className="allexpense-stat-value">
+              {stats.partiallyApproved}
+            </div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <X size={24} color="#ef4444" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #64748b 0%, #334155 100%)",
+              color: "#fff",
+            }}
+          >
+            <Clock size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
+            <h3>Unattended</h3>
+            <div className="allexpense-stat-value">{stats.unattended}</div>
+          </div>
+        </div>
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+              color: "#fff",
+            }}
+          >
+            <X size={28} />
+          </div>
+          <div className="allexpense-stat-info">
             <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
+            <div className="allexpense-stat-value">{stats.rejected}</div>
           </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="requisition-filters-section">
-        <div className="requisition-search-container">
+      <div className="myleavesfilters-section">
+        <div className="myleavessearch-container">
           <Search size={20} color="#64748b" />
           <input
             type="text"
             placeholder="Search requisitions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="requisition-search-input"
+            className="myleavessearch-input"
           />
         </div>
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="requisition-filter-button"
+          className="myleavesfilter-button"
         >
-          <option>All Status</option>
+          <option>All</option>
           <option>Unattended</option>
           <option>Approved</option>
           <option>Rejected</option>
@@ -304,55 +336,96 @@ export default function MyRequisitions() {
         </select>
       </div>
 
-      {/* Requisitions Grid */}
-      <div className="requisition-requisitions-grid">
-        {paginated.map((item, idx) => (
-          <div
-            className="requisition-requisition-card"
-            key={item.requisition_id || idx}
-            data-status={item.requisition_status}
-            style={{ background: getStatusBg(item.requisition_status) }}
-            onClick={() => setSelected(item)}
-          >
-            <div className="requisition-card-header">
-              <div className="requisition-submission-flow">
-                <div className="requisition-name-container">
-                  <h3 className="requisition-employee-name">
-                    {item.created_by_full_name || "Unknown User"}
-                  </h3>
-                  <div className="requisition-submission-arrow">
-                    <ArrowRight size={16} color="#6366f1" />
-                    <span>
-                      {item.submitted_to_full_name || "Not submitted"}
-                    </span>
-                  </div>
+      {/* Card/Table View Toggle */}
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${viewMode === "card" ? " active" : ""}`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${viewMode === "table" ? " active" : ""}`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
+      </div>
+
+      {viewMode === "card" ? (
+        <div className="leaves-grid">
+          {paginated.map((item, idx) => (
+            <div
+              className="leave-card"
+              key={item.requisition_id || idx}
+              data-status={item.requisition_status}
+              style={{ background: getStatusBg(item.requisition_status) }}
+              onClick={() => setSelected(item)}
+            >
+              <div className="leave-header">
+                <div className="leave-header-content">
+                  <span className="leave-type">{item.requisition_title}</span>
                 </div>
                 <span
-                  className="requisition-status-badge"
-                  style={{
-                    backgroundColor: getStatusColor(item.requisition_status),
-                  }}
+                  className={`status-badge status-${item.requisition_status?.toLowerCase?.()}`}
+                  title={item.requisition_status}
                 >
                   {item.requisition_status}
                 </span>
               </div>
+              <div className="requestedleaves-leave-details">
+                <div className="requestedleaves-leave-dates">
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Amount:</span>
+                    <span className="requestedleaves-date-value">₹{parseFloat(item.requisition_req_amount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Date:</span>
+                    <span className="requestedleaves-date-value">{new Date(item.requisition_date).toLocaleDateString()}</span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Created By:</span>
+                    <span className="requestedleaves-date-value">{item.created_by_full_name}</span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Submitted To:</span>
+                    <span className="requestedleaves-date-value">{item.submitted_to_full_name || "Not submitted"}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="requisition-requisition-details">
-              <h4 className="requisition-requisition-title">
-                {item.requisition_title || "No Title"}
-              </h4>
-              <span className="requisition-amount">
-                ₹{parseFloat(item.requisition_req_amount || 0).toFixed(2)}
-              </span>
-            </div>
-            <div className="requisition-requisition-meta">
-              <span className="requisition-date">
-                {new Date(item.requisition_date).toLocaleDateString()}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="myexpenses-table-container">
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Requisition ID</th>
+                <th>Title</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Created By</th>
+                <th>Submitted To</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((item, idx) => (
+                <tr key={item.requisition_id || idx}>
+                  <td>{item.requisition_id}</td>
+                  <td>{item.requisition_title}</td>
+                  <td>₹{parseFloat(item.requisition_req_amount || 0).toFixed(2)}</td>
+                  <td>{item.requisition_status}</td>
+                  <td>{new Date(item.requisition_date).toLocaleDateString()}</td>
+                  <td>{item.created_by_full_name}</td>
+                  <td>{item.submitted_to_full_name || "Not submitted"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 0 && (
@@ -376,57 +449,6 @@ export default function MyRequisitions() {
             Next
             <ChevronRight size={20} />
           </button>
-        </div>
-      )}
-
-      {/* Modal */}
-      {selected && (
-        <div className="requisition-modal-overlay">
-          <div className="requisition-modal-content">
-            <div className="requisition-modal-header">
-              <h2>Requisition Details</h2>
-              <button
-                className="requisition-close-button"
-                onClick={() => setSelected(null)}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="requisition-modal-body">
-              <div className="requisition-details-section">
-                <h3>{selected.requisition_title}</h3>
-                <p className="requisition-employee-name">
-                  {selected.created_by_full_name}
-                </p>
-              </div>
-              <div className="requisition-details-grid">
-                <div className="requisition-detail-item">
-                  <span className="requisition-detail-label">Amount</span>
-                  <span className="requisition-detail-value requisition-amount">
-                    ₹{parseFloat(selected.requisition_req_amount).toFixed(2)}
-                  </span>
-                </div>
-                <div className="requisition-detail-item">
-                  <span className="requisition-detail-label">Status</span>
-                  <span className="requisition-detail-value">
-                    {selected.requisition_status}
-                  </span>
-                </div>
-                <div className="requisition-detail-item">
-                  <span className="requisition-detail-label">Date</span>
-                  <span className="requisition-detail-value">
-                    {new Date(selected.requisition_date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="requisition-detail-item">
-                  <span className="requisition-detail-label">Submitted To</span>
-                  <span className="requisition-detail-value">
-                    {selected.submitted_to_full_name || "Not submitted"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>
