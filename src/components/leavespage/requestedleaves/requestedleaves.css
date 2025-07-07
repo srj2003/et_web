@@ -1,3 +1,19 @@
+/* Modal actions: side by side approve/reject buttons */
+.requestedleaves-modal-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: flex-start;
+}
+.requestedleaves-leave-details {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.requestedleaves-leave-dates {
+  flex: 1;
+}
 .requestedleaves-container {
   padding: 2rem;
   background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);

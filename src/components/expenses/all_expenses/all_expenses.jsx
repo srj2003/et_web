@@ -397,6 +397,12 @@ const AllExpensesWeb = () => {
                       {expense.status}
                     </span>
                   </div>
+                  <div className="all_expenses-date-item">
+                    <span className="all_expenses-date-label">Created By:</span>
+                    <span className="all_expenses-date-value">
+                      {expense.employee}
+                    </span>
+                  </div>
                   {expense.expense_id && (
                     <div className="all_expenses-date-item">
                       <span className="all_expenses-date-label">
@@ -420,7 +426,7 @@ const AllExpensesWeb = () => {
                   {expense.approved_by && (
                     <div className="all_expenses-date-item">
                       <span className="all_expenses-date-label">
-                        Approved By:
+                        Approved/Rejected By:
                       </span>
                       <span className="all_expenses-date-value">
                         {expense.approved_by}
@@ -485,6 +491,16 @@ const AllExpensesWeb = () => {
                     </div>
                   );
                 })()}
+              <button
+                className="view-details-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedExpense(expense);
+                  setShowExpenseDetails(true);
+                }}
+              >
+                View Details
+              </button>
             </div>
           ))}
         </div>
@@ -499,8 +515,9 @@ const AllExpensesWeb = () => {
                 <th>Date</th>
                 <th>Status</th>
                 <th>Amount</th>
+                <th>Created By</th>
                 <th>Submitted To</th>
-                <th>Approved By</th>
+                <th>Approved/Rejected By</th>
                 <th>Details</th>
               </tr>
             </thead>
@@ -513,6 +530,7 @@ const AllExpensesWeb = () => {
                   <td>{expense.date}</td>
                   <td>{expense.status}</td>
                   <td>₹{expense.amount}</td>
+                  <td>{expense.employee}</td>
                   <td>{expense.submitted_to}</td>
                   <td>{expense.approved_by || "-"}</td>
                   <td>

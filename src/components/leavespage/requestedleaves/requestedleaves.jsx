@@ -55,7 +55,8 @@ export default function RequestedLeaves() {
     rejected: 0,
   });
   const itemsPerPage = 16;
-
+  const [viewMode, setViewMode] = useState("card");
+  const [openMenuRow, setOpenMenuRow] = useState(null);
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
@@ -308,88 +309,205 @@ export default function RequestedLeaves() {
           <option>Rejected</option>
         </select>
       </div>
-
-      {/* Leaves Grid */}
-      <div className="requestedleaves-leaves-grid">
-        {paginated.map((leave, idx) => (
-          <div
-            className="requestedleaves-leave-card"
-            key={leave.leave_id || idx}
-            data-leave-id={leave.leave_id}
-            onClick={() => setSelectedLeave(leave)}
-            data-status={getStatusText(leave.leave_track_status)}
-          >
-            <div className="requestedleaves-leave-header">
-              <div className="requestedleaves-leave-header-content">
-                <h3 className="requestedleaves-employee-name">
-                  {leave.user_name}
-                </h3>
-                <span className="requestedleaves-leave-type">
-                  {leave.leave_ground_text}
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "card" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "table" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
+      </div>
+      {viewMode === "card" ? (
+        <div className="requestedleaves-leaves-grid">
+          {paginated.map((leave, idx) => (
+            <div
+              className="leave-card"
+              key={leave.leave_id || idx}
+              data-leave-id={leave.leave_id}
+              onClick={() => setSelectedLeave(leave)}
+              data-status={getStatusText(leave.leave_track_status)}
+            >
+              <div className="requestedleaves-leave-header">
+                <div className="requestedleaves-leave-header-content">
+                  <span className="requestedleaves-leave-type">
+                    {leave.leave_ground_text}
+                  </span>
+                </div>
+                <span
+                  className={`requestedleaves-status-badge requestedleaves-status-${getStatusText(
+                    leave.leave_track_status
+                  ).toLowerCase()}`}
+                >
+                  {getStatusText(leave.leave_track_status)}
                 </span>
               </div>
-              <span
-                className={`requestedleaves-status-badge requestedleaves-status-${getStatusText(
-                  leave.leave_track_status
-                ).toLowerCase()}`}
+              <div className="requestedleaves-leave-details">
+                <div className="requestedleaves-leave-dates">
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">From:</span>
+                    <span className="requestedleaves-date-value">
+                      {new Date(leave.leave_from_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">To:</span>
+                    <span className="requestedleaves-date-value">
+                      {new Date(leave.leave_to_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">
+                      Duration:
+                    </span>
+                    <span className="requestedleaves-date-value">
+                      {(() => {
+                        const start = new Date(leave.leave_from_date);
+                        const end = new Date(leave.leave_to_date);
+                        if (isNaN(start) || isNaN(end)) return "-";
+                        const diffTime = Math.abs(end - start);
+                        return (
+                          Math.ceil(diffTime / (1000 * 60 * 60 * 24)) +
+                          1 +
+                          " days"
+                        );
+                      })()}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Status:</span>
+                    <span className="requestedleaves-date-value">
+                      {getStatusText(leave.leave_track_status)}
+                    </span>
+                  </div>
+                  {leave.submitted_to && (
+                    <div className="requestedleaves-date-item">
+                      <span className="requestedleaves-date-label">
+                        Submitted To:
+                      </span>
+                      <span className="requestedleaves-date-value">
+                        {leave.submitted_to}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <button
+                className="card-view-details-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedLeave(leave);
+                }}
+                style={{ marginTop: "1.5rem" }}
               >
-                {getStatusText(leave.leave_track_status)}
-              </span>
+                View Details
+              </button>
             </div>
-            <div className="requestedleaves-leave-details">
-              <div className="requestedleaves-leave-title-section">
-                <h4 className="requestedleaves-leave-title">
-                  {leave.leave_title}
-                </h4>
-                <p className="requestedleaves-leave-comment">
-                  {leave.leave_comment}
-                </p>
-              </div>
-              <div className="requestedleaves-leave-dates">
-                <div className="requestedleaves-date-item">
-                  <span className="requestedleaves-date-label">From:</span>
-                  <span className="requestedleaves-date-value">
-                    {new Date(leave.leave_from_date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="requestedleaves-date-item">
-                  <span className="requestedleaves-date-label">To:</span>
-                  <span className="requestedleaves-date-value">
-                    {new Date(leave.leave_to_date).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Add action buttons for unattended leaves */}
-            {leave.leave_track_status === null && (
-              <div className="requestedleaves-leave-actions">
-                <button
-                  className="requestedleaves-action-button requestedleaves-approve"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAction(leave.leave_id, "approve");
-                  }}
-                >
-                  <CheckCircle size={16} />
-                  Approve
-                </button>
-                <button
-                  className="requestedleaves-action-button requestedleaves-reject"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAction(leave.leave_id, "reject");
-                  }}
-                >
-                  <X size={16} />
-                  Reject
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
+          ))}
+        </div>
+      ) : (
+        <div className="myexpenses-table-container">
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Leave ID</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Status</th>
+                <th>Duration</th>
+                <th>Created By</th>
+                <th>Submitted To</th>
+                <th>Approved/Rejected By</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((leave, idx) => (
+                <tr key={leave.leave_id || idx}>
+                  <td>{leave.leave_id}</td>
+                  <td>{leave.leave_title}</td>
+                  <td>{leave.leave_ground_text}</td>
+                  <td>{leave.leave_from_date}</td>
+                  <td>{leave.leave_to_date}</td>
+                  <td>{getStatusText(leave.leave_track_status)}</td>
+                  <td>
+                    {(() => {
+                      const start = new Date(leave.leave_from_date);
+                      const end = new Date(leave.leave_to_date);
+                      if (isNaN(start) || isNaN(end)) return "-";
+                      const diffTime = Math.abs(end - start);
+                      return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                    })()}{" "}
+                    days
+                  </td>
+                  <td>{leave.user_name}</td>
+                  <td>{leave.submitted_to}</td>
+                  <td>
+                    {leave.leave_track_status === 1 ||
+                    leave.leave_track_status === 0
+                      ? leave.submitted_to || "-"
+                      : "-"}
+                  </td>
+                  <td>
+                    <div className="requestedexpenses-details-menu-wrapper">
+                      <button
+                        className="requestedexpenses-details-menu-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuRow((prev) =>
+                            prev === leave.leave_id ? null : leave.leave_id
+                          );
+                        }}
+                        aria-label="More options"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="6" r="1" />
+                          <circle cx="12" cy="12" r="1" />
+                          <circle cx="12" cy="18" r="1" />
+                        </svg>
+                      </button>
+                      {openMenuRow === leave.leave_id && (
+                        <div className="requestedexpenses-details-menu-dropdown">
+                          <button
+                            className="requestedexpenses-details-menu-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedLeave(leave);
+                              setOpenMenuRow(null);
+                            }}
+                          >
+                            View
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {/* Pagination */}
       {totalPages > 0 && (
         <div className="requisition-pagination-container">

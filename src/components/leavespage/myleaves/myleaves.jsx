@@ -77,6 +77,13 @@ const MyLeaves = () => {
             title: leave.leave_title,
             created_at: leave.leave_track_created_at,
             approved_rejected_at: leave.leave_track_approved_rejected_at,
+            submitted_to:
+              leave.leave_track_submitted_to_full_name ||
+              leave.leave_track_submitted_to ||
+              null,
+            approved_rejected_by: leave.leave_track_approved_rejected_by
+              ? leave.leave_track_submitted_to_full_name
+              : null,
           }));
 
           setLeaves(formattedLeaves);
@@ -150,6 +157,9 @@ const MyLeaves = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // View mode toggle: "card" or "table"
+  const [viewMode, setViewMode] = useState("card");
 
   if (loading) {
     return (
@@ -240,60 +250,139 @@ const MyLeaves = () => {
         </select>
       </div>
 
-      {/* Leaves Grid - Card Style Like RequestedLeaves */}
-      <div className="requestedleaves-leaves-grid">
-        {paginatedLeaves.map((leave) => (
-          <div
-            key={leave.leave_id}
-            className="requestedleaves-leave-card"
-            data-status={leave.leave_status}
-          >
-            <div className="requestedleaves-leave-header">
-              <div className="requestedleaves-leave-header-content">
-                <h3 className="requestedleaves-employee-name">You</h3>
-                <span className="requestedleaves-leave-type">
-                  {leave.leave_type}
+      {/* View Toggle */}
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "card" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "table" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
+      </div>
+
+      {viewMode === "card" ? (
+        <div className="requestedleaves-leaves-grid">
+          {paginatedLeaves.map((leave) => (
+            <div
+              key={leave.leave_id}
+              className="leave-card"
+              data-status={leave.leave_status}
+            >
+              <div className="requestedleaves-leave-header">
+                <div className="requestedleaves-leave-header-content">
+                  <span className="requestedleaves-leave-type">
+                    {leave.leave_type}
+                  </span>
+                </div>
+                <span
+                  className={`requestedleaves-status-badge requestedleaves-status-${leave.leave_status.toLowerCase()}`}
+                >
+                  {leave.leave_status}
                 </span>
               </div>
-              <span
-                className={`requestedleaves-status-badge requestedleaves-status-${leave.leave_status.toLowerCase()}`}
-              >
-                {leave.leave_status}
-              </span>
-            </div>
-            <div className="requestedleaves-leave-details">
-              <div className="requestedleaves-leave-title-section">
-                <h4 className="requestedleaves-leave-title">{leave.title}</h4>
-                {leave.leave_reason && (
-                  <p className="requestedleaves-leave-comment">
-                    {leave.leave_reason}
-                  </p>
-                )}
+              <div className="requestedleaves-leave-details">
+                <div className="requestedleaves-leave-dates">
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">From:</span>
+                    <span className="requestedleaves-date-value">
+                      {leave.from_date}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">To:</span>
+                    <span className="requestedleaves-date-value">
+                      {leave.to_date}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">
+                      Duration:
+                    </span>
+                    <span className="requestedleaves-date-value">
+                      {leave.duration} days
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Status:</span>
+                    <span className="requestedleaves-date-value">
+                      {leave.leave_status}
+                    </span>
+                  </div>
+                  {leave.submitted_to && (
+                    <div className="requestedleaves-date-item">
+                      <span className="requestedleaves-date-label">
+                        Submitted To:
+                      </span>
+                      <span className="requestedleaves-date-value">
+                        {leave.submitted_to}
+                      </span>
+                    </div>
+                  )}
+                  {(leave.leave_status === "Approved" ||
+                    leave.leave_status === "Rejected") &&
+                    leave.approved_rejected_by && (
+                      <div className="requestedleaves-date-item">
+                        <span className="requestedleaves-date-label">
+                          Approved/Rejected By:
+                        </span>
+                        <span className="requestedleaves-date-value">
+                          {leave.approved_rejected_by}
+                        </span>
+                      </div>
+                    )}
+                </div>
               </div>
-              <div className="requestedleaves-leave-dates">
-                <div className="requestedleaves-date-item">
-                  <span className="requestedleaves-date-label">From:</span>
-                  <span className="requestedleaves-date-value">
-                    {leave.from_date}
-                  </span>
-                </div>
-                <div className="requestedleaves-date-item">
-                  <span className="requestedleaves-date-label">To:</span>
-                  <span className="requestedleaves-date-value">
-                    {leave.to_date}
-                  </span>
-                </div>
-                <div className="requestedleaves-date-item">
-                  <span className="requestedleaves-date-label">Duration:</span>
-                  <span className="requestedleaves-date-value">
-                    {leave.duration} days
-                  </span>
-                </div>
-              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="myexpenses-table-container">
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Submitted To</th>
+                <th>Approved/Rejected By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedLeaves.map((leave) => (
+                <tr key={leave.leave_id}>
+                  <td>{leave.title}</td>
+                  <td>{leave.leave_type}</td>
+                  <td>{leave.from_date}</td>
+                  <td>{leave.to_date}</td>
+                  <td>{leave.duration} days</td>
+                  <td>{leave.leave_status}</td>
+                  <td>{leave.submitted_to || "-"}</td>
+                  <td>
+                    {(leave.leave_status === "Approved" ||
+                      leave.leave_status === "Rejected") &&
+                    leave.approved_rejected_by
+                      ? leave.approved_rejected_by
+                      : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination controls */}
       {totalPages > 0 && (

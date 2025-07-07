@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 
 // Define status types
 const ExpenseStatus = {
@@ -42,6 +43,7 @@ const ManageExpenseWeb = () => {
     rejected: 0,
   });
   const [viewMode, setViewMode] = useState("card"); // "card" or "table"
+  const [openMenuRow, setOpenMenuRow] = useState(null);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -560,6 +562,12 @@ const ManageExpenseWeb = () => {
                       {expense.status}
                     </span>
                   </div>
+                  <div className="myexpenses-date-item">
+                    <span className="myexpenses-date-label">Created By:</span>
+                    <span className="myexpenses-date-value">
+                      {expense.employee}
+                    </span>
+                  </div>
                   {expense.expense_id && (
                     <div className="myexpenses-date-item">
                       <span className="myexpenses-date-label">Expense ID:</span>
@@ -645,112 +653,129 @@ const ManageExpenseWeb = () => {
                     </div>
                   );
                 })()}
-              {expense.status === "Unattended" &&
-                roleId !== null &&
-                (roleId < 5 || roleId === 8) && (
-                  <div className="requestedexpenses-actions">
-                    <button
-                      className="requestedexpenses-action-button requestedexpenses-approve"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAction(expense.expense_id, "approve");
-                      }}
-                    >
-                      <Check size={16} />
-                      Approve
-                    </button>
-                    <button
-                      className="requestedexpenses-action-button requestedexpenses-reject"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAction(expense.expense_id, "reject");
-                      }}
-                    >
-                      <X size={16} />
-                      Reject
-                    </button>
-                  </div>
-                )}
+              <button
+                className="view-details-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedExpense(expense);
+                  setShowExpenseDetails(true);
+                }}
+              >
+                View Details
+              </button>
             </div>
           ))}
         </div>
       ) : (
         <div className="myexpenses-table-container">
-          <table className="myexpenses-table">
-            <thead>
-              <tr>
-                <th>Expense ID</th>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Amount</th>
-                <th>Submitted To</th>
-                <th>Approved By</th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedExpenses.map((expense) => (
-                <tr key={expense.expense_id}>
-                  <td>{expense.expense_id}</td>
-                  <td>{expense.expense_title}</td>
-                  <td>{expense.expense_type_name || expense.expense_type}</td>
-                  <td>{expense.date}</td>
-                  <td>{expense.status}</td>
-                  <td>₹{expense.amount}</td>
-                  <td>{expense.submitted_to}</td>
-                  <td>{expense.approved_by || "-"}</td>
-                  <td>
-                    <details>
-                      <summary>Show</summary>
-                      <table className="myexpenses-details-table">
-                        <thead>
-                          <tr>
-                            <th>Head</th>
-                            <th>Amount</th>
-                            <th>Qty</th>
-                            <th>Unit</th>
-                            <th>Name</th>
-                            <th>Desc</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {expense.expense_details &&
-                            expense.expense_details.map((d, i) => (
-                              <tr key={d.expense_id || i}>
-                                <td
-                                  title={
-                                    d.expense_head_name || d.expense_head_title
-                                  }
+  <table className="myexpenses-table">
+    <thead>
+      <tr>
+        <th>Expense ID</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Amount</th>
+        <th>Created By</th>
+        <th>Submitted To</th>
+        <th>Approved By</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {paginatedExpenses.map((expense) => (
+        <tr key={expense.expense_id}>
+          <td>{expense.expense_id}</td>
+          <td>{expense.expense_title}</td>
+          <td>{expense.expense_type_name || expense.expense_type}</td>
+          <td>{expense.date}</td>
+          <td>{expense.status}</td>
+          <td>₹{expense.amount}</td>
+          <td>{expense.employee}</td>
+          <td>{expense.submitted_to}</td>
+          <td>{expense.approved_by || "-"}</td>
+          <td style={{ whiteSpace: "nowrap" }}>
+            <details className="requestedexpenses-details-table-details">
+              <summary className="requestedexpenses-details-table-summary">
+                Show
+              </summary>
+              <table className="myexpenses-details-table">
+                <thead>
+                  <tr>
+                    <th style={{ maxWidth: 120 }}>Head</th>
+                    <th>Amount</th>
+                    <th>Qty</th>
+                    <th>Unit</th>
+                    <th>Name</th>
+                    <th>Desc</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expense.expense_details &&
+                    expense.expense_details.map((d, i) => (
+                      <tr key={`${expense.expense_id}-${i}`}>
+                        <td
+                          title={d.expense_head_name || d.expense_head_title}
+                          style={{
+                            maxWidth: 120,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {(d.expense_head_name || d.expense_head_title)?.length > 8
+                            ? (d.expense_head_name || d.expense_head_title).slice(0, 8) + "..."
+                            : d.expense_head_name || d.expense_head_title}
+                        </td>
+                        <td>₹{d.expense_product_amount}</td>
+                        <td>{d.expense_product_qty}</td>
+                        <td>{d.expense_product_unit}</td>
+                        <td>{d.expense_product_name}</td>
+                        <td>{d.expense_product_desc}</td>
+                        <td>
+                          <div className="requestedexpenses-details-menu-wrapper">
+                            <button
+                              className="requestedexpenses-details-menu-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuRow((prev) =>
+                                  prev === expense.expense_id ? null : expense.expense_id
+                                );
+                              }}
+                              aria-label="More options"
+                            >
+                              <MoreVertical size={20} />
+                            </button>
+                            {openMenuRow === expense.expense_id && (
+                              <div className="requestedexpenses-details-menu-dropdown">
+                                <button
+                                  className="requestedexpenses-details-menu-item"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedExpense(expense);
+                                    setShowExpenseDetails(true);
+                                    setOpenMenuRow(null);
+                                  }}
                                 >
-                                  {(d.expense_head_name ||
-                                    d.expense_head_title) &&
-                                  (d.expense_head_name || d.expense_head_title)
-                                    .length > 8
-                                    ? (
-                                        d.expense_head_name ||
-                                        d.expense_head_title
-                                      ).slice(0, 8) + "..."
-                                    : d.expense_head_name ||
-                                      d.expense_head_title}
-                                </td>
-                                <td>₹{d.expense_product_amount}</td>
-                                <td>{d.expense_product_qty}</td>
-                                <td>{d.expense_product_unit}</td>
-                                <td>{d.expense_product_name}</td>
-                                <td>{d.expense_product_desc}</td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </details>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                                  View
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </details>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
       )}
       {totalPages > 0 && (
         <div className="allexpense-pagination-container">

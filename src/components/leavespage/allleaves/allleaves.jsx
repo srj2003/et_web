@@ -39,6 +39,7 @@ export default function AllLeaves() {
     approved: 0,
     rejected: 0,
   });
+  const [openMenuRow, setOpenMenuRow] = useState(null);
   const itemsPerPage = 16;
 
   useEffect(() => {
@@ -119,6 +120,10 @@ export default function AllLeaves() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Add viewMode state for card/table toggle
+  const [viewMode, setViewMode] = useState("card");
+  // Add openMenuRow state for three-dot menu in table view
 
   if (loading) {
     return (
@@ -211,50 +216,242 @@ export default function AllLeaves() {
         </select>
       </div>
 
-      {/* Leaves Grid - Card Style Like RequestedLeaves, but using allleaves.css classes */}
-      <div className="leaves-grid">
-        {paginated.map((leave, idx) => (
-          <div
-            className="leave-card"
-            key={leave.leave_id || idx}
-            data-status={leave.leave_track_status_text}
-            onClick={() => setSelectedLeave(leave)}
-          >
-            <div className="leave-header">
-              <div className="leave-header-content">
-                <h3 className="employee-name">{leave.employee_name}</h3>
-                <span className="leave-type">{leave.leave_ground_text}</span>
-              </div>
-              <span
-                className={`status-badge status-${leave.leave_track_status_text.toLowerCase()}`}
-                title={leave.leave_track_status_text}
-              >
-                {leave.leave_track_status_text}
-              </span>
-            </div>
-            <div className="leave-details">
-              <div className="leave-title-section">
-                <h4 className="leave-title">{leave.leave_title}</h4>
-                <p className="leave-comment">{leave.leave_comment}</p>
-              </div>
-              <div className="leave-dates">
-                <div className="date-item">
-                  <span className="date-label">From:</span>
-                  <span className="date-value">
-                    {new Date(leave.leave_from_date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="date-item">
-                  <span className="date-label">To:</span>
-                  <span className="date-value">
-                    {new Date(leave.leave_to_date).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Card/Table View Toggle */}
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "card" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "table" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
       </div>
+      {viewMode === "card" ? (
+        <div className="leaves-grid">
+          {paginated.map((leave, idx) => (
+            <div
+              className="leave-card"
+              key={leave.leave_id || idx}
+              data-status={leave.leave_track_status_text}
+            >
+              {/* View Details button in bottom left */}
+              <div className="leave-header">
+                <div className="leave-header-content">
+                  <span className="leave-type">{leave.leave_ground_text}</span>
+                </div>
+                <span
+                  className={`status-badge status-${leave.leave_track_status_text?.toLowerCase?.()}`}
+                  title={leave.leave_track_status_text}
+                >
+                  {leave.leave_track_status_text}
+                </span>
+              </div>
+              <div
+                className="requestedleaves-leave-details"
+                onClick={() => setSelectedLeave(leave)}
+              >
+                <div className="requestedleaves-leave-dates">
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">From:</span>
+                    <span className="requestedleaves-date-value">
+                      {leave.leave_from_date}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">To:</span>
+                    <span className="requestedleaves-date-value">
+                      {leave.leave_to_date}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">
+                      Duration:
+                    </span>
+                    <span className="requestedleaves-date-value">
+                      {(() => {
+                        const start = new Date(leave.leave_from_date);
+                        const end = new Date(leave.leave_to_date);
+                        if (isNaN(start) || isNaN(end)) return "-";
+                        const diffTime = Math.abs(end - start);
+                        return (
+                          Math.ceil(diffTime / (1000 * 60 * 60 * 24)) +
+                          1 +
+                          " days"
+                        );
+                      })()}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">
+                      Created By:
+                    </span>
+                    <span className="requestedleaves-date-value">
+                      {leave.employee_name}
+                    </span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Status:</span>
+                    <span className="requestedleaves-date-value">
+                      {leave.leave_track_status_text ||
+                        leave.leave_track_status ||
+                        leave.leave_status ||
+                        "-"}
+                    </span>
+                  </div>
+                  {(leave.leave_track_submitted_to_full_name ||
+                    leave.leave_track_submitted_to) && (
+                    <div className="requestedleaves-date-item">
+                      <span className="requestedleaves-date-label">
+                        Submitted To:
+                      </span>
+                      <span className="requestedleaves-date-value">
+                        {leave.leave_track_submitted_to_full_name ||
+                          leave.leave_track_submitted_to}
+                      </span>
+                    </div>
+                  )}
+                  {/* Only show Approved/Rejected By if present and status is Approved/Rejected */}
+                  {(leave.leave_track_status_text === "Approved" ||
+                    leave.leave_track_status_text === "Rejected") &&
+                    (leave.leave_track_approved_rejected_by_full_name ||
+                      leave.leave_track_approved_rejected_by) && (
+                      <div className="requestedleaves-date-item">
+                        <span className="requestedleaves-date-label">
+                          Approved/Rejected By:
+                        </span>
+                        <span className="requestedleaves-date-value">
+                          {leave.leave_track_approved_rejected_by
+                            ? leave.leave_track_submitted_to_full_name
+                            : null}
+                        </span>
+                      </div>
+                    )}
+                </div>
+                <button
+                  className="card-view-details-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedLeave(leave);
+                  }}
+                  style={{ marginTop: "1.5rem" }}
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="myexpenses-table-container">
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Leave ID</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Status</th>
+                <th>Duration</th>
+                <th>Created By</th>
+                <th>Submitted To</th>
+                <th>Approved/Rejected By</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((leave, idx) => (
+                <tr key={leave.leave_id || idx}>
+                  <td>{leave.leave_id}</td>
+                  <td>{leave.leave_title}</td>
+                  <td>{leave.leave_ground_text}</td>
+                  <td>{leave.leave_from_date}</td>
+                  <td>{leave.leave_to_date}</td>
+                  <td>
+                    {leave.leave_track_status_text ||
+                      leave.leave_track_status ||
+                      leave.leave_status ||
+                      "-"}
+                  </td>
+                  <td>
+                    {(() => {
+                      const start = new Date(leave.leave_from_date);
+                      const end = new Date(leave.leave_to_date);
+                      if (isNaN(start) || isNaN(end)) return "-";
+                      const diffTime = Math.abs(end - start);
+                      return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                    })()}{" "}
+                    days
+                  </td>
+                  <td>{leave.employee_name}</td>
+                  <td>
+                    {leave.leave_track_submitted_to_full_name ||
+                      leave.leave_track_submitted_to ||
+                      "-"}
+                  </td>
+                  <td>
+                    {leave.leave_track_approved_rejected_by
+                      ? leave.leave_track_submitted_to_full_name
+                      : "-"}
+                  </td>
+                  <td>
+                    <div className="requestedexpenses-details-menu-wrapper">
+                      <button
+                        className="requestedexpenses-details-menu-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuRow((prev) =>
+                            prev === leave.leave_id ? null : leave.leave_id
+                          );
+                        }}
+                        aria-label="More options"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="6" r="1" />
+                          <circle cx="12" cy="12" r="1" />
+                          <circle cx="12" cy="18" r="1" />
+                        </svg>
+                      </button>
+                      {openMenuRow === leave.leave_id && (
+                        <div className="requestedexpenses-details-menu-dropdown">
+                          <button
+                            className="requestedexpenses-details-menu-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedLeave(leave);
+                              setOpenMenuRow(null);
+                            }}
+                          >
+                            View
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 0 && (
@@ -296,8 +493,8 @@ export default function AllLeaves() {
             </div>
             <div className="modal-body">
               <div className="details-section">
+                <h2>{selectedLeave.leave_ground_text}</h2>
                 <h3>{selectedLeave.leave_title}</h3>
-                <p className="employee-name">{selectedLeave.employee_name}</p>
               </div>
               <div className="details-grid">
                 <div className="detail-item">
@@ -327,14 +524,65 @@ export default function AllLeaves() {
                     {new Date(selectedLeave.leave_to_date).toLocaleDateString()}
                   </span>
                 </div>
-                {selectedLeave.leave_ground && (
-                  <div className="detail-item">
-                    <span className="detail-label">Reason</span>
-                    <span className="detail-value">
-                      {selectedLeave.leave_ground_text}
-                    </span>
+                <div className="detail-item">
+                  <span className="detail-label">Duration</span>
+                  <span className="detail-value">
+                    {(() => {
+                      const start = new Date(selectedLeave.leave_from_date);
+                      const end = new Date(selectedLeave.leave_to_date);
+                      const diffTime = Math.abs(end - start);
+                      return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                    })()}{" "}
+                    days
+                  </span>
+                </div>
+                <div className="detail-comment-block">
+                  <span className="detail-label">Comment</span>
+                  <div className="detail-comment-value">
+                    {selectedLeave.leave_comment}
                   </div>
-                )}
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Created By</span>
+                  <span className="detail-value">
+                    {selectedLeave.employee_name}
+                  </span>
+                </div>
+                {/* Comment on a separate line for better readability */}
+                <div className="detail-item">
+                  <span className="detail-label">Submitted To</span>
+                  <span className="detail-value">
+                    {selectedLeave.leave_track_submitted_to_full_name ||
+                      selectedLeave.leave_track_submitted_to ||
+                      "-"}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Approved/Rejected By</span>
+                  <span className="detail-value">
+                    {selectedLeave.leave_track_approved_rejected_by
+                      ? selectedLeave.leave_track_submitted_to_full_name
+                      : "-"}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Created At</span>
+                  <span className="detail-value">
+                    {selectedLeave.leave_track_created_at}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Updated At</span>
+                  <span className="detail-value">
+                    {selectedLeave.leave_track_updated_at}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Approved/Rejected At</span>
+                  <span className="detail-value">
+                    {selectedLeave.leave_track_approved_rejected_at || "-"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

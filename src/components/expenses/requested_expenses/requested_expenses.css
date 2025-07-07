@@ -1,3 +1,81 @@
+/* --- Requested Expenses Table Details Actions Row --- */
+.requestedexpenses-details-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.requestedexpenses-details-table-details {
+  display: inline-block;
+}
+.requestedexpenses-details-table-summary {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+  color: #6366f1;
+  background: none;
+  border: none;
+  padding: 0 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.requestedexpenses-details-table-summary:hover,
+.requestedexpenses-details-table-summary:focus {
+  background: #f1f5f9;
+}
+
+.requestedexpenses-details-menu-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.requestedexpenses-details-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 2px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.requestedexpenses-details-menu-btn:hover,
+.requestedexpenses-details-menu-btn:focus {
+  background: #f1f5f9;
+}
+
+.requestedexpenses-details-menu-dropdown {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  z-index: 10;
+  min-width: 100px;
+  padding: 2px 0;
+  animation: fadeIn 0.15s;
+}
+.requestedexpenses-details-menu-item {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #374151;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 10px 16px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.requestedexpenses-details-menu-item:hover,
+.requestedexpenses-details-menu-item:focus {
+  background: #f1f5f9;
+}
 /* Main Container */
 .expenses-container {
     max-width: 100%;
@@ -977,4 +1055,28 @@
 
 .expenses-container {
     animation: fadeIn 0.5s ease-in-out;
+}
+
+/* View Details Button - Bottom Left of Card Breakdown Badge */
+.view-details-button {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(90deg, #6366f1 60%, #818cf8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  outline: none;
+}
+.view-details-button:hover, .view-details-button:focus {
+  background: linear-gradient(90deg, #4f46e5 60%, #6366f1 100%);
+  box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+  transform: translateY(-2px) scale(1.03);
 }
