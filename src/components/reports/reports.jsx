@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "./reports.css";
 // import "../expenses/add_expense/add_expense.css";
-import { FaUser, FaCalendarAlt, FaGlobe, FaRedo, FaSearch, FaDownload } from 'react-icons/fa';
+import {
+  FaUser,
+  FaCalendarAlt,
+  FaGlobe,
+  FaRedo,
+  FaSearch,
+  FaDownload,
+} from "react-icons/fa";
 import Select from "react-select";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 
 const dummyUsers = [
   { id: 1, name: "Alice Smith" },
@@ -44,7 +51,8 @@ const Reports = () => {
   const [expenseReportLoading, setExpenseReportLoading] = useState(false);
   const [expenseReportError, setExpenseReportError] = useState("");
   const [requisitionReportTable, setRequisitionReportTable] = useState([]);
-  const [requisitionReportLoading, setRequisitionReportLoading] = useState(false);
+  const [requisitionReportLoading, setRequisitionReportLoading] =
+    useState(false);
   const [requisitionReportError, setRequisitionReportError] = useState("");
   const [expenseCsvTable, setExpenseCsvTable] = useState([]);
   const location = useLocation();
@@ -67,11 +75,14 @@ const Reports = () => {
         return;
       }
       try {
-        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId })
-        });
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId }),
+          }
+        );
         const data = await response.json();
         if (data.status === "success" && Array.isArray(data.projects)) {
           setProjects(data.projects);
@@ -92,10 +103,16 @@ const Reports = () => {
       setLoadingAllUsers(true);
       try {
         const token = localStorage.getItem("authToken");
-        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/user_details.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        });
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/user_details.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const data = await response.json();
         if (Array.isArray(data)) {
           setAllUsers(data);
@@ -122,13 +139,23 @@ const Reports = () => {
       setLoadingUsers(true);
       const userId = localStorage.getItem("userid");
       try {
-        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/get_project_details.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId, project_id: selectedProject })
-        });
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/get_project_details.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: userId,
+              project_id: selectedProject,
+            }),
+          }
+        );
         const data = await response.json();
-        if (data.status === "success" && data.project_details && Array.isArray(data.project_details.team_members)) {
+        if (
+          data.status === "success" &&
+          data.project_details &&
+          Array.isArray(data.project_details.team_members)
+        ) {
           setUsers(data.project_details.team_members);
         } else {
           setUsers([]);
@@ -144,18 +171,22 @@ const Reports = () => {
 
   // Effect: fetch expense heads when domain is set to Expense
   useEffect(() => {
-    const isExpenseDomain = dummyDomains.find(d => d.id == selectedDomain)?.name === 'Expense';
+    const isExpenseDomain =
+      dummyDomains.find((d) => d.id == selectedDomain)?.name === "Expense";
     if (isExpenseDomain && expenseTypes.length === 0) {
       const fetchExpenseHeads = async () => {
         setLoadingExpenseTypes(true);
         try {
           const token = localStorage.getItem("authToken");
-          const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_heads=true", {
-            method: "GET",
-            headers: { "Authorization": `Bearer ${token}` },
-          });
+          const response = await fetch(
+            "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php?fetch_expense_heads=true",
+            {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           const data = await response.json();
-          if (data.status === 'success' && Array.isArray(data.data)) {
+          if (data.status === "success" && Array.isArray(data.data)) {
             setExpenseTypes(data.data);
           } else {
             setExpenseTypes([]);
@@ -191,24 +222,39 @@ const Reports = () => {
     setExpenseReportError("");
     setRequisitionReportTable([]);
     setRequisitionReportError("");
-    if (selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Attendance") {
+    if (
+      selectedDomain &&
+      dummyDomains.find((d) => d.id == selectedDomain)?.name === "Attendance"
+    ) {
       if (!selectedUsers.length || !dateFrom || !dateTo) {
-        setAttendanceError("Please select at least one user, start date, and end date.");
+        setAttendanceError(
+          "Please select at least one user, start date, and end date."
+        );
         return;
       }
       setAttendanceLoading(true);
       try {
         const token = localStorage.getItem("authToken");
         // Fetch attendance for each user
-        const userFetches = selectedUsers.map(userOption => {
+        const userFetches = selectedUsers.map((userOption) => {
           const userId = userOption.value;
-          return fetch("https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({ user_id: userId, start_date: dateFrom, end_date: dateTo })
-          })
-            .then(res => res.json())
-            .then(data => ({ userId, data }));
+          return fetch(
+            "https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                user_id: userId,
+                start_date: dateFrom,
+                end_date: dateTo,
+              }),
+            }
+          )
+            .then((res) => res.json())
+            .then((data) => ({ userId, data }));
         });
         const results = await Promise.all(userFetches);
         // Map: userId -> attendance array
@@ -217,7 +263,9 @@ const Reports = () => {
           if (data.success && Array.isArray(data.attendance)) {
             attendanceResults[userId] = data.attendance;
           } else {
-            attendanceResults[userId] = { error: data.message || "No attendance data found." };
+            attendanceResults[userId] = {
+              error: data.message || "No attendance data found.",
+            };
           }
         });
         setAttendanceTable(attendanceResults);
@@ -226,28 +274,46 @@ const Reports = () => {
       } finally {
         setAttendanceLoading(false);
       }
-    }
-    else if (selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Work Report") {
+    } else if (
+      selectedDomain &&
+      dummyDomains.find((d) => d.id == selectedDomain)?.name === "Work Report"
+    ) {
       if (!selectedUsers.length || !dateFrom || !dateTo) {
-        setWorkReportError("Please select at least one user, start date, and end date.");
+        setWorkReportError(
+          "Please select at least one user, start date, and end date."
+        );
         return;
       }
       setWorkReportLoading(true);
       try {
         const token = localStorage.getItem("authToken");
-        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/get_all_work_reports.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-          // No body needed for all reports
-        });
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/get_all_work_reports.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            // No body needed for all reports
+          }
+        );
         const data = await response.json();
         if (data.status === "success" && Array.isArray(data.reports)) {
           // Filter by selected users, project, and date range
-          const selectedUserIds = selectedUsers.map(u => u.value);
-          const filtered = data.reports.filter(r => {
-            const userMatch = selectedUserIds.includes(String(r.user_id)) || selectedUserIds.includes(Number(r.user_id));
-            const projectMatch = !selectedProject || (r.project_name && projects.find(p => p.project_id === selectedProject)?.project_name === r.project_name);
-            const dateMatch = (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo);
+          const selectedUserIds = selectedUsers.map((u) => u.value);
+          const filtered = data.reports.filter((r) => {
+            const userMatch =
+              selectedUserIds.includes(String(r.user_id)) ||
+              selectedUserIds.includes(Number(r.user_id));
+            const projectMatch =
+              !selectedProject ||
+              (r.project_name &&
+                projects.find((p) => p.project_id === selectedProject)
+                  ?.project_name === r.project_name);
+            const dateMatch =
+              (!dateFrom || r.date >= dateFrom) &&
+              (!dateTo || r.date <= dateTo);
             return userMatch && projectMatch && dateMatch;
           });
           setWorkReportTable(filtered);
@@ -259,17 +325,21 @@ const Reports = () => {
       } finally {
         setWorkReportLoading(false);
       }
-    }
-    else if (selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Expense") {
+    } else if (
+      selectedDomain &&
+      dummyDomains.find((d) => d.id == selectedDomain)?.name === "Expense"
+    ) {
       if (!selectedUsers.length || !dateFrom || !dateTo) {
-        setExpenseReportError("Please select at least one user, start date, and end date.");
+        setExpenseReportError(
+          "Please select at least one user, start date, and end date."
+        );
         return;
       }
       setExpenseReportLoading(true);
       try {
         const token = localStorage.getItem("authToken");
         // Fetch for each user
-        const userFetches = selectedUsers.map(userOption => {
+        const userFetches = selectedUsers.map((userOption) => {
           const userId = userOption.value;
           const body = {
             user_id: userId,
@@ -278,13 +348,19 @@ const Reports = () => {
           };
           if (selectedProject) body.expense_type_id = selectedProject;
           if (selectedExpenseType) body.expense_head_id = selectedExpenseType;
-          return fetch("https://demo-expense.geomaticxevs.in/ET-api/expense_report_fetcher.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify(body)
-          })
-            .then(res => res.json())
-            .then(data => ({ userId, data, userLabel: userOption.label }));
+          return fetch(
+            "https://demo-expense.geomaticxevs.in/ET-api/expense_report_fetcher.php",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(body),
+            }
+          )
+            .then((res) => res.json())
+            .then((data) => ({ userId, data, userLabel: userOption.label }));
         });
         const results = await Promise.all(userFetches);
 
@@ -293,42 +369,58 @@ const Reports = () => {
         results.forEach(({ data, userLabel }) => {
           if (data.status === "success" && Array.isArray(data.data)) {
             // Attach user name to each row
-            allRows.push(...data.data.map(row => ({ ...row, userLabel })));
+            allRows.push(...data.data.map((row) => ({ ...row, userLabel })));
           }
         });
 
         setExpenseReportTable(allRows);
-        setExpenseReportError(allRows.length === 0 ? "No expense data found for the selected filters." : "");
+        setExpenseReportError(
+          allRows.length === 0
+            ? "No expense data found for the selected filters."
+            : ""
+        );
         setExpenseCsvTable([]); // Hide old CSV table if any
       } catch (err) {
         setExpenseReportError("Network error or invalid response");
       } finally {
         setExpenseReportLoading(false);
       }
-    }
-    else if (selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Requisition") {
+    } else if (
+      selectedDomain &&
+      dummyDomains.find((d) => d.id == selectedDomain)?.name === "Requisition"
+    ) {
       if (!selectedUsers.length || !dateFrom || !dateTo) {
-        setRequisitionReportError("Please select at least one user, start date, and end date.");
+        setRequisitionReportError(
+          "Please select at least one user, start date, and end date."
+        );
         return;
       }
       setRequisitionReportLoading(true);
       try {
         const token = localStorage.getItem("authToken");
-        const userIds = selectedUsers.map(user => user.value);
-        const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/requisition_in_range.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-          body: JSON.stringify({
-            start_date: dateFrom,
-            end_date: dateTo,
-            user_ids: userIds
-          })
-        });
+        const userIds = selectedUsers.map((user) => user.value);
+        const response = await fetch(
+          "https://demo-expense.geomaticxevs.in/ET-api/requisition_in_range.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              start_date: dateFrom,
+              end_date: dateTo,
+              user_ids: userIds,
+            }),
+          }
+        );
         const data = await response.json();
         if (data.success && Array.isArray(data.data)) {
           setRequisitionReportTable(data.data);
         } else {
-          setRequisitionReportError(data.message || "No requisition data found.");
+          setRequisitionReportError(
+            data.message || "No requisition data found."
+          );
         }
       } catch (err) {
         setRequisitionReportError("Network error or invalid response");
@@ -339,13 +431,17 @@ const Reports = () => {
   };
 
   // Helper to get user options
-  const getUserOptions = () => (
+  const getUserOptions = () =>
     selectedProject
-      ? users.map(user => ({ value: user.user_id, label: user.full_name }))
-      : allUsers.map(user => ({ value: user.u_id, label: [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ') }))
-  );
+      ? users.map((user) => ({ value: user.user_id, label: user.full_name }))
+      : allUsers.map((user) => ({
+          value: user.u_id,
+          label: [user.u_fname, user.u_mname, user.u_lname]
+            .filter(Boolean)
+            .join(" "),
+        }));
   const userOptions = getUserOptions();
-  const selectAllOption = { value: '__all__', label: 'Select All' };
+  const selectAllOption = { value: "__all__", label: "Select All" };
   const optionsWithSelectAll = [selectAllOption, ...userOptions];
 
   // Handle multi-select with Select All
@@ -355,7 +451,7 @@ const Reports = () => {
       return;
     }
     // If Select All is selected
-    if (selected.some(option => option.value === '__all__')) {
+    if (selected.some((option) => option.value === "__all__")) {
       setSelectedUsers(userOptions);
     } else {
       setSelectedUsers(selected);
@@ -369,8 +465,11 @@ const Reports = () => {
       : selectedUsers;
 
   // Add Select All option for expense types
-  const expenseTypeSelectAllOption = { value: '__all__', label: 'Select All' };
-  const expenseTypeOptionsWithSelectAll = [expenseTypeSelectAllOption, ...expenseTypes];
+  const expenseTypeSelectAllOption = { value: "__all__", label: "Select All" };
+  const expenseTypeOptionsWithSelectAll = [
+    expenseTypeSelectAllOption,
+    ...expenseTypes,
+  ];
 
   // Handle multi-select for expense types
   const [selectedExpenseTypes, setSelectedExpenseTypes] = useState([]);
@@ -382,7 +481,7 @@ const Reports = () => {
       return;
     }
     // If Select All is selected
-    if (selected.some(option => option.value === '__all__')) {
+    if (selected.some((option) => option.value === "__all__")) {
       setSelectedExpenseTypes(expenseTypes);
       setSelectedExpenseType(null);
     } else {
@@ -394,7 +493,8 @@ const Reports = () => {
   // Helper to get financial year options (current year +/- 5 years)
   const getFinancialYearOptions = () => {
     const now = new Date();
-    const currentYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+    const currentYear =
+      now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
     const years = [];
     for (let i = -14; i <= 14; i++) {
       const startYear = currentYear + i;
@@ -411,7 +511,8 @@ const Reports = () => {
   const financialYearOptions = getFinancialYearOptions();
 
   // Find if Leaves is selected
-  const isLeavesDomain = dummyDomains.find(d => d.id == selectedDomain)?.name === 'Leaves';
+  const isLeavesDomain =
+    dummyDomains.find((d) => d.id == selectedDomain)?.name === "Leaves";
 
   // Handler for financial year change
   const handleFinancialYearChange = (option) => {
@@ -430,7 +531,7 @@ const Reports = () => {
     let current = new Date(start);
     const endDate = new Date(end);
     while (current <= endDate) {
-      dates.push(current.toISOString().split('T')[0]);
+      dates.push(current.toISOString().split("T")[0]);
       current.setDate(current.getDate() + 1);
     }
     return dates;
@@ -438,8 +539,8 @@ const Reports = () => {
   // Helper: format date as DD-MMM
   function formatDateShort(dateStr) {
     const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = d.toLocaleString('default', { month: 'short' });
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = d.toLocaleString("default", { month: "short" });
     return `${day}-${month}`;
   }
 
@@ -449,29 +550,51 @@ const Reports = () => {
       <section className="form-section">
         <h2 className="section-title">Filter Your Report</h2>
         <div className="filter-reset-topright">
-          <button className="reset-button" onClick={handleReset}><FaRedo /> Reset</button>
+          <button className="reset-button" onClick={handleReset}>
+            <FaRedo /> Reset
+          </button>
         </div>
         <div className="form-grid">
           <div className="form-group">
-            <label htmlFor="project-select">Project <span style={{color: '#e74c3c'}}>*</span></label>
-            <div style={{ position: 'relative' }}>
+            <label htmlFor="project-select">
+              Project <span style={{ color: "#e74c3c" }}>*</span>
+            </label>
+            <div style={{ position: "relative" }}>
               <Select
                 id="project-select"
                 isLoading={loadingProjects}
-                options={projects.map(project => ({ value: project.project_id, label: project.project_name }))}
-                value={projects.find(p => p.project_id === selectedProject) ? { value: selectedProject, label: projects.find(p => p.project_id === selectedProject)?.project_name } : null}
-                onChange={option => setSelectedProject(option ? option.value : "")}
+                options={projects.map((project) => ({
+                  value: project.project_id,
+                  label: project.project_name,
+                }))}
+                value={
+                  projects.find((p) => p.project_id === selectedProject)
+                    ? {
+                        value: selectedProject,
+                        label: projects.find(
+                          (p) => p.project_id === selectedProject
+                        )?.project_name,
+                      }
+                    : null
+                }
+                onChange={(option) =>
+                  setSelectedProject(option ? option.value : "")
+                }
                 placeholder="Select project"
                 isClearable
                 classNamePrefix="react-select"
-                styles={{ container: base => ({ ...base, minWidth: 220 }) }}
-                noOptionsMessage={() => loadingProjects ? "Loading..." : "No projects found"}
+                styles={{ container: (base) => ({ ...base, minWidth: 220 }) }}
+                noOptionsMessage={() =>
+                  loadingProjects ? "Loading..." : "No projects found"
+                }
               />
             </div>
           </div>
           <div className="form-group">
-            <label htmlFor="user-select">Username <span style={{color: '#e74c3c'}}>*</span></label>
-            <div style={{ position: 'relative' }}>
+            <label htmlFor="user-select">
+              Username <span style={{ color: "#e74c3c" }}>*</span>
+            </label>
+            <div style={{ position: "relative" }}>
               <Select
                 id="user-select"
                 isMulti
@@ -482,47 +605,77 @@ const Reports = () => {
                 placeholder="Select user(s)"
                 isClearable
                 classNamePrefix="react-select"
-                styles={{ container: base => ({ ...base, minWidth: 220 }) }}
-                noOptionsMessage={() => (loadingUsers || loadingAllUsers) ? "Loading..." : "No users found"}
+                styles={{ container: (base) => ({ ...base, minWidth: 220 }) }}
+                noOptionsMessage={() =>
+                  loadingUsers || loadingAllUsers
+                    ? "Loading..."
+                    : "No users found"
+                }
                 isDisabled={loadingUsers || loadingAllUsers}
               />
             </div>
           </div>
           <div className="form-group">
-            <label htmlFor="domain-select">Domain <span style={{color: '#e74c3c'}}>*</span></label>
-            <div style={{ position: 'relative' }}>
-              <FaGlobe className="input-icon" style={{ left: '1.1rem', top: '50%', position: 'absolute', transform: 'translateY(-50%)', zIndex: 2, color: '#6552f7' }} />
+            <label htmlFor="domain-select">
+              Domain <span style={{ color: "#e74c3c" }}>*</span>
+            </label>
+            <div style={{ position: "relative" }}>
+              <FaGlobe
+                className="input-icon"
+                style={{
+                  left: "1.1rem",
+                  top: "50%",
+                  position: "absolute",
+                  transform: "translateY(-50%)",
+                  zIndex: 2,
+                  color: "#6552f7",
+                }}
+              />
               <select
                 id="domain-select"
                 value={selectedDomain}
-                onChange={e => setSelectedDomain(e.target.value)}
+                onChange={(e) => setSelectedDomain(e.target.value)}
                 className="input-select modern-input"
-                style={{ paddingLeft: '2.5rem', minWidth: '220px' }}
+                style={{ paddingLeft: "2.5rem", minWidth: "220px" }}
               >
                 <option value="">Select domain</option>
-                {dummyDomains.map(domain => (
-                  <option key={domain.id} value={domain.id}>{domain.name}</option>
+                {dummyDomains.map((domain) => (
+                  <option key={domain.id} value={domain.id}>
+                    {domain.name}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
           {/* Expense Type dropdown (conditionally rendered) */}
-          {dummyDomains.find(d => d.id == selectedDomain)?.name === 'Expense' && (
+          {dummyDomains.find((d) => d.id == selectedDomain)?.name ===
+            "Expense" && (
             <div className="form-group">
-              <label htmlFor="expense-type-select">Expense Type <span style={{color: '#e74c3c'}}>*</span></label>
-              <div style={{ position: 'relative' }}>
+              <label htmlFor="expense-type-select">
+                Expense Type <span style={{ color: "#e74c3c" }}>*</span>
+              </label>
+              <div style={{ position: "relative" }}>
                 <Select
                   id="expense-type-select"
                   isMulti
                   isLoading={loadingExpenseTypes}
                   options={expenseTypeOptionsWithSelectAll}
-                  value={selectedExpenseTypes.length === expenseTypes.length && expenseTypes.length > 0 ? [expenseTypeSelectAllOption, ...expenseTypes] : selectedExpenseTypes}
+                  value={
+                    selectedExpenseTypes.length === expenseTypes.length &&
+                    expenseTypes.length > 0
+                      ? [expenseTypeSelectAllOption, ...expenseTypes]
+                      : selectedExpenseTypes
+                  }
                   onChange={handleExpenseTypeChange}
                   placeholder="Select expense type(s)"
                   isClearable
                   classNamePrefix="react-select"
-                  styles={{ container: base => ({ ...base, minWidth: 220 }) }}
-                  noOptionsMessage={() => loadingExpenseTypes ? "Loading..." : "No expense types found"}
+                  styles={{ container: (base) => ({ ...base, minWidth: 220 }) }}
+                  noOptionsMessage={() =>
+                    loadingExpenseTypes
+                      ? "Loading..."
+                      : "No expense types found"
+                  }
                 />
               </div>
             </div>
@@ -530,64 +683,332 @@ const Reports = () => {
           <div className="form-group date-range-small">
             {isLeavesDomain ? (
               <>
-                <label>Financial Year <span style={{color: '#e74c3c'}}>*</span></label>
+                <label>
+                  Financial Year <span style={{ color: "#e74c3c" }}>*</span>
+                </label>
                 <Select
                   id="financial-year-select"
                   options={financialYearOptions}
-                  value={financialYearOptions.find(opt => opt.from === dateFrom && opt.to === dateTo) || null}
+                  value={
+                    financialYearOptions.find(
+                      (opt) => opt.from === dateFrom && opt.to === dateTo
+                    ) || null
+                  }
                   onChange={handleFinancialYearChange}
                   placeholder="Select financial year"
                   isClearable
                   classNamePrefix="react-select"
-                  styles={{ container: base => ({ ...base, minWidth: 220 }) }}
+                  styles={{ container: (base) => ({ ...base, minWidth: 220 }) }}
                 />
               </>
             ) : (
               <>
-                <label>Date Range <span style={{color: '#e74c3c'}}>*</span></label>
-                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-                  <FaCalendarAlt className="input-icon" style={{ left: '1.1rem', top: '50%', position: 'absolute', transform: 'translateY(-50%)', zIndex: 2, color: '#6552f7' }} />
+                <label>
+                  Date Range <span style={{ color: "#e74c3c" }}>*</span>
+                </label>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    position: "relative",
+                  }}
+                >
+                  <FaCalendarAlt
+                    className="input-icon"
+                    style={{
+                      left: "1.1rem",
+                      top: "50%",
+                      position: "absolute",
+                      transform: "translateY(-50%)",
+                      zIndex: 2,
+                      color: "#6552f7",
+                    }}
+                  />
                   <input
                     type="date"
                     value={dateFrom}
-                    onChange={e => setDateFrom(e.target.value)}
+                    onChange={(e) => setDateFrom(e.target.value)}
                     className="date-input modern-input"
                     placeholder="From"
-                    style={{ paddingLeft: '2.5rem' }}
+                    style={{ paddingLeft: "2.5rem" }}
                   />
                   <span className="date-range-separator">to</span>
                   <input
                     type="date"
                     value={dateTo}
                     min={dateFrom}
-                    onChange={e => setDateTo(e.target.value)}
+                    onChange={(e) => setDateTo(e.target.value)}
                     className="date-input modern-input"
                     placeholder="To"
-                    style={{ paddingLeft: '2.5rem' }}
+                    style={{ paddingLeft: "2.5rem" }}
                   />
                 </div>
               </>
             )}
           </div>
         </div>
-        <div className="form-actions" style={{ marginTop: '2rem', justifyContent: 'flex-end', display: 'flex', gap: '1.5rem' }}>
-          <button className="add-expense-button fetch-data-small" onClick={handleFetch}><FaSearch /> Get Report</button>
+        <div
+          className="form-actions"
+          style={{
+            marginTop: "2rem",
+            justifyContent: "flex-end",
+            display: "flex",
+            gap: "1.5rem",
+          }}
+        >
+          <button
+            className="add-expense-button fetch-data-small"
+            onClick={handleFetch}
+          >
+            <FaSearch /> Get Report
+          </button>
         </div>
       </section>
       {showResults && (
         <section className="form-section">
           <h2 className="section-title">Results</h2>
           <div className="results-download-topright">
-            <button className="download-report-button" onClick={() => alert('Download coming soon!')}>
-              <FaDownload style={{ marginRight: '0.5rem' }} /> Download Report
+            <button
+              className="download-report-button"
+              onClick={() => {
+                // Helper to convert array of objects to CSV
+                function arrayToCSV(data) {
+                  if (!data || !data.length) return "";
+                  const keys = Object.keys(data[0]);
+                  const csvRows = [keys.join(",")];
+                  for (const row of data) {
+                    csvRows.push(
+                      keys
+                        .map(
+                          (k) => '"' + String(row[k]).replace(/"/g, '""') + '"'
+                        )
+                        .join(",")
+                    );
+                  }
+                  return csvRows.join("\n");
+                }
+
+                // Determine which table to export based on selectedDomain
+                let csv = "";
+                let filename = "report.csv";
+                if (
+                  selectedDomain &&
+                  dummyDomains.find((d) => d.id == selectedDomain)?.name ===
+                    "Attendance"
+                ) {
+                  // Attendance: flatten attendanceTable to array of objects
+                  if (attendanceTable && selectedUsers.length > 0) {
+                    const dates =
+                      selectedUsers[0] &&
+                      Array.isArray(attendanceTable[selectedUsers[0].value])
+                        ? attendanceTable[selectedUsers[0].value].map(
+                            (att) => att.date
+                          )
+                        : [];
+                    const rows = selectedUsers.map((userOption) => {
+                      const userId = userOption.value;
+                      const attData = attendanceTable[userId];
+                      const row = { Name: userOption.label };
+                      if (Array.isArray(attData)) {
+                        attData.forEach((att, idx) => {
+                          let val = "";
+                          if (att.isHoliday || att.isSunday) val = "H";
+                          else if (att.hasLogin && att.is_logged_out) val = "P";
+                          else if (!att.hasLogin && !att.is_logged_out)
+                            val = "A";
+                          else if (att.hasLogin && !att.is_logged_out)
+                            val = "NLO";
+                          else val = "-";
+                          row[dates[idx]] = val;
+                        });
+                      }
+                      return row;
+                    });
+                    csv = arrayToCSV(rows);
+                    filename = "attendance_report.csv";
+                  }
+                } else if (
+                  selectedDomain &&
+                  dummyDomains.find((d) => d.id == selectedDomain)?.name ===
+                    "Work Report"
+                ) {
+                  if (workReportTable && workReportTable.length > 0) {
+                    csv = arrayToCSV(workReportTable);
+                    filename = "work_report.csv";
+                  }
+                } else if (
+                  selectedDomain &&
+                  dummyDomains.find((d) => d.id == selectedDomain)?.name ===
+                    "Expense"
+                ) {
+                  if (expenseReportTable && expenseReportTable.length > 0) {
+                    // Build grouped structure to match UI
+                    const grouped = {};
+                    let maxEntryCount = 0;
+                    expenseReportTable.forEach((row) => {
+                      const project = row.expense_type_name || "-";
+                      const user = row.userLabel;
+                      const head = row.expense_head_title;
+                      const dateKey =
+                        row.expense_track_created_at?.split("T")[0] ||
+                        row.expense_track_created_at?.split(" ")[0];
+                      const amount = Number(row.expense_total_amount) || 0;
+                      if (!grouped[project]) grouped[project] = {};
+                      if (!grouped[project][user]) grouped[project][user] = {};
+                      if (!grouped[project][user][head])
+                        grouped[project][user][head] = [];
+                      grouped[project][user][head].push({
+                        amount,
+                        date: dateKey,
+                      });
+                      if (grouped[project][user][head].length > maxEntryCount)
+                        maxEntryCount = grouped[project][user][head].length;
+                    });
+                    // Prepare CSV rows
+                    const header = ["projects", "user", "expense types"];
+                    for (let i = 0; i < maxEntryCount; i++) header.push("");
+                    const rows = [header];
+                    Object.entries(grouped).forEach(([project, users]) => {
+                      let projectRowspan = Object.values(users).reduce(
+                        (sum, heads) => sum + Object.keys(heads).length,
+                        0
+                      );
+                      let projectRendered = false;
+                      Object.entries(users).forEach(([user, heads]) => {
+                        let userRowspan = Object.keys(heads).length;
+                        let userRendered = false;
+                        Object.entries(heads).forEach(([head, details]) => {
+                          const row = [];
+                          row.push(projectRendered ? "" : project);
+                          row.push(userRendered ? "" : user);
+                          row.push(head);
+                          for (let i = 0; i < maxEntryCount; i++) {
+                            if (details[i]) {
+                              const d = new Date(details[i].date);
+                              const dateStr = `${d.getDate()}.${
+                                d.getMonth() + 1
+                              }.${String(d.getFullYear()).slice(-2)}`;
+                              row.push(`${details[i].amount}/- [${dateStr}]`);
+                            } else {
+                              row.push("");
+                            }
+                          }
+                          rows.push(row);
+                          projectRendered = true;
+                          userRendered = true;
+                        });
+                      });
+                    });
+                    // Convert to CSV
+                    csv = rows
+                      .map((r) =>
+                        r
+                          .map(
+                            (cell) =>
+                              '"' + String(cell).replace(/"/g, '""') + '"'
+                          )
+                          .join(",")
+                      )
+                      .join("\n");
+                    filename = "expense_report.csv";
+                  }
+                } else if (
+                  selectedDomain &&
+                  dummyDomains.find((d) => d.id == selectedDomain)?.name ===
+                    "Requisition"
+                ) {
+                  if (
+                    requisitionReportTable &&
+                    requisitionReportTable.length > 0
+                  ) {
+                    // Build a pretty table with custom headers and formatting to match the UI
+                    const header = [
+                      "Date",
+                      "Title",
+                      "Description",
+                      "Requested Amount",
+                      "Approved Amount",
+                      "Status",
+                      "Created By",
+                      "Submitted To",
+                      "Approved/Rejected By",
+                      "Remarks",
+                      "Created At",
+                    ];
+                    const rows = [header];
+                    requisitionReportTable.forEach((row) => {
+                      rows.push([
+                        row.requisition_date || "",
+                        row.requisition_title || "",
+                        row.requisition_desc || "-",
+                        row.requisition_req_amount !== undefined &&
+                        row.requisition_req_amount !== null &&
+                        row.requisition_req_amount !== ""
+                          ? String.fromCharCode(8377) +
+                            row.requisition_req_amount
+                          : "",
+                        row.requisition_app_amount !== undefined &&
+                        row.requisition_app_amount !== null &&
+                        row.requisition_app_amount !== ""
+                          ? String.fromCharCode(8377) +
+                            row.requisition_app_amount
+                          : "",
+                        (row.status_text || "").toUpperCase(),
+                        row.requisition_created_by || "",
+                        row.requisition_submitted_to || "",
+                        row.requisition_approved_rejected_by || "-",
+                        row.requisition_app_rej_remarks || "-",
+                        row.requisition_created_at || "",
+                      ]);
+                    });
+                    csv = rows
+                      .map((r) =>
+                        r
+                          .map(
+                            (cell) =>
+                              '"' + String(cell).replace(/"/g, '""') + '"'
+                          )
+                          .join(",")
+                      )
+                      .join("\n");
+                    filename = "requisition_report.csv";
+                  }
+                }
+                if (csv) {
+                  const blob = new Blob([csv], { type: "text/csv" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = filename;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } else {
+                  alert("No data to download!");
+                }
+              }}
+            >
+              <FaDownload style={{ marginRight: "0.5rem" }} /> Download Report
             </button>
           </div>
-          {selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Work Report" ? (
+          {selectedDomain &&
+          dummyDomains.find((d) => d.id == selectedDomain)?.name ===
+            "Work Report" ? (
             workReportLoading ? (
-              <div className="results-placeholder"><p className="results-text">Loading work report data...</p></div>
+              <div className="results-placeholder">
+                <p className="results-text">Loading work report data...</p>
+              </div>
             ) : workReportError ? (
-              <div className="results-placeholder"><p className="results-text" style={{color: 'red'}}>{workReportError}</p></div>
-            ) : workReportTable && workReportTable.length > 0 && dateFrom && dateTo ? (
+              <div className="results-placeholder">
+                <p className="results-text" style={{ color: "red" }}>
+                  {workReportError}
+                </p>
+              </div>
+            ) : workReportTable &&
+              workReportTable.length > 0 &&
+              dateFrom &&
+              dateTo ? (
               <div className="attendance-table-wrapper">
                 <table className="attendance-table">
                   <thead>
@@ -601,136 +1022,229 @@ const Reports = () => {
                   </thead>
                   <tbody>
                     {/* For each date in range, show all reports for that date, or empty row if none */}
-                    {getAllDateStringsInRange(dateFrom, dateTo).map(dateStr => {
-                      const reportsForDate = workReportTable.filter(r => r.date === dateStr);
-                      if (reportsForDate.length === 0) {
-                        return (
-                          <tr key={dateStr}>
-                            <td>{formatDateShort(dateStr)}</td>
-                            <td colSpan={4} style={{textAlign:'center',color:'#bbb'}}>No report</td>
-                          </tr>
+                    {getAllDateStringsInRange(dateFrom, dateTo).map(
+                      (dateStr) => {
+                        const reportsForDate = workReportTable.filter(
+                          (r) => r.date === dateStr
                         );
+                        if (reportsForDate.length === 0) {
+                          return (
+                            <tr key={dateStr}>
+                              <td>{formatDateShort(dateStr)}</td>
+                              <td
+                                colSpan={4}
+                                style={{ textAlign: "center", color: "#bbb" }}
+                              >
+                                No report
+                              </td>
+                            </tr>
+                          );
+                        }
+                        return reportsForDate.map((report, idx) => (
+                          <tr key={dateStr + "-" + (report.id || idx)}>
+                            <td>{formatDateShort(report.date)}</td>
+                            <td>{report.user_name}</td>
+                            <td>{report.project_name}</td>
+                            <td
+                              className="work-report-cell"
+                              style={{ whiteSpace: "pre-line" }}
+                            >
+                              {report.work_details}
+                            </td>
+                            <td>{report.submission_time}</td>
+                          </tr>
+                        ));
                       }
-                      return reportsForDate.map((report, idx) => (
-                        <tr key={dateStr + '-' + (report.id || idx)}>
-                          <td>{formatDateShort(report.date)}</td>
-                          <td>{report.user_name}</td>
-                          <td>{report.project_name}</td>
-                          <td className="work-report-cell" style={{ whiteSpace: 'pre-line' }}>{report.work_details}</td>
-                          <td>{report.submission_time}</td>
-                        </tr>
-                      ));
-                    })}
+                    )}
                   </tbody>
                 </table>
               </div>
             ) : (
               <div className="results-placeholder">
-                <p className="results-text">No data to display. Please use the filters above and click <b>Fetch Data</b> to view your report.</p>
+                <p className="results-text">
+                  No data to display. Please use the filters above and click{" "}
+                  <b>Fetch Data</b> to view your report.
+                </p>
               </div>
             )
-          ) : selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Expense" ? (
+          ) : selectedDomain &&
+            dummyDomains.find((d) => d.id == selectedDomain)?.name ===
+              "Expense" ? (
             expenseReportLoading ? (
-              <div className="results-placeholder"><p className="results-text">Loading expense report data...</p></div>
+              <div className="results-placeholder">
+                <p className="results-text">Loading expense report data...</p>
+              </div>
             ) : expenseReportError ? (
-              <div className="results-placeholder"><p className="results-text" style={{color: 'red'}}>{expenseReportError}</p></div>
+              <div className="results-placeholder">
+                <p className="results-text" style={{ color: "red" }}>
+                  {expenseReportError}
+                </p>
+              </div>
             ) : expenseReportTable && expenseReportTable.length > 0 ? (
               <div className="attendance-table-wrapper">
-              <table className="attendance-table expense-report-table custom-expense-table">
-                <thead>
-                  <tr>
-                    <th>projects</th>
-                    <th>user</th>
-                    <th>expense types</th>
-                    {/* Dynamically add maxEntryCount columns for expense entries */}
+                <table className="attendance-table expense-report-table custom-expense-table">
+                  <thead>
+                    <tr>
+                      <th>projects</th>
+                      <th>user</th>
+                      <th>expense types</th>
+                      {/* Dynamically add maxEntryCount columns for expense entries */}
+                      {(() => {
+                        // Build nested structure to find maxEntryCount
+                        const grouped = {};
+                        let maxEntryCount = 0;
+                        expenseReportTable.forEach((row) => {
+                          const project = row.expense_type_name || "-";
+                          const user = row.userLabel;
+                          const head = row.expense_head_title;
+                          const dateKey =
+                            row.expense_track_created_at?.split("T")[0] ||
+                            row.expense_track_created_at?.split(" ")[0];
+                          const amount = Number(row.expense_total_amount) || 0;
+                          if (!grouped[project]) grouped[project] = {};
+                          if (!grouped[project][user])
+                            grouped[project][user] = {};
+                          if (!grouped[project][user][head])
+                            grouped[project][user][head] = [];
+                          grouped[project][user][head].push({
+                            amount,
+                            date: dateKey,
+                          });
+                          if (
+                            grouped[project][user][head].length > maxEntryCount
+                          )
+                            maxEntryCount = grouped[project][user][head].length;
+                        });
+                        return Array.from({ length: maxEntryCount }).map(
+                          (_, i) => <th key={i}> </th>
+                        );
+                      })()}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Group by project, then user, then expense head, and use rowspan for project/user. Each expense type row shows each entry in its own cell. */}
                     {(() => {
-                      // Build nested structure to find maxEntryCount
+                      // Build nested structure and find maxEntryCount
                       const grouped = {};
                       let maxEntryCount = 0;
-                      expenseReportTable.forEach(row => {
-                        const project = row.expense_type_name || '-';
+                      expenseReportTable.forEach((row) => {
+                        const project = row.expense_type_name || "-";
                         const user = row.userLabel;
                         const head = row.expense_head_title;
-                        const dateKey = row.expense_track_created_at?.split('T')[0] || row.expense_track_created_at?.split(' ')[0];
+                        const dateKey =
+                          row.expense_track_created_at?.split("T")[0] ||
+                          row.expense_track_created_at?.split(" ")[0];
                         const amount = Number(row.expense_total_amount) || 0;
                         if (!grouped[project]) grouped[project] = {};
-                        if (!grouped[project][user]) grouped[project][user] = {};
-                        if (!grouped[project][user][head]) grouped[project][user][head] = [];
-                        grouped[project][user][head].push({ amount, date: dateKey });
-                        if (grouped[project][user][head].length > maxEntryCount) maxEntryCount = grouped[project][user][head].length;
+                        if (!grouped[project][user])
+                          grouped[project][user] = {};
+                        if (!grouped[project][user][head])
+                          grouped[project][user][head] = [];
+                        grouped[project][user][head].push({
+                          amount,
+                          date: dateKey,
+                        });
+                        if (grouped[project][user][head].length > maxEntryCount)
+                          maxEntryCount = grouped[project][user][head].length;
                       });
-                      return Array.from({ length: maxEntryCount }).map((_, i) => (
-                        <th key={i}> </th>
-                      ));
-                    })()}
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Group by project, then user, then expense head, and use rowspan for project/user. Each expense type row shows each entry in its own cell. */}
-                  {(() => {
-                    // Build nested structure and find maxEntryCount
-                    const grouped = {};
-                    let maxEntryCount = 0;
-                    expenseReportTable.forEach(row => {
-                      const project = row.expense_type_name || '-';
-                      const user = row.userLabel;
-                      const head = row.expense_head_title;
-                      const dateKey = row.expense_track_created_at?.split('T')[0] || row.expense_track_created_at?.split(' ')[0];
-                      const amount = Number(row.expense_total_amount) || 0;
-                      if (!grouped[project]) grouped[project] = {};
-                      if (!grouped[project][user]) grouped[project][user] = {};
-                      if (!grouped[project][user][head]) grouped[project][user][head] = [];
-                      grouped[project][user][head].push({ amount, date: dateKey });
-                      if (grouped[project][user][head].length > maxEntryCount) maxEntryCount = grouped[project][user][head].length;
-                    });
-                    // Prepare flat rows with rowspan info
-                    const rows = [];
-                    Object.entries(grouped).forEach(([project, users]) => {
-                      const projectRowspan = Object.values(users).reduce((sum, heads) => sum + Object.keys(heads).length, 0);
-                      let projectRendered = false;
-                      Object.entries(users).forEach(([user, heads]) => {
-                        const userRowspan = Object.keys(heads).length;
-                        let userRendered = false;
-                        Object.entries(heads).forEach(([head, details], idx) => {
-                          rows.push(
-                            <tr key={project + '-' + user + '-' + head}>
-                              {!projectRendered && (
-                                <td rowSpan={projectRowspan} className="custom-project-cell">{project}</td>
-                              )}
-                              {!userRendered && (
-                                <td rowSpan={userRowspan} className="custom-user-cell">{user}</td>
-                              )}
-                              <td className="custom-expense-type-cell">
-                                {head}
-                              </td>
-                              {/* Render each entry in its own cell, fill up to maxEntryCount */}
-                              {Array.from({ length: maxEntryCount }).map((_, i) => (
-                                <td key={i} className="custom-expense-entry-cell">
-                                  {details[i] ? (<><b>{details[i].amount}/-</b> [{(() => { const d = new Date(details[i].date); return `${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(-2)}`; })()}]</>) : ''}
-                                </td>
-                        ))}
-                      </tr>
+                      // Prepare flat rows with rowspan info
+                      const rows = [];
+                      Object.entries(grouped).forEach(([project, users]) => {
+                        const projectRowspan = Object.values(users).reduce(
+                          (sum, heads) => sum + Object.keys(heads).length,
+                          0
+                        );
+                        let projectRendered = false;
+                        Object.entries(users).forEach(([user, heads]) => {
+                          const userRowspan = Object.keys(heads).length;
+                          let userRendered = false;
+                          Object.entries(heads).forEach(
+                            ([head, details], idx) => {
+                              rows.push(
+                                <tr key={project + "-" + user + "-" + head}>
+                                  {!projectRendered && (
+                                    <td
+                                      rowSpan={projectRowspan}
+                                      className="custom-project-cell"
+                                    >
+                                      {project}
+                                    </td>
+                                  )}
+                                  {!userRendered && (
+                                    <td
+                                      rowSpan={userRowspan}
+                                      className="custom-user-cell"
+                                    >
+                                      {user}
+                                    </td>
+                                  )}
+                                  <td className="custom-expense-type-cell">
+                                    {head}
+                                  </td>
+                                  {/* Render each entry in its own cell, fill up to maxEntryCount */}
+                                  {Array.from({ length: maxEntryCount }).map(
+                                    (_, i) => (
+                                      <td
+                                        key={i}
+                                        className="custom-expense-entry-cell"
+                                      >
+                                        {details[i] ? (
+                                          <>
+                                            <b>{details[i].amount}/-</b> [
+                                            {(() => {
+                                              const d = new Date(
+                                                details[i].date
+                                              );
+                                              return `${d.getDate()}.${
+                                                d.getMonth() + 1
+                                              }.${String(d.getFullYear()).slice(
+                                                -2
+                                              )}`;
+                                            })()}
+                                            ]
+                                          </>
+                                        ) : (
+                                          ""
+                                        )}
+                                      </td>
+                                    )
+                                  )}
+                                </tr>
+                              );
+                              projectRendered = true;
+                              userRendered = true;
+                            }
                           );
-                          projectRendered = true;
-                          userRendered = true;
                         });
                       });
-                    });
-                    return rows;
-                  })()}
-                </tbody>
-              </table>
-            </div>
+                      return rows;
+                    })()}
+                  </tbody>
+                </table>
+              </div>
             ) : (
               <div className="results-placeholder">
-                <p className="results-text">No data to display. Please use the filters above and click <b>Fetch Data</b> to view your report.</p>
+                <p className="results-text">
+                  No data to display. Please use the filters above and click{" "}
+                  <b>Fetch Data</b> to view your report.
+                </p>
               </div>
             )
-          ) : selectedDomain && dummyDomains.find(d => d.id == selectedDomain)?.name === "Requisition" ? (
+          ) : selectedDomain &&
+            dummyDomains.find((d) => d.id == selectedDomain)?.name ===
+              "Requisition" ? (
             requisitionReportLoading ? (
-              <div className="results-placeholder"><p className="results-text">Loading requisition report data...</p></div>
+              <div className="results-placeholder">
+                <p className="results-text">
+                  Loading requisition report data...
+                </p>
+              </div>
             ) : requisitionReportError ? (
-              <div className="results-placeholder"><p className="results-text" style={{color: 'red'}}>{requisitionReportError}</p></div>
+              <div className="results-placeholder">
+                <p className="results-text" style={{ color: "red" }}>
+                  {requisitionReportError}
+                </p>
+              </div>
             ) : requisitionReportTable && requisitionReportTable.length > 0 ? (
               <div className="attendance-table-wrapper">
                 <table className="attendance-table">
@@ -754,18 +1268,24 @@ const Reports = () => {
                       <tr key={requisition.requisition_id || index}>
                         <td>{requisition.requisition_date}</td>
                         <td>{requisition.requisition_title}</td>
-                        <td>{requisition.requisition_desc || '-'}</td>
+                        <td>{requisition.requisition_desc || "-"}</td>
                         <td>₹{requisition.requisition_req_amount}</td>
                         <td>₹{requisition.requisition_app_amount}</td>
                         <td>
-                          <span className={`status-report status-${requisition.status_text?.toLowerCase()}`}>
+                          <span
+                            className={`status-report status-${requisition.status_text?.toLowerCase()}`}
+                          >
                             {requisition.status_text}
                           </span>
                         </td>
                         <td>{requisition.requisition_created_by}</td>
                         <td>{requisition.requisition_submitted_to}</td>
-                        <td>{requisition.requisition_approved_rejected_by || '-'}</td>
-                        <td>{requisition.requisition_app_rej_remarks || '-'}</td>
+                        <td>
+                          {requisition.requisition_approved_rejected_by || "-"}
+                        </td>
+                        <td>
+                          {requisition.requisition_app_rej_remarks || "-"}
+                        </td>
                         <td>{requisition.requisition_created_at}</td>
                       </tr>
                     ))}
@@ -774,13 +1294,22 @@ const Reports = () => {
               </div>
             ) : (
               <div className="results-placeholder">
-                <p className="results-text">No data to display. Please use the filters above and click <b>Fetch Data</b> to view your report.</p>
+                <p className="results-text">
+                  No data to display. Please use the filters above and click{" "}
+                  <b>Fetch Data</b> to view your report.
+                </p>
               </div>
             )
           ) : attendanceLoading ? (
-            <div className="results-placeholder"><p className="results-text">Loading attendance data...</p></div>
+            <div className="results-placeholder">
+              <p className="results-text">Loading attendance data...</p>
+            </div>
           ) : attendanceError ? (
-            <div className="results-placeholder"><p className="results-text" style={{color: 'red'}}>{attendanceError}</p></div>
+            <div className="results-placeholder">
+              <p className="results-text" style={{ color: "red" }}>
+                {attendanceError}
+              </p>
+            </div>
           ) : attendanceTable && selectedUsers.length > 0 ? (
             <div className="attendance-table-wrapper">
               <table className="attendance-table">
@@ -801,7 +1330,7 @@ const Reports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedUsers.map(userOption => {
+                  {selectedUsers.map((userOption) => {
                     const userId = userOption.value;
                     const attData = attendanceTable[userId];
                     const userLabel = userOption.label;
@@ -810,7 +1339,19 @@ const Reports = () => {
                       return (
                         <tr key={userId}>
                           <td>{userLabel}</td>
-                          <td colSpan={selectedUsers[0] && Array.isArray(attendanceTable[selectedUsers[0].value]) ? attendanceTable[selectedUsers[0].value].length : 1} style={{color: 'red'}}>{attData.error}</td>
+                          <td
+                            colSpan={
+                              selectedUsers[0] &&
+                              Array.isArray(
+                                attendanceTable[selectedUsers[0].value]
+                              )
+                                ? attendanceTable[selectedUsers[0].value].length
+                                : 1
+                            }
+                            style={{ color: "red" }}
+                          >
+                            {attData.error}
+                          </td>
                         </tr>
                       );
                     }
@@ -821,8 +1362,10 @@ const Reports = () => {
                           let val = "";
                           if (att.isHoliday || att.isSunday) val = "H";
                           else if (att.hasLogin && att.is_logged_out) val = "P";
-                          else if (!att.hasLogin && !att.is_logged_out) val = "A";
-                          else if (att.hasLogin && !att.is_logged_out) val = "NLO";
+                          else if (!att.hasLogin && !att.is_logged_out)
+                            val = "A";
+                          else if (att.hasLogin && !att.is_logged_out)
+                            val = "NLO";
                           else val = "-";
                           return <td key={idx}>{val}</td>;
                         })}
@@ -834,7 +1377,10 @@ const Reports = () => {
             </div>
           ) : (
             <div className="results-placeholder">
-              <p className="results-text">No data to display. Please use the filters above and click <b>Fetch Data</b> to view your report.</p>
+              <p className="results-text">
+                No data to display. Please use the filters above and click{" "}
+                <b>Fetch Data</b> to view your report.
+              </p>
             </div>
           )}
         </section>
