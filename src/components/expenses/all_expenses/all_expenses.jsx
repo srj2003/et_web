@@ -2,11 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./all_expenses.css";
 import {
   Search,
-  Filter,
-  Calendar,
-  ArrowRight,
   CheckCircle,
-  XCircle,
   Clock,
   X,
   ChevronLeft,
@@ -36,7 +32,8 @@ const AllExpensesWeb = () => {
     rejected: 0,
   });
   const [viewMode, setViewMode] = useState("card"); // "card" or "table"
-
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   // Helper function to format date
   const formatDate = useCallback((dateString) => {
     if (!dateString) return "N/A";
@@ -183,7 +180,8 @@ const AllExpensesWeb = () => {
     }
   }, []);
 
-  // Filter expenses based on search, status, and date range
+  // Filter expenses based on search, status, and date range (using fromDate/toDate from UI)
+  // Filtered expenses and stats based on all filters (search, status, date)
   const filteredExpenses = useCallback(() => {
     return expenses.filter((expense) => {
       const matchesSearch =
@@ -197,15 +195,53 @@ const AllExpensesWeb = () => {
       const matchesStatus =
         selectedStatus === "All" || expense.status === selectedStatus;
 
+      // Use fromDate/toDate from date pickers if set, else fallback to startDate/endDate (quick-selects)
+      let filterFrom = fromDate
+        ? moment(fromDate, "YYYY-MM-DD").startOf("day")
+        : startDate
+        ? moment(startDate).startOf("day")
+        : null;
+      let filterTo = toDate
+        ? moment(toDate, "YYYY-MM-DD").endOf("day")
+        : endDate
+        ? moment(endDate).endOf("day")
+        : null;
       let matchesDate = true;
-      if (startDate && endDate) {
-        const expenseDate = moment(expense.date, "MMM D, YYYY").toDate();
-        matchesDate = expenseDate >= startDate && expenseDate <= endDate;
+      if (filterFrom && filterTo) {
+        const expenseDate = moment(expense.date, "MMM D, YYYY");
+        matchesDate =
+          expenseDate.isSameOrAfter(filterFrom) &&
+          expenseDate.isSameOrBefore(filterTo);
+      } else if (filterFrom) {
+        const expenseDate = moment(expense.date, "MMM D, YYYY");
+        matchesDate = expenseDate.isSameOrAfter(filterFrom);
+      } else if (filterTo) {
+        const expenseDate = moment(expense.date, "MMM D, YYYY");
+        matchesDate = expenseDate.isSameOrBefore(filterTo);
       }
 
       return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [expenses, searchQuery, selectedStatus, startDate, endDate]);
+  }, [
+    expenses,
+    searchQuery,
+    selectedStatus,
+    fromDate,
+    toDate,
+    startDate,
+    endDate,
+  ]);
+
+  // Stats for filtered expenses
+  const filteredStats = (() => {
+    const filtered = filteredExpenses();
+    return {
+      total: filtered.length,
+      Unattended: filtered.filter((exp) => exp.status === "Unattended").length,
+      approved: filtered.filter((exp) => exp.status === "Approved").length,
+      rejected: filtered.filter((exp) => exp.status === "Rejected").length,
+    };
+  })();
 
   const handleFilterSelect = (status) => {
     setSelectedStatus(status);
@@ -275,7 +311,7 @@ const AllExpensesWeb = () => {
           </div>
           <div className="allexpense-stat-info">
             <h3>Total Expenses</h3>
-            <div className="allexpense-stat-value">{stats.total}</div>
+            <div className="allexpense-stat-value">{filteredStats.total}</div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -290,7 +326,9 @@ const AllExpensesWeb = () => {
           </div>
           <div className="allexpense-stat-info">
             <h3>Approved</h3>
-            <div className="allexpense-stat-value">{stats.approved}</div>
+            <div className="allexpense-stat-value">
+              {filteredStats.approved}
+            </div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -305,7 +343,9 @@ const AllExpensesWeb = () => {
           </div>
           <div className="allexpense-stat-info">
             <h3>Unattended</h3>
-            <div className="allexpense-stat-value">{stats.Unattended}</div>
+            <div className="allexpense-stat-value">
+              {filteredStats.Unattended}
+            </div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -320,7 +360,9 @@ const AllExpensesWeb = () => {
           </div>
           <div className="allexpense-stat-info">
             <h3>Rejected</h3>
-            <div className="allexpense-stat-value">{stats.rejected}</div>
+            <div className="allexpense-stat-value">
+              {filteredStats.rejected}
+            </div>
           </div>
         </div>
       </div>
@@ -345,24 +387,61 @@ const AllExpensesWeb = () => {
           <option>Approved</option>
           <option>Rejected</option>
         </select>
+        <div>
+          <button
+            className="requestedrequesitionfilter-reset-btn"
+            onClick={() => {
+              setSearchQuery("");
+              setSelectedStatus("All");
+              setFromDate("");
+              setToDate("");
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
-      <div className="myexpenses-view-toggle">
-        <button
-          className={`myexpenses-view-btn${
-            viewMode === "card" ? " active" : ""
-          }`}
-          onClick={() => setViewMode("card")}
-        >
-          Card View
-        </button>
-        <button
-          className={`myexpenses-view-btn${
-            viewMode === "table" ? " active" : ""
-          }`}
-          onClick={() => setViewMode("table")}
-        >
-          Table View
-        </button>
+      <div className="myrequisition-filter-row">
+        <div className="requestedrequesitiondatefilter-container requestedrequesitiondatefilter-row">
+          <label className="requestedrequesitiondatefilter-label label-margin-right">
+            From:
+          </label>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-from input-margin-right"
+            max={toDate || undefined}
+          />
+          <label className="requestedrequesitiondatefilter-label label-margin-right">
+            To:
+          </label>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-to"
+            min={fromDate || undefined}
+          />
+        </div>
+        <div className="myexpenses-view-toggle view-toggle-align">
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "card" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("card")}
+          >
+            Card View
+          </button>
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "table" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("table")}
+          >
+            Table View
+          </button>
+        </div>
       </div>
       {viewMode === "card" ? (
         <div className="all_expenses-expenses-grid">

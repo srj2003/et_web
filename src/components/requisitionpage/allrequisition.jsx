@@ -15,6 +15,7 @@ import {
   DollarSign,
   CheckCircle,
   AlertTriangle,
+  RotateCcw,
 } from "lucide-react";
 
 const getStatusColor = (status) => {
@@ -71,6 +72,8 @@ export default function AllRequisitions() {
   const [filtered, setFiltered] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [selected, setSelected] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -163,13 +166,55 @@ export default function AllRequisitions() {
         selectedStatus === "All" ||
         selectedStatus === "All Status" ||
         r.requisition_status === selectedStatus;
-      return matchesSearch && matchesStatus;
+
+      // Date filter logic
+      let matchesDate = true;
+      // Date filter logic (strict: only show if within range, inclusive)
+      let dateInRange = true;
+      if (fromDate && toDate) {
+        // Both from and to set: must be within range (inclusive)
+        const reqDate = new Date(r.requisition_date);
+        const from = new Date(fromDate);
+        const to = new Date(toDate);
+        reqDate.setHours(0, 0, 0, 0);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(0, 0, 0, 0);
+        dateInRange = reqDate >= from && reqDate <= to;
+      } else if (fromDate) {
+        const reqDate = new Date(r.requisition_date);
+        const from = new Date(fromDate);
+        reqDate.setHours(0, 0, 0, 0);
+        from.setHours(0, 0, 0, 0);
+        dateInRange = reqDate >= from;
+      } else if (toDate) {
+        const reqDate = new Date(r.requisition_date);
+        const to = new Date(toDate);
+        reqDate.setHours(0, 0, 0, 0);
+        to.setHours(0, 0, 0, 0);
+        dateInRange = reqDate <= to;
+      }
+
+      return matchesSearch && matchesStatus && dateInRange;
     });
     setFiltered(filteredData);
     setCurrentPage(1);
-  }, [searchQuery, selectedStatus, requisitions]);
+  }, [searchQuery, selectedStatus, fromDate, toDate, requisitions]);
 
   const [viewMode, setViewMode] = useState("card");
+  // Live update stats based on filtered data
+  const liveStats = {
+    total: filtered.length,
+    approved: filtered.filter((r) => r.requisition_status === "Approved")
+      .length,
+    rejected: filtered.filter((r) => r.requisition_status === "Rejected")
+      .length,
+    unattended: filtered.filter((r) => r.requisition_status === "Unattended")
+      .length,
+    partiallyApproved: filtered.filter(
+      (r) => r.requisition_status === "Partially Approved"
+    ).length,
+  };
+
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginated = filtered.slice(
     (currentPage - 1) * itemsPerPage,
@@ -230,8 +275,8 @@ export default function AllRequisitions() {
             <DollarSign size={28} />
           </div>
           <div className="allexpense-stat-info">
-            <h3>Total Expenses</h3>
-            <div className="allexpense-stat-value">{stats.total}</div>
+            <h3>Total Requisitions</h3>
+            <div className="allexpense-stat-value">{liveStats.total}</div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -246,7 +291,7 @@ export default function AllRequisitions() {
           </div>
           <div className="allexpense-stat-info">
             <h3>Approved</h3>
-            <div className="allexpense-stat-value">{stats.approved}</div>
+            <div className="allexpense-stat-value">{liveStats.approved}</div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -263,7 +308,7 @@ export default function AllRequisitions() {
           <div className="allexpense-stat-info">
             <h3>Partially Approved</h3>
             <div className="allexpense-stat-value">
-              {stats.partiallyApproved}
+              {liveStats.partiallyApproved}
             </div>
           </div>
         </div>
@@ -279,7 +324,7 @@ export default function AllRequisitions() {
           </div>
           <div className="allexpense-stat-info">
             <h3>Unattended</h3>
-            <div className="allexpense-stat-value">{stats.unattended}</div>
+            <div className="allexpense-stat-value">{liveStats.unattended}</div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -294,7 +339,7 @@ export default function AllRequisitions() {
           </div>
           <div className="allexpense-stat-info">
             <h3>Rejected</h3>
-            <div className="allexpense-stat-value">{stats.rejected}</div>
+            <div className="allexpense-stat-value">{liveStats.rejected}</div>
           </div>
         </div>
       </div>
@@ -322,28 +367,61 @@ export default function AllRequisitions() {
           <option value="Unattended">Unattended</option>
           <option value="Partially Approved">Partially Approved</option>
         </select>
-      </div>
-
-      {/* View Toggle */}
-      <div className="myexpenses-view-toggle">
         <button
-          className={`myexpenses-view-btn${
-            viewMode === "card" ? " active" : ""
-          }`}
-          onClick={() => setViewMode("card")}
+          className="requestedrequesitionfilter-reset-btn"
+          title="Reset Filters"
+          onClick={() => {
+            setSearchQuery("");
+            setSelectedStatus("All");
+            setFromDate("");
+            setToDate("");
+          }}
         >
-          Card View
-        </button>
-        <button
-          className={`myexpenses-view-btn${
-            viewMode === "table" ? " active" : ""
-          }`}
-          onClick={() => setViewMode("table")}
-        >
-          Table View
+          <X size={18} />
         </button>
       </div>
-
+      <div className="myrequisition-filter-row">
+        <div className="requestedrequesitiondatefilter-container requestedrequesitiondatefilter-row">
+          <label className="requestedrequesitiondatefilter-label label-margin-right">
+            From:
+          </label>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-from input-margin-right"
+            max={toDate || undefined}
+          />
+          <label className="requestedrequesitiondatefilter-label label-margin-right">
+            To:
+          </label>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-to"
+            min={fromDate || undefined}
+          />
+        </div>
+        <div className="myexpenses-view-toggle view-toggle-align">
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "card" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("card")}
+          >
+            Card View
+          </button>
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "table" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("table")}
+          >
+            Table View
+          </button>
+        </div>
+      </div>
       {viewMode === "card" ? (
         <div className="requisition-requisitions-grid">
           {paginated.map((item, idx) => (
@@ -352,21 +430,9 @@ export default function AllRequisitions() {
               key={idx}
               data-status={item.requisition_status}
               style={{ background: getStatusBg(item.requisition_status) }}
-              onClick={() => setSelected(item)}
             >
               <div className="requisition-card-header">
                 <div className="requisition-submission-flow">
-                  <div className="requisition-name-container">
-                    <h3 className="requisition-employee-name">
-                      {item.created_by_full_name}
-                    </h3>
-                    <div className="requisition-submission-arrow">
-                      <ArrowRight size={16} color="#6366f1" />
-                      <span>
-                        {item.submitted_to_full_name || "Not submitted"}
-                      </span>
-                    </div>
-                  </div>
                   <span
                     className="requisition-status-badge"
                     style={{
@@ -377,18 +443,89 @@ export default function AllRequisitions() {
                   </span>
                 </div>
               </div>
-              <div className="requisition-requisition-details">
+              <div
+                className="requisition-requisition-details"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                }}
+              >
                 <h4 className="requisition-requisition-title">
                   {item.requisition_title}
                 </h4>
-                <span className="requisition-amount">
-                  ₹{parseFloat(item.requisition_req_amount).toFixed(2)}
-                </span>
-              </div>
-              <div className="requisition-requisition-meta">
-                <span className="requisition-date">
-                  {new Date(item.requisition_date).toLocaleDateString()}
-                </span>
+                <div
+                  className="requestedleaves-leave-details"
+                  style={{ flex: 1 }}
+                >
+                  <div className="requestedleaves-leave-dates">
+                    <div className="requestedleaves-date-item">
+                      <span className="requestedleaves-date-label">
+                        Amount:
+                      </span>
+                      <span className="requestedleaves-date-value">
+                        ₹
+                        {parseFloat(item.requisition_req_amount || 0).toFixed(
+                          2
+                        )}
+                      </span>
+                    </div>
+                    <div className="requestedleaves-date-item">
+                      <span className="requestedleaves-date-label">
+                        Submission Date:
+                      </span>
+                      <span className="requestedleaves-date-value">
+                        {new Date(item.requisition_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="requestedleaves-date-item">
+                      <span className="requestedleaves-date-label">
+                        Submitted To:
+                      </span>
+                      <span className="requestedleaves-date-value">
+                        {item.submitted_to_full_name || "Not submitted"}
+                      </span>
+                    </div>
+                    {item.requisition_status !== "Unattended" && (
+                      <div className="requestedleaves-date-item">
+                        <span className="requestedleaves-date-label">
+                          Approved/Rejected By:
+                        </span>
+                        <span className="requestedleaves-date-value">
+                          {item.submitted_to_full_name}
+                        </span>
+                      </div>
+                    )}
+                    {item.requisition_status !== "Unattended" && (
+                      <div className="requestedleaves-date-item">
+                        <span className="requestedleaves-date-label">
+                          Approved amount:
+                        </span>
+                        <span className="requestedleaves-date-value">
+                          ₹{item.requisition_app_amount}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-end",
+                    marginTop: "auto",
+                    minHeight: 60,
+                  }}
+                >
+                  <button
+                    className="card-view-details-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelected(item);
+                    }}
+                  >
+                    View Details
+                  </button>
+                </div>
               </div>
             </div>
           ))}

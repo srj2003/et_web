@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import moment from "moment";
 import "./allleaves.css";
 import {
   Search,
@@ -10,6 +11,7 @@ import {
   ChevronRight,
   X,
   DollarSign,
+  Calendar1,
 } from "lucide-react";
 
 const getStatusColor = (status) => {
@@ -41,6 +43,9 @@ export default function AllLeaves() {
     rejected: 0,
   });
   const [openMenuRow, setOpenMenuRow] = useState(null);
+  const [viewMode, setViewMode] = useState("card");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const itemsPerPage = 16;
 
   useEffect(() => {
@@ -100,6 +105,7 @@ export default function AllLeaves() {
     fetchLeaves();
   }, []);
 
+  // Filtered leaves and stats based on all filters (search, status, date)
   useEffect(() => {
     const filteredData = leaves.filter((leave) => {
       const matchesSearch =
@@ -110,21 +116,49 @@ export default function AllLeaves() {
       const matchesStatus =
         selectedStatus === "All" ||
         leave.leave_track_status_text === selectedStatus;
-      return matchesSearch && matchesStatus;
+      // Use moment for robust date comparison
+      let matchesDateRange = true;
+      let filterFrom = fromDate
+        ? moment(fromDate, "YYYY-MM-DD").startOf("day")
+        : null;
+      let filterTo = toDate ? moment(toDate, "YYYY-MM-DD").endOf("day") : null;
+      if (filterFrom && filterTo) {
+        const leaveFrom = moment(leave.leave_from_date, "YYYY-MM-DD");
+        const leaveTo = moment(leave.leave_to_date, "YYYY-MM-DD");
+        matchesDateRange =
+          leaveFrom.isSameOrAfter(filterFrom) &&
+          leaveTo.isSameOrBefore(filterTo);
+      } else if (filterFrom) {
+        const leaveFrom = moment(leave.leave_from_date, "YYYY-MM-DD");
+        matchesDateRange = leaveFrom.isSameOrAfter(filterFrom);
+      } else if (filterTo) {
+        const leaveTo = moment(leave.leave_to_date, "YYYY-MM-DD");
+        matchesDateRange = leaveTo.isSameOrBefore(filterTo);
+      }
+      return matchesSearch && matchesStatus && matchesDateRange;
     });
     setFiltered(filteredData);
     setCurrentPage(1);
-  }, [searchQuery, selectedStatus, leaves]);
+    // Update stats based on filteredData
+    setStats({
+      total: filteredData.length,
+      unattended: filteredData.filter(
+        (l) => l.leave_track_status_text === "Unattended"
+      ).length,
+      approved: filteredData.filter(
+        (l) => l.leave_track_status_text === "Approved"
+      ).length,
+      rejected: filteredData.filter(
+        (l) => l.leave_track_status_text === "Rejected"
+      ).length,
+    });
+  }, [searchQuery, selectedStatus, fromDate, toDate, leaves]);
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginated = filtered.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  // Add viewMode state for card/table toggle
-  const [viewMode, setViewMode] = useState("card");
-  // Add openMenuRow state for three-dot menu in table view
 
   if (loading) {
     return (
@@ -163,10 +197,10 @@ export default function AllLeaves() {
               color: "#fff",
             }}
           >
-            <DollarSign size={28} />
+            <Calendar1 size={28} />
           </div>
           <div className="allexpense-stat-info">
-            <h3>Total Expenses</h3>
+            <h3>Total Leaves</h3>
             <div className="allexpense-stat-value">{stats.total}</div>
           </div>
         </div>
@@ -197,7 +231,7 @@ export default function AllLeaves() {
           </div>
           <div className="allexpense-stat-info">
             <h3>Unattended</h3>
-            <div className="allexpense-stat-value">{stats.Unattended}</div>
+            <div className="allexpense-stat-value">{stats.unattended}</div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -238,27 +272,64 @@ export default function AllLeaves() {
           <option>Approved</option>
           <option>Rejected</option>
         </select>
+        <div>
+          <button
+            className="requestedrequesitionfilter-reset-btn"
+            onClick={() => {
+              setSearchQuery("");
+              setSelectedStatus("All");
+              setFromDate && setFromDate("");
+              setToDate && setToDate("");
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
-      {/* Card/Table View Toggle */}
-      <div className="myexpenses-view-toggle">
-        <button
-          className={`myexpenses-view-btn${
-            viewMode === "card" ? " active" : ""
-          }`}
-          onClick={() => setViewMode("card")}
-        >
-          Card View
-        </button>
-        <button
-          className={`myexpenses-view-btn${
-            viewMode === "table" ? " active" : ""
-          }`}
-          onClick={() => setViewMode("table")}
-        >
-          Table View
-        </button>
+      <div className="myrequisition-filter-row">
+        <div className="requestedrequesitiondatefilter-container requestedrequesitiondatefilter-row">
+          <label className="requestedrequesitiondatefilter-label label-margin-right">
+            From:
+          </label>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-from input-margin-right"
+            max={toDate || undefined}
+          />
+          <label className="requestedrequesitiondatefilter-label label-margin-right">
+            To:
+          </label>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-to"
+            min={fromDate || undefined}
+          />
+        </div>
+        <div className="myexpenses-view-toggle view-toggle-align">
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "card" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("card")}
+          >
+            Card View
+          </button>
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "table" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("table")}
+          >
+            Table View
+          </button>
+        </div>
       </div>
+
       {viewMode === "card" ? (
         <div className="leaves-grid">
           {paginated.map((leave, idx) => (

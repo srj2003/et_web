@@ -10,7 +10,37 @@ import {
   AlertCircle,
   DollarSign,
   CheckCircle,
+  RotateCcw,
 } from "lucide-react";
+const getStatusColor = (status) => {
+  switch (status) {
+    case "Approved":
+      return "#10b981";
+    case "Partially Approved":
+      return "#fbbf24";
+    case "Rejected":
+      return "#ef4444";
+    case "Unattended":
+      return "#64748b";
+    default:
+      return "#64748b";
+  }
+};
+
+const getStatusBg = (status) => {
+  switch (status) {
+    case "Approved":
+      return "linear-gradient(145deg, #f0fdf4, #dcfce7)";
+    case "Rejected":
+      return "linear-gradient(145deg, #fef2f2, #fee2e2)";
+    case "Partially Approved":
+      return "linear-gradient(145deg, #fef9c3, #fef08a)";
+    case "Unattended":
+      return "linear-gradient(145deg, #f1f5f9, #e2e8f0)";
+    default:
+      return "white";
+  }
+};
 
 const RequisitionsWeb = () => {
   const [requisitions, setRequisitions] = useState([]);
@@ -18,6 +48,8 @@ const RequisitionsWeb = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [selectedRequisition, setSelectedRequisition] = useState(null);
   const [showRequisitionDetails, setShowRequisitionDetails] = useState(false);
   const [approvedAmount, setApprovedAmount] = useState("");
@@ -89,7 +121,7 @@ const RequisitionsWeb = () => {
             requested_amount: item.requisition_req_amount,
             approved_amount: item.requisition_app_amount,
           }));
-
+          console.log("Fetched Requisitions:", transformedData);
           setRequisitions(transformedData);
 
           // Calculate stats
@@ -182,6 +214,7 @@ const RequisitionsWeb = () => {
     }
   };
 
+  // Filtered requisitions based on all filters (search, status, date)
   const filteredRequisitions = requisitions.filter((requisition) => {
     const matchesSearch =
       requisition.employee.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -193,8 +226,38 @@ const RequisitionsWeb = () => {
       selectedStatus === "All" ||
       requisition.requisition_status === selectedStatus;
 
-    return matchesSearch && matchesStatus;
+    // Date filter logic
+    let matchesDate = true;
+    if (fromDate) {
+      const reqDate = new Date(requisition.requisition_date);
+      const from = new Date(fromDate);
+      if (reqDate < from) matchesDate = false;
+    }
+    if (toDate) {
+      const reqDate = new Date(requisition.requisition_date);
+      const to = new Date(toDate);
+      if (reqDate > to) matchesDate = false;
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
+
+  // Live update stats based on filtered requisitions
+  const liveStats = {
+    total: filteredRequisitions.length,
+    unattended: filteredRequisitions.filter(
+      (req) => req.requisition_status === "Unattended"
+    ).length,
+    approved: filteredRequisitions.filter(
+      (req) => req.requisition_status === "Approved"
+    ).length,
+    rejected: filteredRequisitions.filter(
+      (req) => req.requisition_status === "Rejected"
+    ).length,
+    partiallyApproved: filteredRequisitions.filter(
+      (req) => req.requisition_status === "Partially Approved"
+    ).length,
+  };
 
   const totalPages = Math.ceil(filteredRequisitions.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -243,8 +306,8 @@ const RequisitionsWeb = () => {
               <DollarSign size={28} />
             </div>
             <div className="allexpense-stat-info">
-              <h3>Total Expenses</h3>
-              <div className="allexpense-stat-value">{stats.total}</div>
+              <h3>Total Requisitions</h3>
+              <div className="allexpense-stat-value">{liveStats.total}</div>
             </div>
           </div>
           <div className="allexpense-stat-card">
@@ -259,7 +322,7 @@ const RequisitionsWeb = () => {
             </div>
             <div className="allexpense-stat-info">
               <h3>Approved</h3>
-              <div className="allexpense-stat-value">{stats.approved}</div>
+              <div className="allexpense-stat-value">{liveStats.approved}</div>
             </div>
           </div>
           <div className="allexpense-stat-card">
@@ -276,7 +339,7 @@ const RequisitionsWeb = () => {
             <div className="allexpense-stat-info">
               <h3>Partially Approved</h3>
               <div className="allexpense-stat-value">
-                {stats.partiallyApproved}
+                {liveStats.partiallyApproved}
               </div>
             </div>
           </div>
@@ -292,7 +355,9 @@ const RequisitionsWeb = () => {
             </div>
             <div className="allexpense-stat-info">
               <h3>Unattended</h3>
-              <div className="allexpense-stat-value">{stats.unattended}</div>
+              <div className="allexpense-stat-value">
+                {liveStats.unattended}
+              </div>
             </div>
           </div>
           <div className="allexpense-stat-card">
@@ -307,7 +372,7 @@ const RequisitionsWeb = () => {
             </div>
             <div className="allexpense-stat-info">
               <h3>Rejected</h3>
-              <div className="allexpense-stat-value">{stats.rejected}</div>
+              <div className="allexpense-stat-value">{liveStats.rejected}</div>
             </div>
           </div>
         </div>
@@ -333,135 +398,158 @@ const RequisitionsWeb = () => {
             <option value="Partially Approved">Partially Approved</option>
             <option value="Rejected">Rejected</option>
           </select>
+          {/* Reset Button below search bar */}
+          <div>
+            <button
+              className="requestedrequesitionfilter-reset-btn"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedStatus("All");
+                setFromDate("");
+                setToDate("");
+              }}
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
-        {/* Card/Table View Toggle */}
-        <div className="myexpenses-view-toggle">
-          <button
-            className={`myexpenses-view-btn${
-              viewMode === "card" ? " active" : ""
-            }`}
-            onClick={() => setViewMode("card")}
-          >
-            Card View
-          </button>
-          <button
-            className={`myexpenses-view-btn${
-              viewMode === "table" ? " active" : ""
-            }`}
-            onClick={() => setViewMode("table")}
-          >
-            Table View
-          </button>
+        <div className="myrequisition-filter-row">
+          <div className="requestedrequesitiondatefilter-container requestedrequesitiondatefilter-row">
+            <label className="requestedrequesitiondatefilter-label label-margin-right">
+              From:
+            </label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-from input-margin-right"
+              max={toDate || undefined}
+            />
+            <label className="requestedrequesitiondatefilter-label label-margin-right">
+              To:
+            </label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-to"
+              min={fromDate || undefined}
+            />
+          </div>
+          <div className="myexpenses-view-toggle view-toggle-align">
+            <button
+              className={`myexpenses-view-btn${
+                viewMode === "card" ? " active" : ""
+              }`}
+              onClick={() => setViewMode("card")}
+            >
+              Card View
+            </button>
+            <button
+              className={`myexpenses-view-btn${
+                viewMode === "table" ? " active" : ""
+              }`}
+              onClick={() => setViewMode("table")}
+            >
+              Table View
+            </button>
+          </div>
         </div>
         {viewMode === "card" ? (
-          <div className="requisitions-grid">
-            {paginatedRequisitions.map((requisition) => (
+          <div className="requisition-requisitions-grid">
+            {paginatedRequisitions.map((item, idx) => (
               <div
-                key={requisition.requisition_id}
-                className="requisition-card"
-                onClick={() => {
-                  setSelectedRequisition(requisition);
-                  setShowRequisitionDetails(true);
-                }}
+                className="requisition-requisition-card"
+                key={idx}
+                data-status={item.requisition_status}
+                style={{ background: getStatusBg(item.requisition_status) }}
               >
-                <div className="requisition-header">
-                  <h3 className="requisition-title">
-                    {requisition.requisition_title}
-                  </h3>
-                  <span
-                    className="requisitiion-status-badge"
+                <div className="requisition-card-header">
+                  <div className="requisition-submission-flow">
+                    <span
+                      className="requisition-status-badge"
+                      style={{
+                        backgroundColor: getStatusColor(
+                          item.requisition_status
+                        ),
+                      }}
+                    >
+                      {item.requisition_status}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className="requisition-requisition-details"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                  }}
+                >
+                  <h4 className="requisition-requisition-title">
+                    {item.requisition_title}
+                  </h4>
+                  <div
+                    className="requestedleaves-leave-details"
+                    style={{ flex: 1 }}
+                  >
+                    <div className="requestedleaves-leave-dates">
+                      <div className="requestedleaves-date-item">
+                        <span className="requestedleaves-date-label">
+                          Amount:
+                        </span>
+                        <span className="requestedleaves-date-value">
+                          ₹{parseFloat(item.requested_amount || 0).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="requestedleaves-date-item">
+                        <span className="requestedleaves-date-label">
+                          Submission Date:
+                        </span>
+                        <span className="requestedleaves-date-value">
+                          {item.requisition_date}
+                        </span>
+                      </div>
+                      <div className="requestedleaves-date-item">
+                        <span className="requestedleaves-date-label">
+                          Employee:
+                        </span>
+                        <span className="requestedleaves-date-value">
+                          {item.employee}
+                        </span>
+                      </div>
+                      {item.requisition_status !== "Unattended" && (
+                        <div className="requestedleaves-date-item">
+                          <span className="requestedleaves-date-label">
+                            Approved amount:
+                          </span>
+                          <span className="requestedleaves-date-value">
+                            ₹{parseFloat(item.approved_amount || 0).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div
                     style={{
-                      backgroundColor:
-                        requisition.requisition_status === "Approved"
-                          ? "#10b981"
-                          : requisition.requisition_status ===
-                            "Partially Approved"
-                          ? "#fbbf24"
-                          : requisition.requisition_status === "Rejected"
-                          ? "#ef4444"
-                          : requisition.requisition_status === "Unattended"
-                          ? "#64748b"
-                          : "#64748b",
-                      color: "#fff",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      marginTop: "auto",
+                      minHeight: 60,
                     }}
                   >
-                    {requisition.requisition_status}
-                  </span>
+                    <button
+                      className="card-view-details-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedRequisition(item);
+                        setShowRequisitionDetails(true);
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </div>
                 </div>
-                <div className="requisition-details">
-                  <div className="requisition-info">
-                    <span className="info-label">Employee:</span>
-                    <span className="info-value">{requisition.employee}</span>
-                  </div>
-                  <div className="requisition-info">
-                    <span className="info-label">Amount:</span>
-                    <span className="info-value amount">
-                      ₹{requisition.requested_amount.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="requisition-info">
-                    <span className="info-label">Type:</span>
-                    <span className="info-value">
-                      {requisition.requisition_type}
-                    </span>
-                  </div>
-                  <div className="requisition-info">
-                    <span className="info-label">Date:</span>
-                    <span className="info-value">
-                      {requisition.requisition_date}
-                    </span>
-                  </div>
-                  {requisition.requisition_status !== "Unattended" && (
-                    <div className="requisition-info">
-                      <span className="info-label">Approved Amount:</span>
-                      <span className="info-value amount">
-                        ₹{(requisition.approved_amount || 0).toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {requisition.requisition_status === "Unattended" ? (
-                  <div className="requisition-actions">
-                    <button
-                      className="action-button approve"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAction(
-                          requisition.requisition_id,
-                          "approve",
-                          requisition.requested_amount // Approve full requested amount
-                        );
-                      }}
-                    >
-                      <Check size={16} />
-                      Approve
-                    </button>
-                    <button
-                      className="action-button partial"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAction(
-                          requisition.requisition_id,
-                          "partial",
-                          requisition.approved_amount
-                        );
-                      }}
-                    >
-                      <Check size={16} />
-                      Partial
-                    </button>
-                    <button
-                      className="action-button reject"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAction(requisition.requisition_id, "reject");
-                      }}
-                    >
-                      <X size={16} />
-                      Reject
-                    </button>
-                  </div>
-                ) : null}
               </div>
             ))}
           </div>

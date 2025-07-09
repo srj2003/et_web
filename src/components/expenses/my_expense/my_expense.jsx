@@ -9,6 +9,7 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 
 const ExpenseDetailsWeb = () => {
@@ -29,6 +30,8 @@ const ExpenseDetailsWeb = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("card"); // "card" or "table"
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const fetchExpenses = useCallback(async () => {
     const userId = localStorage.getItem("userid");
@@ -106,8 +109,34 @@ const ExpenseDetailsWeb = () => {
     const matchesSearch = expense.expense_title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesFilter && matchesSearch;
+
+    // Date filter logic
+    let matchesDate = true;
+    if (fromDate && toDate) {
+      matchesDate =
+        expense.expense_date >= fromDate && expense.expense_date <= toDate;
+    } else if (fromDate) {
+      matchesDate = expense.expense_date >= fromDate;
+    } else if (toDate) {
+      matchesDate = expense.expense_date <= toDate;
+    }
+
+    return matchesStatus && matchesFilter && matchesSearch && matchesDate;
   });
+
+  // Update stats based on filteredExpenses
+  const filteredStats = {
+    total: filteredExpenses.length,
+    approved: filteredExpenses.filter(
+      (exp) => exp.expense_status === "Approved"
+    ).length,
+    Unattended: filteredExpenses.filter(
+      (exp) => exp.expense_status === "Unattended"
+    ).length,
+    rejected: filteredExpenses.filter(
+      (exp) => exp.expense_status === "Rejected"
+    ).length,
+  };
 
   // Pagination logic
   const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
@@ -153,7 +182,7 @@ const ExpenseDetailsWeb = () => {
           </div>
           <div className="myexpenses-stat-info">
             <h3>Total Expenses</h3>
-            <div className="myexpenses-stat-value">{stats.total}</div>
+            <div className="myexpenses-stat-value">{filteredStats.total}</div>
           </div>
         </div>
         <div className="myexpenses-stat-card">
@@ -168,7 +197,9 @@ const ExpenseDetailsWeb = () => {
           </div>
           <div className="myexpenses-stat-info">
             <h3>Approved</h3>
-            <div className="myexpenses-stat-value">{stats.approved}</div>
+            <div className="myexpenses-stat-value">
+              {filteredStats.approved}
+            </div>
           </div>
         </div>
         <div className="myexpenses-stat-card">
@@ -183,7 +214,9 @@ const ExpenseDetailsWeb = () => {
           </div>
           <div className="myexpenses-stat-info">
             <h3>Unattended</h3>
-            <div className="myexpenses-stat-value">{stats.Unattended}</div>
+            <div className="myexpenses-stat-value">
+              {filteredStats.Unattended}
+            </div>
           </div>
         </div>
         <div className="myexpenses-stat-card">
@@ -198,7 +231,9 @@ const ExpenseDetailsWeb = () => {
           </div>
           <div className="myexpenses-stat-info">
             <h3>Rejected</h3>
-            <div className="myexpenses-stat-value">{stats.rejected}</div>
+            <div className="myexpenses-stat-value">
+              {filteredStats.rejected}
+            </div>
           </div>
         </div>
       </div>
@@ -223,24 +258,61 @@ const ExpenseDetailsWeb = () => {
           <option>Approved</option>
           <option>Rejected</option>
         </select>
+        <div>
+          <button
+            className="requestedrequesitionfilter-reset-btn"
+            onClick={() => {
+              setSearchQuery("");
+              setSelectedStatus("All");
+              setFromDate("");
+              setToDate("");
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
-      <div className="myexpenses-view-toggle">
-        <button
-          className={`myexpenses-view-btn${
-            viewMode === "card" ? " active" : ""
-          }`}
-          onClick={() => setViewMode("card")}
-        >
-          Card View
-        </button>
-        <button
-          className={`myexpenses-view-btn${
-            viewMode === "table" ? " active" : ""
-          }`}
-          onClick={() => setViewMode("table")}
-        >
-          Table View
-        </button>
+      <div className="myrequisition-filter-row">
+        <div className="requestedrequesitiondatefilter-container requestedrequesitiondatefilter-row">
+          <label className="requestedrequesitiondatefilter-label label-margin-right">
+            From:
+          </label>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-from input-margin-right"
+            max={toDate || undefined}
+          />
+          <label className="requestedrequesitiondatefilter-label label-margin-right">
+            To:
+          </label>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-to"
+            min={fromDate || undefined}
+          />
+        </div>
+        <div className="myexpenses-view-toggle view-toggle-align">
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "card" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("card")}
+          >
+            Card View
+          </button>
+          <button
+            className={`myexpenses-view-btn${
+              viewMode === "table" ? " active" : ""
+            }`}
+            onClick={() => setViewMode("table")}
+          >
+            Table View
+          </button>
+        </div>
       </div>
       {viewMode === "card" ? (
         <div className="myexpenses-expenses-grid">
