@@ -97,6 +97,13 @@ const Users = () => {
   const roleId = localStorage.getItem('roleId');
   const canDownload = ["1", "2", "8"].includes(roleId);
 
+  const [showEditRoleModal, setShowEditRoleModal] = useState(false);
+  const [editingRole, setEditingRole] = useState(null);
+  const [roleDetails, setRoleDetails] = useState(null);
+  const [roleDetailsLoading, setRoleDetailsLoading] = useState(false);
+  const [roleDetailsError, setRoleDetailsError] = useState(null);
+  const [roleDetailsSaving, setRoleDetailsSaving] = useState(false);
+
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -792,6 +799,76 @@ const Users = () => {
     headerCount = filteredUsers.length;
   }
 
+  const handleEditRole = async (roleId) => {
+    setRoleDetailsLoading(true);
+    setRoleDetailsError(null);
+    setShowEditRoleModal(true);
+    setEditingRole(roleId);
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(
+        "https://demo-expense.geomaticxevs.in/ET-api/role_api.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ role_id: roleId }),
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch role details");
+      const result = await response.json();
+      // Defensive: ensure all fields are present and not undefined
+      const d = result.data || {};
+      setRoleDetails({
+        role_id: d.role_id ?? 0,
+        role_name: d.role_name ?? "",
+        role_active: typeof d.role_active !== "undefined" ? d.role_active : "1",
+        created_at: d.created_at ?? "",
+        updated_at: d.updated_at ?? "",
+        total_expense_amount: typeof d.total_expense_amount !== "undefined" && d.total_expense_amount !== null ? d.total_expense_amount : "",
+      });
+    } catch (err) {
+      setRoleDetailsError(err.message || "Error fetching role details");
+    } finally {
+      setRoleDetailsLoading(false);
+    }
+  };
+
+  const handleSaveRoleDetails = async () => {
+    setRoleDetailsSaving(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(
+        "https://demo-expense.geomaticxevs.in/ET-api/role_expense_api.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify(roleDetails),
+        }
+      );
+      if (!response.ok) throw new Error("Failed to update role details");
+      const result = await response.json();
+      if (result.success) {
+        toast.success("Role updated successfully!");
+        setShowEditRoleModal(false);
+        setEditingRole(null);
+        setRoleDetails(null);
+        fetchData(); // Refresh roles list
+      } else {
+        toast.error(result.message || "Failed to update role");
+      }
+    } catch (err) {
+      toast.error(err.message || "Error updating role");
+    } finally {
+      setRoleDetailsSaving(false);
+    }
+  };
+
   return (
     <div className="users-container">
       <div className="the-header">
@@ -1118,6 +1195,7 @@ const Users = () => {
                       <th>ID</th>
                       <th>USER ROLE</th>
                       <th>TOTAL COUNT</th>
+                      <th>Edit</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1130,6 +1208,18 @@ const Users = () => {
                         <td>{role.role_id}</td>
                         <td className="role-name">{role.role_name}</td>
                         <td>{role.user_count}</td>
+                        <td>
+                          <button
+                            className="action-button"
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleEditRole(role.role_id);
+                            }}
+                            title="Edit Role"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1191,424 +1281,426 @@ const Users = () => {
               <h2 className="modal-title">Add New User</h2>
             </div>
 
-            <div className="form-container">
-              <div className="form-section">
-                <h3 className="section-title">Profile Details</h3>
+            <div className="modal-scrollable">
+              <div className="form-container">
+                <div className="form-section">
+                  <h3 className="section-title">Profile Details</h3>
 
-                <div
-                  className="profile-upload-container"
-                  onClick={() =>
-                    document.getElementById("profileImage").click()
-                  }
-                >
-                  {imageUri ? (
-                    <>
-                      <img
-                        src={imageUri}
-                        alt="Profile Preview"
-                        className="profile-image-preview"
-                      />
-                      <div className="profile-upload-overlay">
-                        <Upload size={24} />
-                        <span className="profile-upload-text">
-                          Change Photo
+                  <div
+                    className="profile-upload-container"
+                    onClick={() =>
+                      document.getElementById("profileImage").click()
+                    }
+                  >
+                    {imageUri ? (
+                      <>
+                        <img
+                          src={imageUri}
+                          alt="Profile Preview"
+                          className="profile-image-preview"
+                        />
+                        <div className="profile-upload-overlay">
+                          <Upload size={24} />
+                          <span className="profile-upload-text">
+                            Change Photo
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="profile-upload-placeholder">
+                        <Upload size={32} />
+                        <span className="profile-upload-placeholder-text">
+                          Upload Profile Photo
                         </span>
                       </div>
-                    </>
-                  ) : (
-                    <div className="profile-upload-placeholder">
-                      <Upload size={32} />
-                      <span className="profile-upload-placeholder-text">
-                        Upload Profile Photo
-                      </span>
-                    </div>
-                  )}
-                  {imageUri && (
-                    <div
-                      className="profile-image-actions"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImageUri(null);
-                        setFormData((prev) => ({
-                          ...prev,
-                          profileImage: null,
-                        }));
-                      }}
-                    >
-                      <X size={16} />
-                    </div>
-                  )}
-                </div>
-                <input
-                  type="file"
-                  id="profileImage"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  style={{ display: "none" }}
-                />
-
-                <div
-                  className={`form-group ${formErrors.userId ? "error" : ""}`}
-                >
-                  <label className="required-field">User ID</label>
-                  <input
-                    type="text"
-                    value={formData.userId}
-                    onChange={(e) => {
-                      setFormData({ ...formData, userId: e.target.value });
-                      setFormErrors({ ...formErrors, userId: "" });
-                    }}
-                    placeholder="Enter user ID"
-                  />
-                  {formErrors.userId && (
-                    <div className="error-message">
-                      <AlertCircle size={16} />
-                      {formErrors.userId}
-                    </div>
-                  )}
-                </div>
-
-                <div className={`form-group ${formErrors.firstName ? "error" : ""}`}>
-                  <label className="required-field">First Name</label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => {
-                      setFormData({ ...formData, firstName: e.target.value });
-                      setFormErrors({ ...formErrors, firstName: "" });
-                    }}
-                    placeholder="Enter first name"
-                  />
-                  {formErrors.firstName && (
-                    <div className="error-message">
-                      <AlertCircle size={16} />
-                      {formErrors.firstName}
-                    </div>
-                  )}
-                </div>
-
-                <div className="form-group">
-                  <label>Middle Name</label>
-                  <input
-                    type="text"
-                    value={formData.middleName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, middleName: e.target.value })
-                    }
-                    placeholder="Enter middle name"
-                  />
-                </div>
-
-                <div className={`form-group ${formErrors.lastName ? "error" : ""}`}>
-                  <label className="required-field">Last Name</label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => {
-                      setFormData({ ...formData, lastName: e.target.value });
-                      setFormErrors({ ...formErrors, lastName: "" });
-                    }}
-                    placeholder="Enter last name"
-                  />
-                  {formErrors.lastName && (
-                    <div className="error-message">
-                      <AlertCircle size={16} />
-                      {formErrors.lastName}
-                    </div>
-                  )}
-                </div>
-
-                <div className={`form-group ${formErrors.email ? "error" : ""}`}>
-                  <label className="required-field">Email</label>
-                  <div className="email-input-container">
-                    <Mail size={18} />
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => {
-                        setFormData({ ...formData, email: e.target.value });
-                        setFormErrors({ ...formErrors, email: "" });
-                      }}
-                      placeholder="Enter email address"
-                    />
-                  </div>
-                  {formErrors.email && (
-                    <div className="error-message">
-                      <AlertCircle size={16} />
-                      {formErrors.email}
-                    </div>
-                  )}
-                </div>
-
-                <div className={`form-group ${formErrors.mobile ? "error" : ""}`}>
-                  <label className="required-field">Mobile Number</label>
-                  <input
-                    type="tel"
-                    value={formData.mobile}
-                    onChange={(e) => {
-                      setFormData({ ...formData, mobile: e.target.value });
-                      setFormErrors({ ...formErrors, mobile: "" });
-                    }}
-                    placeholder="Enter mobile number"
-                  />
-                  {formErrors.mobile && (
-                    <div className="error-message">
-                      <AlertCircle size={16} />
-                      {formErrors.mobile}
-                    </div>
-                  )}
-                </div>
-
-                <div className={`form-group ${formErrors.password ? "error" : ""}`}>
-                  <label className="required-field">Password</label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => {
-                      setFormData({ ...formData, password: e.target.value });
-                      setFormErrors({ ...formErrors, password: "" });
-                    }}
-                    placeholder="Enter password"
-                  />
-                  {formErrors.password && (
-                    <div className="error-message">
-                      <AlertCircle size={16} />
-                      {formErrors.password}
-                    </div>
-                  )}
-                </div>
-
-                <div className="form-group">
-                  <label>Gender</label>
-                  <div className="radio-group">
-                    <label className="radio-button">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="male"
-                        checked={formData.gender === "male"}
-                        onChange={(e) =>
-                          setFormData({ ...formData, gender: e.target.value })
-                        }
-                      />
-                      <span className="radio-label">Male</span>
-                    </label>
-
-                    <label className="radio-button">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="female"
-                        checked={formData.gender === "female"}
-                        onChange={(e) =>
-                          setFormData({ ...formData, gender: e.target.value })
-                        }
-                      />
-                      <span className="radio-label">Female</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>CV/Resume</label>
-                  <div
-                    className="cv-upload-container"
-                    onClick={() => document.getElementById("cvFile").click()}
-                  >
-                    <div className="cv-upload-icon">
-                      <Upload size={24} />
-                    </div>
-                    <h3 className="cv-upload-text">
-                      {formData.cv ? "Update CV" : "Upload your CV"}
-                    </h3>
-                    <p className="cv-upload-subtext">PDF format up to 10MB</p>
-
-                    {formData.cv && (
-                      <div className="cv-file-info">
-                        <FileText className="cv-file-icon" size={24} />
-                        <div className="cv-file-details">
-                          <div className="cv-file-name">
-                            {formData.cvName || "Document.pdf"}
-                          </div>
-                          <div className="cv-file-size">
-                            {formatFileSize(formData.cvSize)}
-                          </div>
-                        </div>
-                        <div className="cv-file-actions">
-                          <button
-                            className="cv-action-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Add preview functionality here if needed
-                            }}
-                          >
-                            <Eye size={18} />
-                          </button>
-                          <button
-                            className="cv-action-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setFormData((prev) => ({
-                                ...prev,
-                                cv: "",
-                                cvName: "",
-                                cvSize: 0,
-                              }));
-                            }}
-                          >
-                            <X size={18} />
-                          </button>
-                        </div>
+                    )}
+                    {imageUri && (
+                      <div
+                        className="profile-image-actions"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageUri(null);
+                          setFormData((prev) => ({
+                            ...prev,
+                            profileImage: null,
+                          }));
+                        }}
+                      >
+                        <X size={16} />
                       </div>
                     )}
                   </div>
                   <input
                     type="file"
-                    id="cvFile"
-                    accept=".pdf"
-                    onChange={handleCVUpload}
+                    id="profileImage"
+                    accept="image/*"
+                    onChange={handleImageUpload}
                     style={{ display: "none" }}
                   />
-                </div>
-              </div>
 
-              <div className="form-section">
-                <h3 className="section-title">Organization Details</h3>
+                  <div
+                    className={`form-group ${formErrors.userId ? "error" : ""}`}
+                  >
+                    <label className="required-field">User ID</label>
+                    <input
+                      type="text"
+                      value={formData.userId}
+                      onChange={(e) => {
+                        setFormData({ ...formData, userId: e.target.value });
+                        setFormErrors({ ...formErrors, userId: "" });
+                      }}
+                      placeholder="Enter user ID"
+                    />
+                    {formErrors.userId && (
+                      <div className="error-message">
+                        <AlertCircle size={16} />
+                        {formErrors.userId}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="form-group">
-                  <label>Organization</label>
-                  <input
-                    type="text"
-                    value={formData.organization}
-                    onChange={(e) =>
-                      setFormData({ ...formData, organization: e.target.value })
-                    }
-                    placeholder="Enter organization name"
-                  />
-                </div>
+                  <div className={`form-group ${formErrors.firstName ? "error" : ""}`}>
+                    <label className="required-field">First Name</label>
+                    <input
+                      type="text"
+                      value={formData.firstName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, firstName: e.target.value });
+                        setFormErrors({ ...formErrors, firstName: "" });
+                      }}
+                      placeholder="Enter first name"
+                    />
+                    {formErrors.firstName && (
+                      <div className="error-message">
+                        <AlertCircle size={16} />
+                        {formErrors.firstName}
+                      </div>
+                    )}
+                  </div>
 
-                <div className={`form-group ${formErrors.role ? "error" : ""}`}>
-                  <label className="required-field">Role</label>
-                  <Select
-                    options={data.map((role) => ({
-                      value: role.role_name,
-                      label: role.role_name,
-                    }))}
-                    value={
-                      selectedRole
-                        ? { value: selectedRole, label: selectedRole }
-                        : null
-                    }
-                    onChange={(option) => {
-                      setSelectedRole(option ? option.value : null);
-                      setFormErrors({ ...formErrors, role: "" });
-                    }}
-                    placeholder="Select Role"
-                    className={formErrors.role ? "select-error" : ""}
-                  />
-                  {formErrors.role && (
-                    <div className="error-message">
-                      <AlertCircle size={16} />
-                      {formErrors.role}
+                  <div className="form-group">
+                    <label>Middle Name</label>
+                    <input
+                      type="text"
+                      value={formData.middleName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, middleName: e.target.value })
+                      }
+                      placeholder="Enter middle name"
+                    />
+                  </div>
+
+                  <div className={`form-group ${formErrors.lastName ? "error" : ""}`}>
+                    <label className="required-field">Last Name</label>
+                    <input
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, lastName: e.target.value });
+                        setFormErrors({ ...formErrors, lastName: "" });
+                      }}
+                      placeholder="Enter last name"
+                    />
+                    {formErrors.lastName && (
+                      <div className="error-message">
+                        <AlertCircle size={16} />
+                        {formErrors.lastName}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={`form-group ${formErrors.email ? "error" : ""}`}>
+                    <label className="required-field">Email</label>
+                    <div className="email-input-container">
+                      <Mail size={18} />
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => {
+                          setFormData({ ...formData, email: e.target.value });
+                          setFormErrors({ ...formErrors, email: "" });
+                        }}
+                        placeholder="Enter email address"
+                      />
                     </div>
-                  )}
-                </div>
+                    {formErrors.email && (
+                      <div className="error-message">
+                        <AlertCircle size={16} />
+                        {formErrors.email}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="form-group">
-                  <label>Street Address</label>
-                  <textarea
-                    value={formData.streetAddress}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        streetAddress: e.target.value,
-                      })
-                    }
-                    placeholder="Enter street address"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>State</label>
+                  <div className={`form-group ${formErrors.mobile ? "error" : ""}`}>
+                    <label className="required-field">Mobile Number</label>
                     <input
-                      type="text"
-                      value={formData.state}
-                      onChange={(e) =>
-                        setFormData({ ...formData, state: e.target.value })
-                      }
-                      placeholder="Enter state"
+                      type="tel"
+                      value={formData.mobile}
+                      onChange={(e) => {
+                        setFormData({ ...formData, mobile: e.target.value });
+                        setFormErrors({ ...formErrors, mobile: "" });
+                      }}
+                      placeholder="Enter mobile number"
                     />
+                    {formErrors.mobile && (
+                      <div className="error-message">
+                        <AlertCircle size={16} />
+                        {formErrors.mobile}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={`form-group ${formErrors.password ? "error" : ""}`}>
+                    <label className="required-field">Password</label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => {
+                        setFormData({ ...formData, password: e.target.value });
+                        setFormErrors({ ...formErrors, password: "" });
+                      }}
+                      placeholder="Enter password"
+                    />
+                    {formErrors.password && (
+                      <div className="error-message">
+                        <AlertCircle size={16} />
+                        {formErrors.password}
+                      </div>
+                    )}
                   </div>
 
                   <div className="form-group">
-                    <label>City</label>
+                    <label>Gender</label>
+                    <div className="radio-group">
+                      <label className="radio-button">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="male"
+                          checked={formData.gender === "male"}
+                          onChange={(e) =>
+                            setFormData({ ...formData, gender: e.target.value })
+                          }
+                        />
+                        <span className="radio-label">Male</span>
+                      </label>
+
+                      <label className="radio-button">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="female"
+                          checked={formData.gender === "female"}
+                          onChange={(e) =>
+                            setFormData({ ...formData, gender: e.target.value })
+                          }
+                        />
+                        <span className="radio-label">Female</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>CV/Resume</label>
+                    <div
+                      className="cv-upload-container"
+                      onClick={() => document.getElementById("cvFile").click()}
+                    >
+                      <div className="cv-upload-icon">
+                        <Upload size={24} />
+                      </div>
+                      <h3 className="cv-upload-text">
+                        {formData.cv ? "Update CV" : "Upload your CV"}
+                      </h3>
+                      <p className="cv-upload-subtext">PDF format up to 10MB</p>
+
+                      {formData.cv && (
+                        <div className="cv-file-info">
+                          <FileText className="cv-file-icon" size={24} />
+                          <div className="cv-file-details">
+                            <div className="cv-file-name">
+                              {formData.cvName || "Document.pdf"}
+                            </div>
+                            <div className="cv-file-size">
+                              {formatFileSize(formData.cvSize)}
+                            </div>
+                          </div>
+                          <div className="cv-file-actions">
+                            <button
+                              className="cv-action-button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Add preview functionality here if needed
+                              }}
+                            >
+                              <Eye size={18} />
+                            </button>
+                            <button
+                              className="cv-action-button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  cv: "",
+                                  cvName: "",
+                                  cvSize: 0,
+                                }));
+                              }}
+                            >
+                              <X size={18} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
-                      }
-                      placeholder="Enter city"
+                      type="file"
+                      id="cvFile"
+                      accept=".pdf"
+                      onChange={handleCVUpload}
+                      style={{ display: "none" }}
                     />
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Created At</label>
+                <div className="form-section">
+                  <h3 className="section-title">Organization Details</h3>
+
+                  <div className="form-group">
+                    <label>Organization</label>
+                    <input
+                      type="text"
+                      value={formData.organization}
+                      onChange={(e) =>
+                        setFormData({ ...formData, organization: e.target.value })
+                      }
+                      placeholder="Enter organization name"
+                    />
+                  </div>
+
+                  <div className={`form-group ${formErrors.role ? "error" : ""}`}>
+                    <label className="required-field">Role</label>
+                    <Select
+                      options={data.map((role) => ({
+                        value: role.role_name,
+                        label: role.role_name,
+                      }))}
+                      value={
+                        selectedRole
+                          ? { value: selectedRole, label: selectedRole }
+                          : null
+                      }
+                      onChange={(option) => {
+                        setSelectedRole(option ? option.value : null);
+                        setFormErrors({ ...formErrors, role: "" });
+                      }}
+                      placeholder="Select Role"
+                      className={formErrors.role ? "select-error" : ""}
+                    />
+                    {formErrors.role && (
+                      <div className="error-message">
+                        <AlertCircle size={16} />
+                        {formErrors.role}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Street Address</label>
+                    <textarea
+                      value={formData.streetAddress}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          streetAddress: e.target.value,
+                        })
+                      }
+                      placeholder="Enter street address"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>State</label>
+                      <input
+                        type="text"
+                        value={formData.state}
+                        onChange={(e) =>
+                          setFormData({ ...formData, state: e.target.value })
+                        }
+                        placeholder="Enter state"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>City</label>
+                      <input
+                        type="text"
+                        value={formData.city}
+                        onChange={(e) =>
+                          setFormData({ ...formData, city: e.target.value })
+                        }
+                        placeholder="Enter city"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Created At</label>
+                    <input
+                      type="text"
+                      value={moment().format("YYYY-MM-DD HH:mm:ss")}
+                      readOnly
+                      className="readonly-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="toggle-container">
+                  <label>Active</label>
                   <input
-                    type="text"
-                    value={moment().format("YYYY-MM-DD HH:mm:ss")}
-                    readOnly
-                    className="readonly-input"
+                    type="checkbox"
+                    checked={formData.active}
+                    onChange={(e) =>
+                      setFormData({ ...formData, active: e.target.checked })
+                    }
                   />
                 </div>
-              </div>
 
-              <div className="toggle-container">
-                <label>Active</label>
-                <input
-                  type="checkbox"
-                  checked={formData.active}
-                  onChange={(e) =>
-                    setFormData({ ...formData, active: e.target.checked })
-                  }
-                />
-              </div>
-
-              <div className="toggle-container">
-                <label>Deleted</label>
-                <input
-                  type="checkbox"
-                  checked={formData.isDeleted}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isDeleted: e.target.checked })
-                  }
-                />
-              </div>
-
-              {submitError && (
-                <div className="form-submit-error">
-                  <AlertCircle size={18} />
-                  {submitError}
+                <div className="toggle-container">
+                  <label>Deleted</label>
+                  <input
+                    type="checkbox"
+                    checked={formData.isDeleted}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isDeleted: e.target.checked })
+                    }
+                  />
                 </div>
-              )}
 
-              <div className="button-container">
-                <button className="submit-button" onClick={handleSubmitUser}>
-                  Add User
-                </button>
-                <button
-                  className="cancel-button"
-                  onClick={() => {
-                    setImageUri(null);
-                    resetForm();
-                    setShowAddUser(false);
-                  }}
-                >
-                  Cancel
-                </button>
+                {submitError && (
+                  <div className="form-submit-error">
+                    <AlertCircle size={18} />
+                    {submitError}
+                  </div>
+                )}
+
+                <div className="button-container">
+                  <button className="submit-button" onClick={handleSubmitUser}>
+                    Add User
+                  </button>
+                  <button
+                    className="cancel-button"
+                    onClick={() => {
+                      setImageUri(null);
+                      resetForm();
+                      setShowAddUser(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1633,99 +1725,101 @@ const Users = () => {
               <h2 className="modal-title">Add New Role</h2>
             </div>
 
-            <div className="form-container">
-              <div className="form-section">
-                <h3 className="section-title">Role Details</h3>
+            <div className="modal-scrollable">
+              <div className="form-container">
+                <div className="form-section">
+                  <h3 className="section-title">Role Details</h3>
 
-                <div className="form-row">
-                  <div className="form-group">
-                  <label>Role Id</label>
-                    <input
-                      type="text"
-                      value={formRoleData.role_id || lastRoleId}
-                      readOnly
-                      className="readonly-input"
-                      placeholder="Auto-Generated ID"
-                    />
-                    
+                  <div className="form-row">
+                    <div className="form-group">
+                    <label>Role Id</label>
+                      <input
+                        type="text"
+                        value={formRoleData.role_id || lastRoleId}
+                        readOnly
+                        className="readonly-input"
+                        placeholder="Auto-Generated ID"
+                      />
+                      
+                    </div>
+
+                    <div className="form-group">
+                      <label>Role Name</label>
+                      <input
+                        type="text"
+                        value={formRoleData.role_name}
+                        onChange={(e) =>
+                          setFormRoleData({
+                            ...formRoleData,
+                            role_name: e.target.value,
+                          })
+                        }
+                        placeholder="Enter Role Name"
+                      />
+                    </div>
                   </div>
 
-                  <div className="form-group">
-                    <label>Role Name</label>
-                    <input
-                      type="text"
-                      value={formRoleData.role_name}
-                      onChange={(e) =>
-                        setFormRoleData({
-                          ...formRoleData,
-                          role_name: e.target.value,
-                        })
-                      }
-                      placeholder="Enter Role Name"
-                    />
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Created At</label>
+                      <input
+                        type="text"
+                        value={formRoleData.created_at}
+                        readOnly
+                        className="readonly-input"
+                        placeholder="Created At"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      
+                      <label>Parent Role</label>
+                      <Select
+                        options={data.map((role) => ({
+                          value: role.role_id.toString(),
+                          label: role.role_name,
+                        }))}
+                        value={
+                          formRoleData.role_parent
+                            ? {
+                                value: formRoleData.role_parent.toString(),
+                                label: data.find(
+                                  (r) => r.role_id === formRoleData.role_parent
+                                )?.role_name,
+                              }
+                            : null
+                        }
+                        onChange={(option) =>
+                          setFormRoleData({
+                            ...formRoleData,
+                            role_parent: option ? parseInt(option.value) : 0,
+                          })
+                        }
+                        placeholder="Select Parent Role"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Created At</label>
-                    <input
-                      type="text"
-                      value={formRoleData.created_at}
-                      readOnly
-                      className="readonly-input"
-                      placeholder="Created At"
-                    />
-                  </div>
-
-                  <div className="form-group">
+                <div className="button-container">
                   
-                    <label>Parent Role</label>
-                    <Select
-                      options={data.map((role) => ({
-                        value: role.role_id.toString(),
-                        label: role.role_name,
-                      }))}
-                      value={
-                        formRoleData.role_parent
-                          ? {
-                              value: formRoleData.role_parent.toString(),
-                              label: data.find(
-                                (r) => r.role_id === formRoleData.role_parent
-                              )?.role_name,
-                            }
-                          : null
-                      }
-                      onChange={(option) =>
-                        setFormRoleData({
-                          ...formRoleData,
-                          role_parent: option ? parseInt(option.value) : 0,
-                        })
-                      }
-                      placeholder="Select Parent Role"
-                    />
-                  </div>
+                  <button
+                    className="submit-button"
+                    onClick={handleSubmitUserRole}
+                  >
+                    Add User Role
+                  </button>
+                  <button
+                    className="cancel-button"
+                    onClick={() => {
+                      setSelectedRole(null);
+                      resetFormRole();
+                      setShowAddUserRole(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
                 </div>
-              </div>
-
-              <div className="button-container">
-                
-                <button
-                  className="submit-button"
-                  onClick={handleSubmitUserRole}
-                >
-                  Add User Role
-                </button>
-                <button
-                  className="cancel-button"
-                  onClick={() => {
-                    setSelectedRole(null);
-                    resetFormRole();
-                    setShowAddUserRole(false);
-                  }}
-                >
-                  Cancel
-                </button>
               </div>
             </div>
           </div>
@@ -1768,296 +1862,298 @@ const Users = () => {
               </button>
             </div>
 
-            <div className="profile-content">
-              <div className="profile-image-container">
-                <img
-                  src={
-                    imageUri || editedUser.u_pro_img || defaultAvatar
-                  }
-                  alt="Profile"
-                  className="profile-image"
-                />
-                {isEditing && (
-                  <div className="profile-image-actions-container">
-                    {(imageUri || editedUser.u_pro_img) && (
-                      <button
-                        className="image-action-button remove"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setImageUri(null);
-                          setEditedUser({
-                            ...editedUser,
-                            u_pro_img: null
-                          });
-                        }}
-                      >
-                        <Trash2 size={16} />
-                        <span>Remove</span>
-                      </button>
-                    )}
-                    <button
-                      className="image-action-button update"
-                      onClick={() =>
-                        document.getElementById("editProfileImage").click()
-                      }
-                    >
-                      <Upload size={16} />
-                      <span>Update</span>
-                    </button>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  id="editProfileImage"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setImageUri(reader.result);
-                        setEditedUser({
-                          ...editedUser,
-                          u_pro_img: reader.result
-                        });
-                      };
-                      reader.readAsDataURL(file);
+            <div className="modal-scrollable">
+              <div className="profile-content">
+                <div className="profile-image-container">
+                  <img
+                    src={
+                      imageUri || editedUser.u_pro_img || defaultAvatar
                     }
-                  }}
-                  style={{ display: "none" }}
-                />
-              </div>
-
-              <div className="profile-section">
-                <h3 className="section-title">Personal Information</h3>
-                <div className="profile-details">
-                  <div className="detail-group">
-                    <label>First Name</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editedUser.u_fname}
-                        onChange={(e) =>
-                          setEditedUser({
-                            ...editedUser,
-                            u_fname: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{editedUser.u_fname}</span>
-                    )}
-                  </div>
-
-                  <div className="detail-group">
-                    <label>Middle Name</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editedUser.u_mname}
-                        onChange={(e) =>
-                          setEditedUser({
-                            ...editedUser,
-                            u_mname: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{editedUser.u_mname}</span>
-                    )}
-                  </div>
-
-                  <div className="detail-group">
-                    <label>Last Name</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editedUser.u_lname}
-                        onChange={(e) =>
-                          setEditedUser({
-                            ...editedUser,
-                            u_lname: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{editedUser.u_lname}</span>
-                    )}
-                  </div>
-
-                  <div className="detail-group">
-                    <label>Email</label>
-                    {isEditing ? (
-                      <input
-                        type="email"
-                        value={editedUser.u_email}
-                        onChange={(e) =>
-                          setEditedUser({
-                            ...editedUser,
-                            u_email: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{editedUser.u_email}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="profile-section">
-                <h3 className="section-title">Organization Details</h3>
-                <div className="profile-details">
-                  <div className="detail-group">
-                    <label>Organization</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editedUser.u_organization}
-                        onChange={(e) =>
-                          setEditedUser({
-                            ...editedUser,
-                            u_organization: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{editedUser.u_organization}</span>
-                    )}
-                  </div>
-
-                  <div className="detail-group">
-                    <label>Role</label>
-                    {isEditing ? (
-                      <div 
-                        className="role-select-input"
-                        onClick={() => setShowUserRoleModal(true)}
-                      >
-                        <span>{editedUser.role_name}</span>
-                        <Edit2 size={16} />
-                      </div>
-                    ) : (
-                      <span>{editedUser.role_name}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="profile-section">
-                <h3 className="section-title">Location</h3>
-                <div className="profile-details">
-                  <div className="detail-group">
-                    <label>City</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editedUser.u_city}
-                        onChange={(e) =>
-                          setEditedUser({
-                            ...editedUser,
-                            u_city: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{editedUser.u_city}</span>
-                    )}
-                  </div>
-
-                  <div className="detail-group">
-                    <label>State</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editedUser.u_state}
-                        onChange={(e) =>
-                          setEditedUser({
-                            ...editedUser,
-                            u_state: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{editedUser.u_state}</span>
-                    )}
-                  </div>
-
-                  <div className="detail-group">
-                    <label>Country</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editedUser.u_country}
-                        onChange={(e) =>
-                          setEditedUser({
-                            ...editedUser,
-                            u_country: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{editedUser.u_country}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="profile-section">
-                <h3 className="section-title">Documents</h3>
-                <div className="profile-details">
-                  <div className="detail-group">
-                    <label>CV/Resume</label>
-                    {editedUser.u_cv ? (
-                      <div className="document-container">
-                        <span className="document-text">
-                          {editedUser.u_cv.split("/").pop()}
-                        </span>
-                        <button className="view-button">View</button>
-                      </div>
-                    ) : (
-                      <span className="no-document">No document uploaded</span>
-                    )}
-                    {isEditing && (
+                    alt="Profile"
+                    className="profile-image"
+                  />
+                  {isEditing && (
+                    <div className="profile-image-actions-container">
+                      {(imageUri || editedUser.u_pro_img) && (
+                        <button
+                          className="image-action-button remove"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setImageUri(null);
+                            setEditedUser({
+                              ...editedUser,
+                              u_pro_img: null
+                            });
+                          }}
+                        >
+                          <Trash2 size={16} />
+                          <span>Remove</span>
+                        </button>
+                      )}
                       <button
-                        className="upload-document-button"
+                        className="image-action-button update"
                         onClick={() =>
-                          document.getElementById("editCVFile").click()
+                          document.getElementById("editProfileImage").click()
                         }
                       >
                         <Upload size={16} />
-                        <span>
-                          {editedUser.u_cv ? "Update CV" : "Upload CV"}
-                        </span>
+                        <span>Update</span>
                       </button>
-                    )}
-                    <input
-                      type="file"
-                      id="editCVFile"
-                      accept=".pdf"
-                      onChange={handleCVUpload}
-                      style={{ display: "none" }}
-                    />
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    id="editProfileImage"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setImageUri(reader.result);
+                          setEditedUser({
+                            ...editedUser,
+                            u_pro_img: reader.result
+                          });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    style={{ display: "none" }}
+                  />
+                </div>
+
+                <div className="profile-section">
+                  <h3 className="section-title">Personal Information</h3>
+                  <div className="profile-details">
+                    <div className="detail-group">
+                      <label>First Name</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedUser.u_fname}
+                          onChange={(e) =>
+                            setEditedUser({
+                              ...editedUser,
+                              u_fname: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        <span>{editedUser.u_fname}</span>
+                      )}
+                    </div>
+
+                    <div className="detail-group">
+                      <label>Middle Name</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedUser.u_mname}
+                          onChange={(e) =>
+                            setEditedUser({
+                              ...editedUser,
+                              u_mname: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        <span>{editedUser.u_mname}</span>
+                      )}
+                    </div>
+
+                    <div className="detail-group">
+                      <label>Last Name</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedUser.u_lname}
+                          onChange={(e) =>
+                            setEditedUser({
+                              ...editedUser,
+                              u_lname: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        <span>{editedUser.u_lname}</span>
+                      )}
+                    </div>
+
+                    <div className="detail-group">
+                      <label>Email</label>
+                      {isEditing ? (
+                        <input
+                          type="email"
+                          value={editedUser.u_email}
+                          onChange={(e) =>
+                            setEditedUser({
+                              ...editedUser,
+                              u_email: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        <span>{editedUser.u_email}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="profile-section">
-                <h3 className="section-title">Additional Information</h3>
-                <div className="profile-details">
-                  <div className="detail-group">
-                    <label>Created At</label>
-                    <span>
-                      {new Date(editedUser.u_created_at).toLocaleDateString(
-                        "en-US",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
+                <div className="profile-section">
+                  <h3 className="section-title">Organization Details</h3>
+                  <div className="profile-details">
+                    <div className="detail-group">
+                      <label>Organization</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedUser.u_organization}
+                          onChange={(e) =>
+                            setEditedUser({
+                              ...editedUser,
+                              u_organization: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        <span>{editedUser.u_organization}</span>
                       )}
-                    </span>
+                    </div>
+
+                    <div className="detail-group">
+                      <label>Role</label>
+                      {isEditing ? (
+                        <div 
+                          className="role-select-input"
+                          onClick={() => setShowUserRoleModal(true)}
+                        >
+                          <span>{editedUser.role_name}</span>
+                          <Edit2 size={16} />
+                        </div>
+                      ) : (
+                        <span>{editedUser.role_name}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="profile-section">
+                  <h3 className="section-title">Location</h3>
+                  <div className="profile-details">
+                    <div className="detail-group">
+                      <label>City</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedUser.u_city}
+                          onChange={(e) =>
+                            setEditedUser({
+                              ...editedUser,
+                              u_city: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        <span>{editedUser.u_city}</span>
+                      )}
+                    </div>
+
+                    <div className="detail-group">
+                      <label>State</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedUser.u_state}
+                          onChange={(e) =>
+                            setEditedUser({
+                              ...editedUser,
+                              u_state: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        <span>{editedUser.u_state}</span>
+                      )}
+                    </div>
+
+                    <div className="detail-group">
+                      <label>Country</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedUser.u_country}
+                          onChange={(e) =>
+                            setEditedUser({
+                              ...editedUser,
+                              u_country: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        <span>{editedUser.u_country}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="profile-section">
+                  <h3 className="section-title">Documents</h3>
+                  <div className="profile-details">
+                    <div className="detail-group">
+                      <label>CV/Resume</label>
+                      {editedUser.u_cv ? (
+                        <div className="document-container">
+                          <span className="document-text">
+                            {editedUser.u_cv.split("/").pop()}
+                          </span>
+                          <button className="view-button">View</button>
+                        </div>
+                      ) : (
+                        <span className="no-document">No document uploaded</span>
+                      )}
+                      {isEditing && (
+                        <button
+                          className="upload-document-button"
+                          onClick={() =>
+                            document.getElementById("editCVFile").click()
+                          }
+                        >
+                          <Upload size={16} />
+                          <span>
+                            {editedUser.u_cv ? "Update CV" : "Upload CV"}
+                          </span>
+                        </button>
+                      )}
+                      <input
+                        type="file"
+                        id="editCVFile"
+                        accept=".pdf"
+                        onChange={handleCVUpload}
+                        style={{ display: "none" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="profile-section">
+                  <h3 className="section-title">Additional Information</h3>
+                  <div className="profile-details">
+                    <div className="detail-group">
+                      <label>Created At</label>
+                      <span>
+                        {new Date(editedUser.u_created_at).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2080,7 +2176,7 @@ const Users = () => {
               </button>
             </div>
 
-            <div className="modal-content">
+            <div className="modal-scrollable modal-content">
               {/* Search Bar */}
               <div className="search-container">
                 <Search size={20} />
@@ -2125,6 +2221,129 @@ const Users = () => {
                       )}
                     </div>
                   ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Role Modal */}
+      {showEditRoleModal && roleDetails && typeof roleDetails.total_expense_amount !== 'undefined' && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <button
+                className="back-button"
+                onClick={() => {
+                  setShowEditRoleModal(false);
+                  setEditingRole(null);
+                  setRoleDetails(null);
+                }}
+              >
+                <ArrowLeft size={24} />
+              </button>
+              <h2 className="modal-title">Edit Role</h2>
+            </div>
+            <div className="modal-scrollable">
+              <div className="form-container">
+                {/* Full-page loader overlay */}
+                {roleDetailsLoading && (
+                  <div className="modal-fullpage-loader">
+                    <span className="loader-large" />
+                    <div style={{marginTop: '1em', fontSize: '1.2em', color: '#333'}}>Loading role details...</div>
+                  </div>
+                )}
+                {!roleDetailsLoading && (
+                  <div className="form-section">
+                    <div className="form-group">
+                      <label>Role id</label>
+                      <input
+                        type="text"
+                        value={roleDetails.role_id ?? ""}
+                        readOnly
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Role name</label>
+                      <input
+                        type="text"
+                        value={roleDetails.role_name ?? ""}
+                        onChange={e =>
+                          setRoleDetails({ ...roleDetails, role_name: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Active status</label>
+                      <select
+                        value={roleDetails.role_active ?? ""}
+                        onChange={e =>
+                          setRoleDetails({ ...roleDetails, role_active: e.target.value })
+                        }
+                      >
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Created at</label>
+                      <input
+                        type="text"
+                        value={roleDetails.created_at ?? ""}
+                        onChange={e =>
+                          setRoleDetails({ ...roleDetails, created_at: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Updated at</label>
+                      <input
+                        type="text"
+                        value={roleDetails.updated_at ?? ""}
+                        onChange={e =>
+                          setRoleDetails({ ...roleDetails, updated_at: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Expense Amount</label>
+                      <input
+                        type="number"
+                        value={
+                          typeof roleDetails.total_expense_amount === "number" || typeof roleDetails.total_expense_amount === "string"
+                            ? roleDetails.total_expense_amount
+                            : ""
+                        }
+                        onChange={e =>
+                          setRoleDetails({ ...roleDetails, total_expense_amount: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="button-container">
+                  <button
+                    className="submit-button"
+                    onClick={handleSaveRoleDetails}
+                    disabled={roleDetailsSaving || roleDetailsLoading}
+                  >
+                    {roleDetailsSaving ? (
+                      <span className="loader loader-inline" style={{marginRight: '8px'}} />
+                    ) : null}
+                    {roleDetailsSaving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    className="cancel-button"
+                    onClick={() => {
+                      setShowEditRoleModal(false);
+                      setEditingRole(null);
+                      setRoleDetails(null);
+                    }}
+                    disabled={roleDetailsSaving || roleDetailsLoading}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>

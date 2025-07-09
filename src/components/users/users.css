@@ -651,7 +651,8 @@ body {
     width: 100%;
     max-width: 60rem;
     max-height: 95vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     position: relative;
     margin: 2rem;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
@@ -659,6 +660,15 @@ body {
     animation: modalFadeIn 0.3s ease-out;
     border: 1px solid rgba(255, 255, 255, 0.8);
     z-index: 1001;
+    overflow: hidden;
+}
+
+/* Add scrollable content area for modal */
+.modal-scrollable {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    max-height: calc(95vh - 80px); /* leave space for header/footer */
+    padding: 0 2rem 2rem 2rem;
 }
 
 @keyframes modalFadeIn {
@@ -1965,5 +1975,34 @@ body {
     .role-text {
         font-size: 0.9rem;
     }
+}
+
+/* Full-page loader overlay for Edit Role modal */
+.modal-fullpage-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255,255,255,0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.loader-large {
+  width: 3em;
+  height: 3em;
+  border: 4px solid #ccc;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 1em;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
