@@ -11,6 +11,7 @@ import {
   CalendarPlus,
   CalendarCheck,
   CreditCard,
+  Eye,
 } from "lucide-react";
 import {
   BarChart,
@@ -50,7 +51,7 @@ const initialHolidays = [
 ];
 
 
-const AttendanceDetails = ({ attendance }) => {
+const AttendanceDetails = ({ attendance, breakCount, onViewBreakDetails }) => {
   const formatLocation = (latLongStr) => {
     if (!latLongStr) return "";
     const [lat, long] = latLongStr.split(",");
@@ -73,6 +74,20 @@ const AttendanceDetails = ({ attendance }) => {
             {formatLocation(attendance?.login_lat_long)}
           </span>
         </div>
+        {typeof breakCount === 'number' && (
+          <div className="attendance-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="attendance-label">Number of Breaks taken:</span>
+            <span className="attendance-value">{breakCount}</span>
+            <button
+              className="view-break-details-btn"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 4 }}
+              title="View break details"
+              onClick={onViewBreakDetails}
+            >
+              <Eye size={18} color="#6366f1" />
+            </button>
+          </div>
+        )}
       </div>
 
       {attendance?.is_logged_out && (
@@ -802,13 +817,13 @@ export default function DashboardWeb() {
     if (!todayAttendance?.has_login) {
       return (
         <>
-          <p className="login-status-text">PunchIn to register your attendance</p>
+          <p className="login-status-text">Punch-In to register your attendance</p>
           <button
             className={`login-button ${isLoggingIn ? "loading" : ""}`}
             onClick={handleLogin}
             disabled={isLoggingIn}
           >
-            {isLoggingIn ? "Punching In..." : "PunchIn"}
+            {isLoggingIn ? "Punch-Ing In..." : "Punch-In"}
           </button>
         </>
       );
@@ -818,7 +833,42 @@ export default function DashboardWeb() {
       return (
         <>
           <p className="login-status-text">Today's attendance completed (Punched Out)</p>
-          <AttendanceDetails attendance={todayAttendance.attendance} />
+          <AttendanceDetails attendance={todayAttendance.attendance} breakCount={breakCount} onViewBreakDetails={handleViewBreakDetails} />
+          {breakDetailsModalOpen && (
+            <div className="break-details-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(30,41,59,0.35)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="break-details-modal-content" style={{ background: '#fff', borderRadius: 12, padding: '2.5rem 2.5rem 2rem 2.5rem', minWidth: 340, boxShadow: '0 4px 32px rgba(30,41,59,0.18)', display: 'flex', flexDirection: 'column', alignItems: 'center', maxHeight: '80vh', overflowY: 'auto' }}>
+                <h2 style={{ marginBottom: 18, color: '#6366f1', fontWeight: 700 }}>Break Details</h2>
+                {breakDetailsLoading ? (
+                  <div style={{ margin: 24 }}>Loading...</div>
+                ) : breakDetails.length === 0 ? (
+                  <div style={{ margin: 24 }}>No breaks taken today.</div>
+                ) : (
+                  <ul style={{ listStyle: 'none', padding: 0, width: '100%' }}>
+                    {breakDetails.map((b, idx) => (
+                      <li key={b.break_id || idx} style={{ marginBottom: 18, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
+                        <div style={{ fontWeight: 600, color: '#22223b', marginBottom: 2 }}>Break {idx + 1}:</div>
+                        <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
+                          Start: {b.break_start_timestamp ? new Date(b.break_start_timestamp).toLocaleTimeString() : '-'}
+                        </div>
+                        <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
+                          End: {b.break_end_timestamp ? new Date(b.break_end_timestamp).toLocaleTimeString() : '-'}
+                        </div>
+                        <div style={{ fontSize: '1rem', color: '#444' }}>
+                          Duration: {b.break_duration || '-'}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <button
+                  style={{ marginTop: 18, background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '0.7rem 2.2rem', fontWeight: 600, fontSize: '1.1rem', cursor: 'pointer' }}
+                  onClick={closeBreakDetailsModal}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </>
       );
     }
@@ -826,14 +876,81 @@ export default function DashboardWeb() {
     return (
       <>
         <p className="login-status-text">Currently Punched In</p>
-        <AttendanceDetails attendance={todayAttendance.attendance} />
-        <button
-          className={`logout-button ${isLoggingOut ? "loading" : ""}`}
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-        >
-          {isLoggingOut ? "Punching Out..." : "PunchOut"}
-        </button>
+        <AttendanceDetails attendance={todayAttendance.attendance} breakCount={breakCount} onViewBreakDetails={handleViewBreakDetails} />
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button
+            className={`logout-button ${isLoggingOut ? "loading" : ""}`}
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? "Punch-Ing Out..." : "PunchOut"}
+          </button>
+          <button
+            className="break-start-button"
+            style={{ background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem 1.2rem', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}
+            onClick={handleBreakStart}
+            disabled={breakLoading}
+          >
+            {breakLoading ? 'Starting...' : 'Take Break'}
+          </button>
+        </div>
+        {breakDetailsModalOpen && (
+          <div className="break-details-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(30,41,59,0.35)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="break-details-modal-content" style={{ background: '#fff', borderRadius: 12, padding: '2.5rem 2.5rem 2rem 2.5rem', minWidth: 340, boxShadow: '0 4px 32px rgba(30,41,59,0.18)', display: 'flex', flexDirection: 'column', alignItems: 'center', maxHeight: '80vh', overflowY: 'auto' }}>
+              <h2 style={{ marginBottom: 18, color: '#6366f1', fontWeight: 700 }}>Break Details</h2>
+              {breakDetailsLoading ? (
+                <div style={{ margin: 24 }}>Loading...</div>
+              ) : breakDetails.length === 0 ? (
+                <div style={{ margin: 24 }}>No breaks taken today.</div>
+              ) : (
+                <ul style={{ listStyle: 'none', padding: 0, width: '100%' }}>
+                  {breakDetails.map((b, idx) => (
+                    <li key={b.break_id || idx} style={{ marginBottom: 18, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
+                      <div style={{ fontWeight: 600, color: '#22223b', marginBottom: 2 }}>Break {idx + 1}:</div>
+                      <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
+                        Start: {b.break_start_timestamp ? new Date(b.break_start_timestamp).toLocaleTimeString() : '-'}
+                      </div>
+                      <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
+                        End: {b.break_end_timestamp ? new Date(b.break_end_timestamp).toLocaleTimeString() : '-'}
+                      </div>
+                      <div style={{ fontSize: '1rem', color: '#444' }}>
+                        Duration: {b.break_duration || '-'}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                style={{ marginTop: 18, background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '0.7rem 2.2rem', fontWeight: 600, fontSize: '1.1rem', cursor: 'pointer' }}
+                onClick={closeBreakDetailsModal}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+        {/* Break Modal */}
+        {breakModalOpen && (
+          <div className="break-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(30,41,59,0.35)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="break-modal-content" style={{ background: '#fff', borderRadius: 12, padding: '2.5rem 2.5rem 2rem 2.5rem', minWidth: 320, boxShadow: '0 4px 32px rgba(30,41,59,0.18)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {breakStartTime && (
+                <div style={{ marginBottom: 12, color: '#6366f1', fontWeight: 600, fontSize: '1.1rem' }}>
+                  Your break started at: {breakStartTime.toLocaleTimeString()}
+                </div>
+              )}
+              <h2 style={{ marginBottom: 24, color: '#f59e0b', fontWeight: 700 }}>Break Timer</h2>
+              <div style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: 32, letterSpacing: 2, color: '#22223b', fontFamily: 'monospace' }}>{formatBreakTime(breakSeconds)}</div>
+              <button
+                className="break-stop-button"
+                style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '0.7rem 2.2rem', fontWeight: 600, fontSize: '1.1rem', cursor: 'pointer', marginTop: 8 }}
+                onClick={handleBreakStop}
+                disabled={breakLoading}
+              >
+                {breakLoading ? 'Stopping...' : 'Stop Break'}
+              </button>
+            </div>
+          </div>
+        )}
       </>
     );
   };
@@ -1061,6 +1178,191 @@ export default function DashboardWeb() {
     setModalProject(null);
     setModalTeamMembers([]);
     setModalSupervisor('');
+  };
+
+  // Break modal state
+  const [breakModalOpen, setBreakModalOpen] = useState(false);
+  const [breakSeconds, setBreakSeconds] = useState(0);
+  const [breakLoading, setBreakLoading] = useState(false);
+  const [breakStartTime, setBreakStartTime] = useState(null); // Store break start time
+  const [breakCount, setBreakCount] = useState(null); // Number of breaks today
+  const breakTimerRef = useRef(null);
+
+  // Format seconds to HH:MM:SS
+  const formatBreakTime = (secs) => {
+    const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
+
+  // Start break handler (calls API)
+  const handleBreakStart = async () => {
+    const userId = localStorage.getItem('userid');
+    const token = localStorage.getItem('authToken');
+    if (!userId || !token) {
+      alert('User not logged in.');
+      return;
+    }
+    setBreakLoading(true);
+    try {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/break_start.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: parseInt(userId, 10) }),
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setBreakSeconds(0);
+        setBreakStartTime(new Date()); // Store the JS time when break started
+        setBreakModalOpen(true);
+      } else {
+        alert(data.message || 'Failed to start break.');
+      }
+    } catch (err) {
+      alert('Network error while starting break.');
+    } finally {
+      setBreakLoading(false);
+    }
+  };
+
+  // Stop break handler (calls API)
+  const handleBreakStop = async () => {
+    const userId = localStorage.getItem('userid');
+    const token = localStorage.getItem('authToken');
+    if (!userId || !token) {
+      alert('User not logged in.');
+      return;
+    }
+    setBreakLoading(true);
+    try {
+      const break_duration = formatBreakTime(breakSeconds);
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/break_end.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: parseInt(userId, 10), break_duration }),
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setBreakModalOpen(false);
+        setBreakSeconds(0);
+        setBreakStartTime(null); // Reset break start time
+        if (breakTimerRef.current) {
+          clearInterval(breakTimerRef.current);
+          breakTimerRef.current = null;
+        }
+        fetchBreakCount(); // Refresh break count after stopping break
+      } else {
+        alert(data.message || 'Failed to end break.');
+      }
+    } catch (err) {
+      alert('Network error while ending break.');
+    } finally {
+      setBreakLoading(false);
+    }
+  };
+
+  // Timer effect
+  useEffect(() => {
+    if (breakModalOpen) {
+      breakTimerRef.current = setInterval(() => {
+        setBreakSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (breakTimerRef.current) {
+        clearInterval(breakTimerRef.current);
+        breakTimerRef.current = null;
+      }
+    }
+    return () => {
+      if (breakTimerRef.current) {
+        clearInterval(breakTimerRef.current);
+        breakTimerRef.current = null;
+      }
+    };
+  }, [breakModalOpen]);
+
+  // Fetch number of breaks taken today
+  const fetchBreakCount = useCallback(async () => {
+    const userId = localStorage.getItem('userid');
+    const token = localStorage.getItem('authToken');
+    if (!userId || !token) {
+      setBreakCount(null);
+      return;
+    }
+    try {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/break_info.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: parseInt(userId, 10) }),
+      });
+      const data = await response.json();
+      if (data.status === 'success' && Array.isArray(data.data)) {
+        setBreakCount(data.data.length);
+      } else {
+        setBreakCount(0);
+      }
+    } catch (err) {
+      setBreakCount(0);
+    }
+  }, []);
+
+  // Fetch break count on mount and whenever stop break is clicked
+  useEffect(() => {
+    fetchBreakCount();
+  }, [fetchBreakCount]);
+
+  const [breakDetailsModalOpen, setBreakDetailsModalOpen] = useState(false);
+  const [breakDetails, setBreakDetails] = useState([]);
+  const [breakDetailsLoading, setBreakDetailsLoading] = useState(false);
+
+  // Fetch break details for modal
+  const fetchBreakDetails = useCallback(async () => {
+    const userId = localStorage.getItem('userid');
+    const token = localStorage.getItem('authToken');
+    if (!userId || !token) {
+      setBreakDetails([]);
+      return;
+    }
+    setBreakDetailsLoading(true);
+    try {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/break_info.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: parseInt(userId, 10) }),
+      });
+      const data = await response.json();
+      if (data.status === 'success' && Array.isArray(data.data)) {
+        setBreakDetails(data.data);
+      } else {
+        setBreakDetails([]);
+      }
+    } catch (err) {
+      setBreakDetails([]);
+    } finally {
+      setBreakDetailsLoading(false);
+    }
+  }, []);
+
+  const handleViewBreakDetails = () => {
+    fetchBreakDetails();
+    setBreakDetailsModalOpen(true);
+  };
+
+  const closeBreakDetailsModal = () => {
+    setBreakDetailsModalOpen(false);
   };
 
   if (loading || checkingAttendance) {
