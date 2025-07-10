@@ -55,7 +55,7 @@ const RequisitionFormWeb = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ user_id: userId }),
           }
@@ -68,7 +68,7 @@ const RequisitionFormWeb = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ userId }),
           }
@@ -92,8 +92,8 @@ const RequisitionFormWeb = () => {
           lastName: userData.data.u_lname || "",
         });
       } catch (error) {
-        if (error.message.includes('401')) {
-          window.location.href = '/';
+        if (error.message.includes("401")) {
+          window.location.href = "/";
           return;
         }
         console.error("Failed to load user data:", error);
@@ -114,9 +114,9 @@ const RequisitionFormWeb = () => {
           {
             method: "GET",
             headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           }
         );
         const data = await res.json();
@@ -129,8 +129,8 @@ const RequisitionFormWeb = () => {
           );
         }
       } catch (error) {
-        if (error.message.includes('401')) {
-          window.location.href = '/';
+        if (error.message.includes("401")) {
+          window.location.href = "/";
           return;
         }
         console.error("Error fetching roles", error);
@@ -151,9 +151,9 @@ const RequisitionFormWeb = () => {
             {
               method: "GET",
               headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-              }
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
             }
           );
           const data = await res.json();
@@ -166,8 +166,8 @@ const RequisitionFormWeb = () => {
             );
           }
         } catch (error) {
-          if (error.message.includes('401')) {
-            window.location.href = '/';
+          if (error.message.includes("401")) {
+            window.location.href = "/";
             return;
           }
           console.error("Error fetching users", error);
@@ -258,7 +258,7 @@ const RequisitionFormWeb = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(requisitionData),
         }
@@ -266,7 +266,7 @@ const RequisitionFormWeb = () => {
 
       if (response.status === 401) {
         localStorage.clear();
-        window.location.href = '/';
+        window.location.href = "/";
         return;
       }
 
@@ -284,8 +284,8 @@ const RequisitionFormWeb = () => {
         throw new Error(result.message || "Failed to submit requisitions");
       }
     } catch (error) {
-      if (error.message.includes('401')) {
-        window.location.href = '/';
+      if (error.message.includes("401")) {
+        window.location.href = "/";
         return;
       }
       console.error("Submission error:", error);
@@ -455,28 +455,39 @@ const RequisitionFormWeb = () => {
         <h2 className="section-title">Submit To</h2>
         <div className="form-grid">
           <div className="form-group">
-            <label>Role</label>
-            <div
-              className="select-input"
-              onClick={() => setShowRoleModal(true)}
+            <label className="role-label">Role</label>
+            <select
+              className="select-input role-select"
+              value={selectedRole || ""}
+              onChange={(e) => {
+                setSelectedRole(e.target.value);
+                setSelectedUser(null);
+              }}
             >
-              {selectedRole
-                ? roles.find((role) => role.value === selectedRole)?.label
-                : "Select Role"}
-            </div>
+              <option value="">Select Role</option>
+              {roles.map((role) => (
+                <option key={role.value} value={role.value}>
+                  {role.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {selectedRole && (
             <div className="form-group">
-              <label>Name</label>
-              <div
-                className="select-input"
-                onClick={() => setShowNameModal(true)}
+              <label className="role-label">Name</label>
+              <select
+                className="select-input role-select"
+                value={selectedUser || ""}
+                onChange={(e) => setSelectedUser(e.target.value)}
               >
-                {selectedUser
-                  ? users.find((user) => user.value === selectedUser)?.label
-                  : "Select Name"}
-              </div>
+                <option value="">Select Name</option>
+                {users.map((user) => (
+                  <option key={user.value} value={user.value}>
+                    {user.label}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
         </div>
