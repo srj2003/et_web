@@ -612,6 +612,29 @@ export default function DashboardWeb() {
     const token = localStorage.getItem("authToken");
     const userId = localStorage.getItem("userid");
 
+    // Check if user is on break and show modal if so
+    const checkUserOnBreak = async () => {
+      if (!token || !userId) return;
+      try {
+        const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/break_check.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ user_id: parseInt(userId, 10) }),
+        });
+        const data = await response.json();
+        if (data.status === 'success' && data.user_on_break) {
+          setBreakModalOpen(true);
+          setBreakStartTime(new Date()); // Optionally, you may want to fetch the actual break start time from backend if available
+          setBreakSeconds(0); // Optionally, you may want to calculate elapsed time if break start time is known
+        }
+      } catch (err) {
+        // Ignore error, do not block dashboard
+      }
+    };
+
     if (!token || !userId) {
       // Not logged in → redirect to login
       window.location.href = "/";
@@ -620,6 +643,7 @@ export default function DashboardWeb() {
 
     // Proceed with data load
     if (!initialLoadDone.current) {
+      checkUserOnBreak();
       loadDashboardData();
       initialLoadDone.current = true;
     }
@@ -844,20 +868,37 @@ export default function DashboardWeb() {
                   <div style={{ margin: 24 }}>No breaks taken today.</div>
                 ) : (
                   <ul style={{ listStyle: 'none', padding: 0, width: '100%' }}>
-                    {breakDetails.map((b, idx) => (
-                      <li key={b.break_id || idx} style={{ marginBottom: 18, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
-                        <div style={{ fontWeight: 600, color: '#22223b', marginBottom: 2 }}>Break {idx + 1}:</div>
-                        <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
-                          Start: {b.break_start_timestamp ? new Date(b.break_start_timestamp).toLocaleTimeString() : '-'}
-                        </div>
-                        <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
-                          End: {b.break_end_timestamp ? new Date(b.break_end_timestamp).toLocaleTimeString() : '-'}
-                        </div>
-                        <div style={{ fontSize: '1rem', color: '#444' }}>
-                          Duration: {b.break_duration || '-'}
-                        </div>
-                      </li>
-                    ))}
+                    {breakDetails.map((b, idx) => {
+                      // Calculate duration if not present
+                      let duration = b.break_duration;
+                      if (!duration && b.break_start_timestamp && b.break_end_timestamp) {
+                        const start = new Date(b.break_start_timestamp);
+                        const end = new Date(b.break_end_timestamp);
+                        const diffMs = end - start;
+                        if (!isNaN(diffMs) && diffMs > 0) {
+                          const h = Math.floor(diffMs / 3600000).toString().padStart(2, '0');
+                          const m = Math.floor((diffMs % 3600000) / 60000).toString().padStart(2, '0');
+                          const s = Math.floor((diffMs % 60000) / 1000).toString().padStart(2, '0');
+                          duration = `${h}:${m}:${s}`;
+                        } else {
+                          duration = '-';
+                        }
+                      }
+                      return (
+                        <li key={b.break_id || idx} style={{ marginBottom: 18, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
+                          <div style={{ fontWeight: 600, color: '#22223b', marginBottom: 2 }}>Break {idx + 1}:</div>
+                          <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
+                            Start: {b.break_start_timestamp ? new Date(b.break_start_timestamp).toLocaleTimeString() : '-'}
+                          </div>
+                          <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
+                            End: {b.break_end_timestamp ? new Date(b.break_end_timestamp).toLocaleTimeString() : '-'}
+                          </div>
+                          <div style={{ fontSize: '1rem', color: '#444' }}>
+                            Duration: {duration || '-'}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
                 <button
@@ -886,12 +927,12 @@ export default function DashboardWeb() {
             {isLoggingOut ? "Punch-Ing Out..." : "PunchOut"}
           </button>
           <button
-            className="break-start-button"
+            className={`break-start-button take-break-btn`}
             style={{ background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem 1.2rem', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}
             onClick={handleBreakStart}
             disabled={breakLoading}
           >
-            {breakLoading ? 'Starting...' : 'Take Break'}
+            {breakLoading ? 'Starting...' : <> Take Break <span role="img" aria-label="coffee" style={{ fontSize: '1rem', verticalAlign: 'middle' }}>☕</span></>}
           </button>
         </div>
         {breakDetailsModalOpen && (
@@ -904,20 +945,37 @@ export default function DashboardWeb() {
                 <div style={{ margin: 24 }}>No breaks taken today.</div>
               ) : (
                 <ul style={{ listStyle: 'none', padding: 0, width: '100%' }}>
-                  {breakDetails.map((b, idx) => (
-                    <li key={b.break_id || idx} style={{ marginBottom: 18, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
-                      <div style={{ fontWeight: 600, color: '#22223b', marginBottom: 2 }}>Break {idx + 1}:</div>
-                      <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
-                        Start: {b.break_start_timestamp ? new Date(b.break_start_timestamp).toLocaleTimeString() : '-'}
-                      </div>
-                      <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
-                        End: {b.break_end_timestamp ? new Date(b.break_end_timestamp).toLocaleTimeString() : '-'}
-                      </div>
-                      <div style={{ fontSize: '1rem', color: '#444' }}>
-                        Duration: {b.break_duration || '-'}
-                      </div>
-                    </li>
-                  ))}
+                  {breakDetails.map((b, idx) => {
+                    // Calculate duration if not present
+                    let duration = b.break_duration;
+                    if (!duration && b.break_start_timestamp && b.break_end_timestamp) {
+                      const start = new Date(b.break_start_timestamp);
+                      const end = new Date(b.break_end_timestamp);
+                      const diffMs = end - start;
+                      if (!isNaN(diffMs) && diffMs > 0) {
+                        const h = Math.floor(diffMs / 3600000).toString().padStart(2, '0');
+                        const m = Math.floor((diffMs % 3600000) / 60000).toString().padStart(2, '0');
+                        const s = Math.floor((diffMs % 60000) / 1000).toString().padStart(2, '0');
+                        duration = `${h}:${m}:${s}`;
+                      } else {
+                        duration = '-';
+                      }
+                    }
+                    return (
+                      <li key={b.break_id || idx} style={{ marginBottom: 18, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
+                        <div style={{ fontWeight: 600, color: '#22223b', marginBottom: 2 }}>Break {idx + 1}:</div>
+                        <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
+                          Start: {b.break_start_timestamp ? new Date(b.break_start_timestamp).toLocaleTimeString() : '-'}
+                        </div>
+                        <div style={{ fontSize: '1rem', color: '#444', marginBottom: 2 }}>
+                          End: {b.break_end_timestamp ? new Date(b.break_end_timestamp).toLocaleTimeString() : '-'}
+                        </div>
+                        <div style={{ fontSize: '1rem', color: '#444' }}>
+                          Duration: {duration || '-'}
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
               <button
@@ -938,8 +996,23 @@ export default function DashboardWeb() {
                   Your break started at: {breakStartTime.toLocaleTimeString()}
                 </div>
               )}
-              <h2 style={{ marginBottom: 24, color: '#f59e0b', fontWeight: 700 }}>Break Timer</h2>
-              <div style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: 32, letterSpacing: 2, color: '#22223b', fontFamily: 'monospace' }}>{formatBreakTime(breakSeconds)}</div>
+              <h2 style={{ marginBottom: 24, color: '#f59e0b', fontWeight: 700 }}>Break Time</h2>
+              {/* Enhanced Coffee with smoke animation */}
+              <div className="coffee-cup-anim coffee-cup-anim-fancy" style={{ marginBottom: 32 }}>
+                <div className="coffee-plate"></div>
+                <div className="coffee-cup-fancy">
+                  <div className="coffee-cup-inner"></div>
+                  <div className="coffee-cup-handle"></div>
+                  <div className="coffee-cup-shadow"></div>
+                  <div className="coffee-liquid-fancy"></div>
+                  <div className="coffee-smoke-group">
+                    <div className="coffee-smoke coffee-smoke1"></div>
+                    <div className="coffee-smoke coffee-smoke2"></div>
+                    <div className="coffee-smoke coffee-smoke3"></div>
+                  </div>
+                </div>
+              </div>
+              
               <button
                 className="break-stop-button"
                 style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '0.7rem 2.2rem', fontWeight: 600, fontSize: '1.1rem', cursor: 'pointer', marginTop: 8 }}

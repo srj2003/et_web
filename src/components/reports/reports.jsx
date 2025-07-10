@@ -944,19 +944,17 @@ const Reports = () => {
                         row.requisition_req_amount !== undefined &&
                         row.requisition_req_amount !== null &&
                         row.requisition_req_amount !== ""
-                          ? String.fromCharCode(8377) +
-                            row.requisition_req_amount
+                          ? "₹" + row.requisition_req_amount
                           : "",
                         row.requisition_app_amount !== undefined &&
                         row.requisition_app_amount !== null &&
                         row.requisition_app_amount !== ""
-                          ? String.fromCharCode(8377) +
-                            row.requisition_app_amount
+                          ? "₹" + row.requisition_app_amount
                           : "",
                         (row.status_text || "").toUpperCase(),
-                        row.requisition_created_by || "",
-                        row.requisition_submitted_to || "",
-                        row.requisition_approved_rejected_by || "-",
+                        row.requisition_created_by_name || "-",
+                        row.requisition_submitted_to_name || "-",
+                        row.requisition_approved_rejected_by_name || "-",
                         row.requisition_app_rej_remarks || "-",
                         row.requisition_created_at || "",
                       ]);
@@ -975,7 +973,8 @@ const Reports = () => {
                   }
                 }
                 if (csv) {
-                  const blob = new Blob([csv], { type: "text/csv" });
+                  const BOM = "\uFEFF";
+                  const blob = new Blob([BOM + csv], { type: "text/csv" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
@@ -1278,11 +1277,9 @@ const Reports = () => {
                             {requisition.status_text}
                           </span>
                         </td>
-                        <td>{requisition.requisition_created_by}</td>
-                        <td>{requisition.requisition_submitted_to}</td>
-                        <td>
-                          {requisition.requisition_approved_rejected_by || "-"}
-                        </td>
+                        <td>{requisition.requisition_created_by_name || "-"}</td>
+                        <td>{requisition.requisition_submitted_to_name || "-"}</td>
+                        <td>{requisition.requisition_approved_rejected_by_name || "-"}</td>
                         <td>
                           {requisition.requisition_app_rej_remarks || "-"}
                         </td>
