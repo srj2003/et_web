@@ -104,6 +104,12 @@ const Users = () => {
   const [roleDetailsError, setRoleDetailsError] = useState(null);
   const [roleDetailsSaving, setRoleDetailsSaving] = useState(false);
 
+  const [userCapping, setUserCapping] = useState(null);
+  const [userCappingLoading, setUserCappingLoading] = useState(false);
+  const [userCappingError, setUserCappingError] = useState(null);
+  const [userCappingEdit, setUserCappingEdit] = useState(null);
+  const [userCappingSaving, setUserCappingSaving] = useState(false);
+
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -866,6 +872,106 @@ const Users = () => {
       toast.error(err.message || "Error updating role");
     } finally {
       setRoleDetailsSaving(false);
+    }
+  };
+
+  // Helper to get token
+  const token = localStorage.getItem("authToken");
+
+  // Fetch capping amount when User Profile modal opens
+  useEffect(() => {
+    if (showUserProfile && editedUser?.u_id) {
+      setUserCappingLoading(true);
+      setUserCappingError(null);
+      const token = localStorage.getItem("authToken");
+      fetch("https://demo-expense.geomaticxevs.in/ET-api/capping_amount_api.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ u_id: editedUser.u_id })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            setUserCapping(data.data.total_expense_amount);
+            setUserCappingEdit(data.data.total_expense_amount);
+          } else {
+            setUserCapping(null);
+            setUserCappingEdit("");
+          }
+        })
+        .catch(err => {
+          console.error("Capping API error:", err);
+          setUserCappingError("Failed to fetch capping amount");
+          setUserCapping(null);
+          setUserCappingEdit("");
+        })
+        .finally(() => setUserCappingLoading(false));
+    }
+  }, [showUserProfile, editedUser?.u_id]);
+
+  const fetchCappingAmount = () => {
+    if (!editedUser?.u_id) return;
+    setUserCappingLoading(true);
+    setUserCappingError(null);
+    fetch("https://demo-expense.geomaticxevs.in/ET-api/capping_amount_api.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ u_id: editedUser.u_id })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setUserCapping(data.data.total_expense_amount);
+          setUserCappingEdit(data.data.total_expense_amount);
+        } else {
+          setUserCapping(null);
+          setUserCappingEdit("");
+        }
+      })
+      .catch(err => {
+        console.error("Capping API error:", err);
+        setUserCappingError("Failed to fetch capping amount");
+        setUserCapping(null);
+        setUserCappingEdit("");
+      })
+      .finally(() => setUserCappingLoading(false));
+  };
+
+  // Handler to save capping amount
+  const handleSaveCapping = async () => {
+    if (!editedUser?.u_id) return;
+    setUserCappingSaving(true);
+    setUserCappingError(null);
+    try {
+      const response = await fetch("https://demo-expense.geomaticxevs.in/ET-api/user_expense_amount_change_api.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          u_id: editedUser.u_id,
+          total_expense_amount: parseFloat(userCappingEdit) || 0
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        setUserCapping(userCappingEdit);
+        toast.success("Capping amount updated!");
+        // Optionally re-fetch to ensure fresh data
+        // await fetchCappingAmount();
+      } else {
+        setUserCappingError(result.message || "Failed to update capping amount");
+        toast.error(result.message || "Failed to update capping amount!");
+      }
+    } catch (err) {
+      setUserCappingError("Failed to update capping amount");
+      toast.error("Failed to update capping amount!");
+    } finally {
+      setUserCappingSaving(false);
     }
   };
 
@@ -2137,6 +2243,42 @@ const Users = () => {
                 </div>
 
                 <div className="profile-section">
+                  <h3 className="section-title">Capping Amount</h3>
+                  <div className="profile-details">
+                    {userCappingLoading ? (
+                      <span>Loading...</span>
+                    ) : userCappingError ? (
+                      <span className="error-message">{userCappingError}</span>
+                    ) : isEditing ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100000}
+                          value={userCappingEdit ?? ""}
+                          onChange={e => {
+                            const val = parseFloat(e.target.value);
+                            if (e.target.value === "" || ( !isNaN(val) && val >= 0 && val <= 100000 )) {
+                              setUserCappingEdit(e.target.value);
+                            }
+                          }}
+                          style={{ width: '120px' }}
+                        />
+                        <button
+                          className="submit-button"
+                          onClick={handleSaveCapping}
+                          disabled={userCappingSaving}
+                        >
+                          {userCappingSaving ? 'Saving...' : 'Save'}
+                        </button>
+                      </div>
+                    ) : (
+                      <span>{userCapping !== null && userCapping !== undefined ? userCapping : 'Not set'}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="profile-section">
                   <h3 className="section-title">Additional Information</h3>
                   <div className="profile-details">
                     <div className="detail-group">
@@ -2306,7 +2448,7 @@ const Users = () => {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Expense Amount</label>
+                      <label>Capping Amount</label>
                       <input
                         type="number"
                         value={

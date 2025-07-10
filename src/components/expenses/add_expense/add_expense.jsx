@@ -45,6 +45,8 @@ const ExpenseFormWeb = () => {
     latitude: "0",
     longitude: "0",
   });
+  const [userCapping, setUserCapping] = useState(null);
+  const [cappingError, setCappingError] = useState("");
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -98,6 +100,23 @@ const ExpenseFormWeb = () => {
           middleName: userData.data.u_mname || "",
           lastName: userData.data.u_lname || "",
         });
+
+        // Fetch capping amount
+        const cappingResponse = await fetch("https://demo-expense.geomaticxevs.in/ET-api/capping_amount_api.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ u_id: userId })
+        });
+        const cappingData = await cappingResponse.json();
+        if (cappingData.success && cappingData.data) {
+          setUserCapping(parseFloat(cappingData.data.total_expense_amount));
+        } else {
+          setUserCapping(null);
+        }
+
       } catch (error) {
         if (error.message === "User ID or token not found") {
           alert("You have been logged out. Please login again.");
@@ -241,6 +260,17 @@ const ExpenseFormWeb = () => {
   }, []);
 
   const handleAddExpense = () => {
+    // Find the selected expense type label
+    const selectedTypeObj = expenseTypeItems.find(
+      (item) => item.value === expenseType
+    );
+    const selectedTypeLabel = selectedTypeObj?.label?.toLowerCase() || "";
+
+    // Determine if bill and image are required
+    const isSpecialType =
+      selectedTypeLabel === "petrol" ||
+      selectedTypeLabel === "buying it product";
+
     // Validation for all required fields
     if (
       !expenseHeadValue ||
@@ -249,10 +279,44 @@ const ExpenseFormWeb = () => {
       !currentExpense.description ||
       !currentExpense.amount ||
       !currentExpense.billDate ||
-      !currentExpense.billFile
+      (isSpecialType && !currentExpense.billFile) ||
+      (isSpecialType && !currentExpense.productImage)
     ) {
-      alert("Fill all the fields");
+      if (isSpecialType) {
+        if (!currentExpense.billFile && !currentExpense.productImage) {
+          alert(
+            "For 'petrol' and 'Buying IT Product', both Bill and Product Image are required."
+          );
+        } else if (!currentExpense.billFile) {
+          alert(
+            "For 'petrol' and 'Buying IT Product', Bill Upload is required."
+          );
+        } else if (!currentExpense.productImage) {
+          alert(
+            "For 'petrol' and 'Buying IT Product', Product Image is required."
+          );
+        } else {
+          alert("Fill all the fields");
+        }
+      } else {
+        alert("Fill all the fields");
+      }
       return;
+    }
+
+    // 💡 Compute total for same bill date (today by default)
+    const billDate = currentExpense.billDate;
+    const sameDayTotal = expenses
+      .filter(exp => exp.billDate === billDate)
+      .reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
+    const proposedTotal = sameDayTotal + (Number(currentExpense.amount) || 0);
+
+    if (userCapping !== null && proposedTotal > userCapping) {
+      const remaining = (userCapping - sameDayTotal).toFixed(2);
+      setCappingError(`Cannot exceed limit. You can only add ₹${remaining} more for ${billDate}`);
+      return;
+    } else {
+      setCappingError(""); // clear warning
     }
 
     const expenseToAdd = {
@@ -539,6 +603,11 @@ const ExpenseFormWeb = () => {
   return (
     <div className="expense-form-container">
       <h1 className="form-title">Add New Expense</h1>
+      {userCapping !== null && (
+        <div style={{ marginTop: '10px', fontWeight: 'bold' }}>
+          Daily Capping Limit: ₹{userCapping}
+        </div>
+      )}
 
       {/* Personal Information Section */}
       <section className="form-section">
@@ -589,7 +658,7 @@ const ExpenseFormWeb = () => {
 
         <div className="form-grid">
           <div className="form-group">
-            <label>Expense Head *</label>
+            <label>Expense Type</label>
             <div
               className="select-input"
               onClick={() => setShowExpenseHeadModal(true)}
@@ -612,7 +681,7 @@ const ExpenseFormWeb = () => {
           </div>
 
           <div className="form-group">
-            <label>Expense Type *</label>
+            <label>Expense Head</label>
             <div
               className="select-input"
               onClick={() => setShowExpenseTypeModal(true)}
@@ -652,6 +721,11 @@ const ExpenseFormWeb = () => {
               }
               placeholder="0.00"
             />
+            {cappingError && (
+              <div style={{ color: 'red', marginTop: '5px' }}>
+                {cappingError}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
