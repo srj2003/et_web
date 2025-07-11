@@ -584,12 +584,16 @@ body.sidebar-open .navbar {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(30,41,59,0.10);
-  padding: 0.6rem 1.2rem;
-  font-size: 0.2rem;
-  font-weight: 200;
+  padding: 0.7rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 400;
   z-index: 1002;
-  white-space: nowrap;
+  white-space: normal;
   margin-top: 0.3rem;
+  min-width: 220px;
+  max-width: 320px;
+  text-align: center;
+  word-break: break-word;
 }
 .break-timer-note-tooltip::before {
   content: '';
