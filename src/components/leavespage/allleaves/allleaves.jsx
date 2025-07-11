@@ -127,13 +127,13 @@ export default function AllLeaves() {
         const leaveTo = moment(leave.leave_to_date, "YYYY-MM-DD");
         matchesDateRange =
           leaveFrom.isSameOrAfter(filterFrom) &&
-          leaveTo.isSameOrBefore(filterTo);
+          leaveFrom.isSameOrBefore(filterTo);
       } else if (filterFrom) {
         const leaveFrom = moment(leave.leave_from_date, "YYYY-MM-DD");
         matchesDateRange = leaveFrom.isSameOrAfter(filterFrom);
       } else if (filterTo) {
-        const leaveTo = moment(leave.leave_to_date, "YYYY-MM-DD");
-        matchesDateRange = leaveTo.isSameOrBefore(filterTo);
+        const leaveFrom = moment(leave.leave_from_date, "YYYY-MM-DD");
+        matchesDateRange = leaveFrom.isSameOrBefore(filterTo);
       }
       return matchesSearch && matchesStatus && matchesDateRange;
     });

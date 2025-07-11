@@ -168,13 +168,14 @@ const MyLeaves = () => {
       const leaveFrom = moment(leave.from_date, "YYYY-MM-DD");
       const leaveTo = moment(leave.to_date, "YYYY-MM-DD");
       matchesDateRange =
-        leaveFrom.isSameOrAfter(filterFrom) && leaveTo.isSameOrBefore(filterTo);
+        leaveFrom.isSameOrAfter(filterFrom) &&
+        leaveFrom.isSameOrBefore(filterTo);
     } else if (filterFrom) {
       const leaveFrom = moment(leave.from_date, "YYYY-MM-DD");
       matchesDateRange = leaveFrom.isSameOrAfter(filterFrom);
     } else if (filterTo) {
-      const leaveTo = moment(leave.to_date, "YYYY-MM-DD");
-      matchesDateRange = leaveTo.isSameOrBefore(filterTo);
+      const leaveFrom = moment(leave.from_date, "YYYY-MM-DD");
+      matchesDateRange = leaveFrom.isSameOrBefore(filterTo);
     }
     return matchesStatus && matchesSearch && matchesDateRange;
   });

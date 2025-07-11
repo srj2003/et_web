@@ -216,27 +216,34 @@ const RequisitionsWeb = () => {
 
   // Filtered requisitions based on all filters (search, status, date)
   const filteredRequisitions = requisitions.filter((requisition) => {
+    // Defensive: ensure values are strings
+    const employeeName = requisition.employee
+      ? String(requisition.employee).toLowerCase()
+      : "";
+    const title = requisition.requisition_title
+      ? String(requisition.requisition_title).toLowerCase()
+      : "";
     const matchesSearch =
-      requisition.employee.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      requisition.requisition_title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      employeeName.includes(searchQuery.toLowerCase()) ||
+      title.includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       selectedStatus === "All" ||
-      requisition.requisition_status === selectedStatus;
+      (requisition.requisition_status &&
+        requisition.requisition_status === selectedStatus);
 
-    // Date filter logic
+    // Apply filter on fromDate and toDate, using strict date comparison
     let matchesDate = true;
     if (fromDate) {
       const reqDate = new Date(requisition.requisition_date);
       const from = new Date(fromDate);
-      if (reqDate < from) matchesDate = false;
+      matchesDate = reqDate.setHours(0, 0, 0, 0) >= from.setHours(0, 0, 0, 0);
     }
     if (toDate) {
       const reqDate = new Date(requisition.requisition_date);
       const to = new Date(toDate);
-      if (reqDate > to) matchesDate = false;
+      matchesDate =
+        matchesDate && reqDate.setHours(0, 0, 0, 0) <= to.setHours(0, 0, 0, 0);
     }
 
     return matchesSearch && matchesStatus && matchesDate;
