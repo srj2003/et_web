@@ -275,7 +275,7 @@ const Navbar = () => {
             </span>
             {showBreakNote && (
               <div className="break-timer-note-tooltip" style={{fontSize:"0.9rem", color:"red"}}>
-                <div style={{width:"0.9rem"}}>Your break is active. Work done now won’t be counted. Go to the Dashboard to stop the break.</div>
+                <b>Your break is active.</b> Work done now would not be counted. Go to the Dashboard to stop the break.
               </div>
             )}
             {/* <img
