@@ -23,6 +23,11 @@ const Navbar = () => {
   const [roleId, setRoleId] = useState(null);
   const location = useLocation();
   const profileDropdownRef = useRef(null);
+  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [breakSeconds, setBreakSeconds] = useState(0);
+  const [breakStartTime, setBreakStartTime] = useState(null);
+  const breakTimerRef = useRef(null);
+  const [showBreakNote, setShowBreakNote] = useState(false);
 
   // Add state for sidebar visibility
   const toggleSidebar = () => {
@@ -164,6 +169,66 @@ const Navbar = () => {
     window.location.href = "/";
   };
 
+  // Format seconds to HH:MM:SS
+  const formatBreakTime = (secs) => {
+    const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
+
+  // Check if user is on break (same as dashboard.jsx)
+  useEffect(() => {
+    const checkUserOnBreak = async () => {
+      const token = localStorage.getItem('authToken');
+      const userId = localStorage.getItem('userid');
+      if (!token || !userId) return;
+      try {
+        const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/break_check.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ user_id: parseInt(userId, 10) }),
+        });
+        const data = await response.json();
+        if (data.status === 'success' && data.user_on_break) {
+          setIsOnBreak(true);
+          setBreakStartTime(new Date()); // Optionally, fetch actual break start time if available
+          setBreakSeconds(0);
+        } else {
+          setIsOnBreak(false);
+          setBreakStartTime(null);
+          setBreakSeconds(0);
+        }
+      } catch (err) {
+        setIsOnBreak(false);
+      }
+    };
+    checkUserOnBreak();
+  }, []);
+
+  // Timer effect for break
+  useEffect(() => {
+    if (isOnBreak) {
+      breakTimerRef.current = setInterval(() => {
+        setBreakSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (breakTimerRef.current) {
+        clearInterval(breakTimerRef.current);
+        breakTimerRef.current = null;
+      }
+    }
+    return () => {
+      if (breakTimerRef.current) {
+        clearInterval(breakTimerRef.current);
+        breakTimerRef.current = null;
+      }
+    };
+  }, [isOnBreak]);
+
   return (
     <nav className="navbar">
       <div className="navbar-left">
@@ -197,6 +262,29 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-right">
+        {/* BREAK TIMER BUBBLE */}
+        {isOnBreak && (
+          <div className="break-timer-navbar" style={{ position: 'relative' }}>
+            <span
+              className="break-timer-label"
+              onMouseEnter={() => setShowBreakNote(true)}
+              onMouseLeave={() => setShowBreakNote(false)}
+              style={{ cursor: 'pointer' }}
+            >
+              Your are currently on Break!
+            </span>
+            {showBreakNote && (
+              <div className="break-timer-note-tooltip" style={{fontSize:"0.9rem", color:"red"}}>
+                <div style={{width:"0.9rem"}}>Your break is active. Work done now won’t be counted. Go to the Dashboard to stop the break.</div>
+              </div>
+            )}
+            {/* <img
+              src={userData?.u_pro_img || "/assets/images/default_profile.png"}
+              alt="Profile"
+              className="break-timer-profile-img"
+            /> */}
+          </div>
+        )}
         <div className="profile-container">
           <button
             className="profile-button"

@@ -1292,6 +1292,7 @@ export default function DashboardWeb() {
         setBreakSeconds(0);
         setBreakStartTime(new Date()); // Store the JS time when break started
         setBreakModalOpen(true);
+        window.location.reload(); // Reload navbar and dashboard
       } else {
         alert(data.message || 'Failed to start break.');
       }
@@ -1331,6 +1332,7 @@ export default function DashboardWeb() {
           breakTimerRef.current = null;
         }
         fetchBreakCount(); // Refresh break count after stopping break
+        window.location.reload(); // Reload navbar and dashboard
       } else {
         alert(data.message || 'Failed to end break.');
       }
