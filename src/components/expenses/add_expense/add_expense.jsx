@@ -47,6 +47,8 @@ const ExpenseFormWeb = () => {
   });
   const [userCapping, setUserCapping] = useState(null);
   const [cappingError, setCappingError] = useState("");
+  const [todayExpenses, setTodayExpenses] = useState([]);
+  const [todayTotal, setTodayTotal] = useState(0);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -115,6 +117,38 @@ const ExpenseFormWeb = () => {
           setUserCapping(parseFloat(cappingData.data.total_expense_amount));
         } else {
           setUserCapping(null);
+        }
+
+        // Fetch today's expenses
+        const todayResponse = await fetch("https://demo-expense.geomaticxevs.in/ET-api/my-expenses.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ userId })
+        });
+        const todayData = await todayResponse.json();
+        
+        if (todayData.status === "success" && todayData.data) {
+          const today = new Date().toISOString().split('T')[0];
+          const todayExpensesList = todayData.data.filter(expense => {
+            const expenseDate = new Date(expense.expense_date).toISOString().split('T')[0];
+            return expenseDate === today;
+          });
+          setTodayExpenses(todayExpensesList);
+          const total = todayExpensesList.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
+          setTodayTotal(total);
+        } else if (Array.isArray(todayData)) {
+          // Handle legacy response format
+          const today = new Date().toISOString().split('T')[0];
+          const todayExpensesList = todayData.filter(expense => {
+            const expenseDate = new Date(expense.expense_date).toISOString().split('T')[0];
+            return expenseDate === today;
+          });
+          setTodayExpenses(todayExpensesList);
+          const total = todayExpensesList.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
+          setTodayTotal(total);
         }
 
       } catch (error) {
@@ -309,11 +343,14 @@ const ExpenseFormWeb = () => {
     const sameDayTotal = expenses
       .filter(exp => exp.billDate === billDate)
       .reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
-    const proposedTotal = sameDayTotal + (Number(currentExpense.amount) || 0);
+    
+    // Calculate total including today's already submitted expenses
+    const totalTodaySubmitted = todayTotal;
+    const proposedTotal = sameDayTotal + (Number(currentExpense.amount) || 0) + totalTodaySubmitted;
 
     if (userCapping !== null && proposedTotal > userCapping) {
-      const remaining = (userCapping - sameDayTotal).toFixed(2);
-      setCappingError(`Cannot exceed limit. You can only add ₹${remaining} more for ${billDate}`);
+      const remaining = (userCapping - totalTodaySubmitted - sameDayTotal).toFixed(2);
+      setCappingError(`Cannot exceed limit. You have already submitted ₹${totalTodaySubmitted} today. You can only add ₹${remaining} more for ${billDate}`);
       return;
     } else {
       setCappingError(""); // clear warning
@@ -398,12 +435,27 @@ const ExpenseFormWeb = () => {
     setSearchQuery("");
   };
 
+  // Helper to check if Project Purpose is selected in either dropdown
+  const isProjectPurposeSelected = (() => {
+    const selectedTypeObj1 = expenseTypeItems.find((item) => item.value === expenseType);
+    const selectedTypeObj2 = headItems.find((item) => item.value === expenseHeadValue);
+    const isPP = (obj) => obj && obj.label && obj.label.trim().toLowerCase().replace(/\s+/g, ' ') === "project purpose";
+    return isPP(selectedTypeObj1) || isPP(selectedTypeObj2);
+  })();
+
   const handleSubmitAllExpenses = async () => {
     if (expenses.length === 0) {
       alert("Please add at least one expense before submitting");
       return;
     }
-    if (!selectedUser || !selectedRole) {
+    // Recalculate Project Purpose selection inside the function
+    const selectedTypeObj1 = expenseTypeItems.find((item) => item.value === expenseType);
+    const selectedTypeObj2 = headItems.find((item) => item.value === expenseHeadValue);
+    const isProjectPurpose = (obj) =>
+      obj && obj.label?.trim().toLowerCase().replace(/\s+/g, ' ') === "project purpose";
+    const isPPSelected = isProjectPurpose(selectedTypeObj1) || isProjectPurpose(selectedTypeObj2);
+
+    if (!isPPSelected && (!selectedUser || !selectedRole)) {
       alert("Please select who to submit to");
       return;
     }
@@ -431,7 +483,10 @@ const ExpenseFormWeb = () => {
         "expense_track_created_by",
         String(userData.userId || "")
       );
-      formData.append("expense_track_submitted_to", String(selectedUser || ""));
+      formData.append(
+        "expense_track_submitted_to",
+        isProjectPurposeSelected ? "" : String(selectedUser || "")
+      );
 
       // Map expense details
       const details = expenses.map((expense, index) => ({
@@ -496,7 +551,18 @@ const ExpenseFormWeb = () => {
       console.log("Server response:", result);
 
       if (result.status === "success") {
-        alert("Expenses submitted successfully!");
+        let message = result.autoApproved 
+          ? `Expenses submitted and auto-approved successfully!\n\nReason: ${result.autoApproveReason}`
+          : "Expenses submitted successfully! Pending approval.";
+
+        if (result.autoApproved && selectedUser) {
+          const notifiedUser = users.find((u) => u.value === selectedUser);
+          if (notifiedUser) {
+            message += `\n\nNotification sent to: ${notifiedUser.label}`;
+          }
+        }
+
+        alert(message);
         resetForm();
         setExpenses([]);
         setExpenseHeadValue(null);
@@ -604,8 +670,21 @@ const ExpenseFormWeb = () => {
     <div className="expense-form-container">
       <h1 className="form-title">Add New Expense</h1>
       {userCapping !== null && (
-        <div style={{ marginTop: '10px', fontWeight: 'bold' }}>
-          Daily Capping Limit: ₹{userCapping}
+        <div className="capping-info">
+          <div className="capping-item">
+            <span className="capping-label">Daily Capping Limit:</span>
+            <span className="capping-value">₹{userCapping}</span>
+          </div>
+          <div className="capping-item">
+            <span className="capping-label">Today's Submitted:</span>
+            <span className="capping-value">₹{todayTotal}</span>
+          </div>
+          <div className="capping-item">
+            <span className="capping-label">Remaining Today:</span>
+            <span className={`capping-value ${(userCapping - todayTotal) < 0 ? 'capping-exceeded' : 'capping-remaining'}`}>
+              ₹{(userCapping - todayTotal).toFixed(2)}
+            </span>
+          </div>
         </div>
       )}
 
@@ -664,14 +743,25 @@ const ExpenseFormWeb = () => {
               onClick={() => setShowExpenseHeadModal(true)}
             >
               {expenseHeadValue
-                ? headItems.find((item) => item.value === expenseHeadValue)
-                    ?.label
-                : "Select Expense Head"}
+                ? headItems.find((item) => item.value === expenseHeadValue)?.label
+                : "Select Expense type"}
             </div>
+            {/* Show warning if Project Purpose is selected in Expense Type */}
+            {(() => {
+              const selectedTypeObj = headItems.find((item) => item.value === expenseHeadValue);
+              if (selectedTypeObj && selectedTypeObj.label && selectedTypeObj.label.trim().toLowerCase().replace(/\s+/g, ' ') === "project purpose") {
+                return (
+                  <div style={{ color: '#b91c1c', marginTop: '6px', fontWeight: 500, fontSize: '0.97em', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '8px 12px' }}>
+                    Use this only for personal expenses. If you choose a project purpose, it will reduce your daily limit.
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
 
           <div className="form-group">
-            <label>Expense Bill Title *</label>
+            <label>Expense Bill Title </label>
             <input
               type="text"
               value={expenseTitle}
@@ -687,14 +777,25 @@ const ExpenseFormWeb = () => {
               onClick={() => setShowExpenseTypeModal(true)}
             >
               {expenseType
-                ? expenseTypeItems.find((item) => item.value === expenseType)
-                    ?.label
-                : "Select Expense Type"}
+                ? expenseTypeItems.find((item) => item.value === expenseType)?.label
+                : "Select Expense Head"}
             </div>
+            {/* Show warning if Project Purpose is selected in Expense Head */}
+            {/* {(() => {
+              const selectedTypeObj = expenseTypeItems.find((item) => item.value === expenseType);
+              if (selectedTypeObj && selectedTypeObj.label && selectedTypeObj.label.trim().toLowerCase().replace(/\s+/g, ' ') === "project purpose") {
+                return (
+                  <div style={{ color: '#b91c1c', marginTop: '6px', fontWeight: 500, fontSize: '0.97em', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '8px 12px' }}>
+                    Only for your personal expenses. Applying with Project Purpose will deduct from your daily expense
+                  </div>
+                );
+              }
+              return null;
+            })()} */}
           </div>
 
           <div className="form-group full-width">
-            <label>Description *</label>
+            <label>Description </label>
             <textarea
               value={currentExpense.description}
               onChange={(e) =>
@@ -709,7 +810,7 @@ const ExpenseFormWeb = () => {
           </div>
 
           <div className="form-group">
-            <label>Amount *</label>
+            <label>Amount </label>
             <input
               type="number"
               value={currentExpense.amount || ""}
@@ -729,7 +830,7 @@ const ExpenseFormWeb = () => {
           </div>
 
           <div className="form-group">
-            <label>Bill Date *</label>
+            <label>Bill Date </label>
             <input
               type="date"
               value={currentExpense.billDate}
@@ -745,7 +846,7 @@ const ExpenseFormWeb = () => {
           </div>
 
           <div className="form-group full-width">
-            <label>Remarks *</label>
+            <label>Remarks </label>
             <textarea
               value={currentExpense.remarks}
               onChange={(e) =>
@@ -910,36 +1011,42 @@ const ExpenseFormWeb = () => {
       </section>
 
       {/* Submit To Section */}
-      <section className="form-section">
-        <h2 className="section-title">Submit To</h2>
-        <div className="form-grid">
-          <div className="form-group">
-            <label>Role *</label>
-            <div
-              className="select-input"
-              onClick={() => setShowRoleModal(true)}
-            >
-              {selectedRole
-                ? roles.find((role) => role.value === selectedRole)?.label
-                : "Select Role"}
-            </div>
-          </div>
-
-          {selectedRole && (
+      {!isProjectPurposeSelected && (
+        <section className="form-section">
+          <h2 className="section-title">Submit To</h2>
+          <div className="form-grid">
             <div className="form-group">
-              <label>Name *</label>
+              <label>Role *</label>
               <div
                 className="select-input"
-                onClick={() => setShowNameModal(true)}
+                onClick={() => {
+                  if (!isProjectPurposeSelected) setShowRoleModal(true);
+                }}
               >
-                {selectedUser
-                  ? users.find((user) => user.value === selectedUser)?.label
-                  : "Select Name"}
+                {selectedRole
+                  ? roles.find((role) => role.value === selectedRole)?.label
+                  : "Select Role"}
               </div>
             </div>
-          )}
-        </div>
-      </section>
+
+            {selectedRole && (
+              <div className="form-group">
+                <label>Name *</label>
+                <div
+                  className="select-input"
+                  onClick={() => {
+                    if (!isProjectPurposeSelected) setShowNameModal(true);
+                  }}
+                >
+                  {selectedUser
+                    ? users.find((user) => user.value === selectedUser)?.label
+                    : "Select Name"}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="submit-button-container">
         <button
@@ -954,7 +1061,7 @@ const ExpenseFormWeb = () => {
       {/* Modals */}
       {showExpenseHeadModal &&
         renderModal(
-          "Select Expense Head",
+          "Select Expense type",
           headItems,
           expenseHeadValue,
           setExpenseHeadValue,
@@ -963,7 +1070,7 @@ const ExpenseFormWeb = () => {
 
       {showExpenseTypeModal &&
         renderModal(
-          "Select Expense Type",
+          "Select Expense Head",
           expenseTypeItems,
           expenseType,
           setExpenseType,

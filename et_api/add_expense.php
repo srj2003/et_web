@@ -153,14 +153,80 @@ try {
 
     $conn->begin_transaction();
 
-        // Parse the details JSON
-        $details = json_decode($_POST['details'], true);
-        if (!$details) {
-            throw new Exception("Invalid details format");
+    // --- Project Purpose Auto-Approval Logic ---
+    $is_project_purpose = false;
+    $auto_approved = 0;
+    $auto_approve_reason = '';
+    if (isset($_POST['expense_type_id'])) {
+        $expense_type_id = $_POST['expense_type_id'];
+        $stmt = $conn->prepare("SELECT expense_type_name FROM expense_types WHERE expense_type_id = ? LIMIT 1");
+        $stmt->bind_param("i", $expense_type_id);
+        $stmt->execute();
+        $stmt->bind_result($label);
+        if ($stmt->fetch()) {
+            if (strtolower(trim($label)) === 'project purpose') {
+                $is_project_purpose = true;
+            }
         }
+        $stmt->close();
+    }
+    // --- End Project Purpose Check ---
 
-        // Insert master entry
-        $stmt = $conn->prepare("
+    // Parse the details JSON
+    $details = json_decode($_POST['details'], true);
+    if (!$details) {
+        throw new Exception("Invalid details format");
+    }
+
+    // Check if auto-approval should be applied
+    $shouldAutoApprove = false;
+    $autoApproveReason = "";
+    
+    // Get user's daily limit
+    $limitQuery = "SELECT total_expense_amount FROM userwise_expense_amount WHERE u_id = ?";
+    $limitStmt = $conn->prepare($limitQuery);
+    $limitStmt->bind_param("s", $authenticated_user_id);
+    $limitStmt->execute();
+    $limitResult = $limitStmt->get_result();
+    
+    if ($limitResult->num_rows > 0) {
+        $limitRow = $limitResult->fetch_assoc();
+        $dailyLimit = (float)$limitRow['total_expense_amount'];
+        
+        // Get today's total expenses
+        $today = date('Y-m-d');
+        $todayQuery = "SELECT SUM(expense_total_amount) as today_total 
+                      FROM expense_track_details 
+                      WHERE expense_track_created_by = ? 
+                      AND DATE(expense_track_created_at) = ?";
+        $todayStmt = $conn->prepare($todayQuery);
+        $todayStmt->bind_param("ss", $authenticated_user_id, $today);
+        $todayStmt->execute();
+        $todayResult = $todayStmt->get_result();
+        
+        if ($todayResult->num_rows > 0) {
+            $todayRow = $todayResult->fetch_assoc();
+            $todayTotal = (float)$todayRow['today_total'] ?? 0;
+            $proposedTotal = $todayTotal + (float)$_POST['expense_total_amount'];
+            
+            // Auto-approve if the total doesn't exceed the daily limit
+            if ($proposedTotal <= $dailyLimit) {
+                $shouldAutoApprove = true;
+                $autoApproveReason = "Auto-approved: Total daily expense (₹{$proposedTotal}) within limit (₹{$dailyLimit})";
+            }
+        }
+    }
+
+    // --- Project Purpose overrides auto-approval ---
+    if ($is_project_purpose) {
+        $shouldAutoApprove = true;
+        $auto_approved = 1;
+        $autoApproveReason = "Auto-approved because 'Project Purpose' was selected";
+    }
+    // --- End Project Purpose override ---
+
+    // Insert master entry
+    $stmt = $conn->prepare("
             INSERT INTO expense_track_details (
                 expense_track_parent_id,
                 expense_track_root_id,
@@ -171,29 +237,62 @@ try {
                 expense_track_create_lat,
                 expense_track_create_long,
                 expense_track_created_by,
-                expense_track_submitted_to
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                expense_track_submitted_to,
+                expense_track_status,
+                expense_track_approved_by,
+                expense_track_approved_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         $parentId = 0;
         $trackRootId = 0;
+        $status = $shouldAutoApprove ? 1 : null; // 1 for approved, null for pending
+        $approvedBy = $shouldAutoApprove ? $authenticated_user_id : null;
+        $approvedAt = $shouldAutoApprove ? date('Y-m-d H:i:s') : null;
         
         $stmt->bind_param(
-            "iisidsssii",
+            "iisidsssiiss",
             $parentId,
             $trackRootId,
             $_POST['expense_track_title'],
             $_POST['expense_type_id'],
             $_POST['expense_total_amount'],
-            $_POST['expense_track_app_rej_remarks'],
+            $autoApproveReason,
             $_POST['expense_track_create_lat'],
             $_POST['expense_track_create_long'],
             $authenticated_user_id,
-            $_POST['expense_track_submitted_to']
+            $_POST['expense_track_submitted_to'],
+            $status,
+            $approvedBy,
+            $approvedAt
         );
 
         $stmt->execute();
         $trackId = $conn->insert_id;
+
+        // Check if this is a "Project Purpose" expense that should auto-approve
+        $auto_approve = false;
+        if ($_POST['expense_type_id'] == 1) {
+            $auto_approve = true;
+        } else {
+            // Double check by name if ID wasn't 1
+            $type_check = $conn->query("SELECT expense_type_name FROM expense_types WHERE expense_type_id = {$_POST['expense_type_id']} LIMIT 1");
+            if ($type_check && $type_row = $type_check->fetch_assoc()) {
+                if (strtolower(trim($type_row['expense_type_name'])) === 'project purpose') {
+                    $auto_approve = true;
+                }
+            }
+        }
+
+        if ($auto_approve) {
+            // Auto-approve the expense immediately
+            $approve_sql = "UPDATE expense_track_details 
+                           SET expense_track_status = 1,
+                               expense_track_approved_rejected_by = {$_POST['expense_track_submitted_to']},
+                               expense_track_approved_rejected_at = NOW()
+                           WHERE expense_track_id = $trackId";
+            $conn->query($approve_sql);
+        }
 
         // Update root ID
         $conn->query("UPDATE expense_track_details SET expense_track_root_id = $trackId WHERE expense_track_id = $trackId");
@@ -265,10 +364,27 @@ try {
         }
 
         $conn->commit();
+        $message = $shouldAutoApprove 
+            ? "Expense submitted and auto-approved successfully!" 
+            : "Expense submitted successfully! Pending approval.";
+        
+        // --- Optional: Notify submitted_to user if auto-approved and submitted_to is set ---
+        if ($auto_approved && isset($_POST['expense_track_submitted_to']) && $_POST['expense_track_submitted_to'] != '') {
+            $submitted_to_id = $_POST['expense_track_submitted_to'];
+            $notif_msg = "An expense under 'Project Purpose' was auto-approved.";
+            $notif_stmt = $conn->prepare("INSERT INTO notifications (u_id, message, created_at) VALUES (?, ?, NOW())");
+            $notif_stmt->bind_param("is", $submitted_to_id, $notif_msg);
+            $notif_stmt->execute();
+            $notif_stmt->close();
+        }
+        // --- End notification ---
+        
         echo json_encode([
             "status" => "success",
-            "message" => "Expense entry recorded successfully",
-            "trackId" => $trackId
+            "message" => $message,
+            "trackId" => $trackId,
+            "autoApproved" => $auto_approve || $shouldAutoApprove,
+            "autoApproveReason" => $auto_approve ? 'Auto-approved as Project Purpose' : ($autoApproveReason ?? '')
         ]);
 
 } catch (Exception $e) {

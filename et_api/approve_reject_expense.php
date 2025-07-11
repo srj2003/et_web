@@ -36,14 +36,48 @@ $action = $input['action']; // "approve" or "reject"
 $user_id = $input['user_id']; // User ID from AsyncStorage
 
 // Determine the new status based on the action
-$new_status = null;
-if ($action === 'approve') {
-    $new_status = 1; // Approved
-} elseif ($action === 'reject') {
-    $new_status = 0; // Rejected
+
+// --- Auto-approve logic for Project Purpose ---
+$force_auto_approve = false;
+// 1. Get expense_type_id for this expense_track_id
+$type_stmt = $conn->prepare("SELECT expense_type_id FROM expense_track_details WHERE expense_track_id = ? LIMIT 1");
+$type_stmt->bind_param('i', $expense_track_id);
+$type_stmt->execute();
+$type_stmt->bind_result($expense_type_id);
+$type_stmt->fetch();
+$type_stmt->close();
+
+if ($expense_type_id) {
+    // 2. Check if expense_type_id == 1 (Project Purpose by ID)
+    if ((int)$expense_type_id === 1) {
+        $force_auto_approve = true;
+    } else {
+        // 3. Or check if expense_type_name is 'Project Purpose'
+        $name_stmt = $conn->prepare("SELECT expense_type_name FROM expense_types WHERE expense_type_id = ? LIMIT 1");
+        $name_stmt->bind_param('i', $expense_type_id);
+        $name_stmt->execute();
+        $name_stmt->bind_result($expense_type_name);
+        $name_stmt->fetch();
+        $name_stmt->close();
+        if (isset($expense_type_name) && strtolower(trim($expense_type_name)) === 'project purpose') {
+            $force_auto_approve = true;
+        }
+    }
+}
+
+if ($force_auto_approve) {
+    $new_status = 1; // Always approve
+    $action = 'approve';
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid action']);
-    exit();
+    $new_status = null;
+    if ($action === 'approve') {
+        $new_status = 1; // Approved
+    } elseif ($action === 'reject') {
+        $new_status = 0; // Rejected
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Invalid action']);
+        exit();
+    }
 }
 
 // Get the current timestamp

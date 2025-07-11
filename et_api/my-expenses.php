@@ -51,44 +51,140 @@ if ($conn->connect_error) {
     exit();
 }
 
-// Prepare SQL query
-$sql = "SELECT * FROM expense_track_details WHERE expense_track_created_by = ?";
+// Prepare SQL query with joins for detailed expense info
+$sql = "
+    SELECT 
+        e.expense_track_id,
+        e.expense_track_title,
+        e.expense_type_id,
+        e.expense_total_amount,
+        e.expense_track_status,
+        e.expense_track_app_rej_remarks,
+        e.expense_track_created_at,
+        e.expense_track_created_by,
+        e.expense_track_submitted_to,
+        e.expense_track_approved_rejected_by,
+        e.expense_track_approved_rejected_at,
+        CONCAT(creator.u_fname, ' ', creator.u_lname) as created_by_full_name,
+        CONCAT(submitter.u_fname, ' ', submitter.u_lname) as submitted_to_full_name,
+        CONCAT(approver.u_fname, ' ', approver.u_lname) as approved_rejected_by_full_name,
+        ed.expense_id,
+        ed.expense_head_id,
+        eh.expense_head_title,
+        ed.expense_product_name,
+        ed.expense_product_qty,
+        ed.expense_product_unit,
+        ed.expense_product_desc,
+        ed.expense_product_photo_path,
+        ed.expense_product_bill_photo_path,
+        ed.expense_product_sl_no,
+        ed.expense_product_amount,
+        ed.expense_bill_date,
+        ed.expense_product_created_at,
+        ed.expense_product_updated_at,
+        ed.expense_product_is_del
+    FROM 
+        expense_track_details e
+    LEFT JOIN 
+        user_details creator ON e.expense_track_created_by = creator.u_id
+    LEFT JOIN 
+        user_details submitter ON e.expense_track_submitted_to = submitter.u_id
+    LEFT JOIN 
+        user_details approver ON e.expense_track_approved_rejected_by = approver.u_id
+    LEFT JOIN
+        expense_details ed ON e.expense_track_id = ed.expense_track_id
+    LEFT JOIN
+        expense_heads eh ON ed.expense_head_id = eh.expense_head_id
+    WHERE e.expense_track_created_by = ?
+    ORDER BY e.expense_track_created_at DESC
+";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Initialize response array
-$jsonData = [];
-
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        // Convert `expense_status` to human-readable text
+// Group expense details by expense_track_id
+$expenses = [];
+while ($row = $result->fetch_assoc()) {
+    $track_id = $row['expense_track_id'];
+    if (!isset($expenses[$track_id])) {
+        // Convert `expense_track_status` to human-readable text
         $status = match ($row['expense_track_status']) {
-            null => "Pending",
+            null => "Unattended",
             0 => "Rejected",
             1 => "Approved",
             default => "Unknown"
         };
-
-        // Format JSON response
-        $jsonData[] = [
+        $expenses[$track_id] = [
             'expense_id' => $row['expense_track_id'],
             'expense_title' => $row['expense_track_title'],
-            'expense_type' => $row['expense_type_id'],
+            'expense_type' => $row['expense_type_id'], // keep id for reference
+            'expense_type_name' => isset($row['expense_type_id']) ? getExpenseTypeName($conn, $row['expense_type_id']) : null,
             'expense_amount' => $row['expense_total_amount'],
             'expense_status' => $status,
             'expense_date' => $row['expense_track_created_at'],
             'expense_comment' => $row['expense_track_app_rej_remarks'],
+            'expense_created_by' => $row['created_by_full_name'],
+            'expense_submitted_to' => $row['submitted_to_full_name'],
+            'expense_approved_by' => $row['approved_rejected_by_full_name'],
+            'expense_approved_rejected_at' => $row['expense_track_approved_rejected_at'],
+            'expense_details' => []
         ];
     }
-} else {
-    $jsonData = ['status' => 'error', 'message' => 'No expense records found'];
+    // Add expense detail if exists
+    if (!empty($row['expense_id'])) {
+        $expenses[$track_id]['expense_details'][] = [
+            'expense_id' => $row['expense_id'],
+            'expense_head_id' => $row['expense_head_id'], // keep id for reference
+            'expense_head_title' => $row['expense_head_title'],
+            'expense_head_name' => isset($row['expense_head_id']) ? getExpenseHeadName($conn, $row['expense_head_id']) : null,
+            'expense_product_name' => $row['expense_product_name'],
+            'expense_product_qty' => $row['expense_product_qty'],
+            'expense_product_unit' => $row['expense_product_unit'],
+            'expense_product_desc' => $row['expense_product_desc'],
+            'expense_product_photo_path' => $row['expense_product_photo_path'],
+            'expense_product_bill_photo_path' => $row['expense_product_bill_photo_path'],
+            'expense_product_sl_no' => $row['expense_product_sl_no'],
+            'expense_product_amount' => $row['expense_product_amount'],
+            'expense_bill_date' => $row['expense_bill_date'],
+            'expense_product_created_at' => $row['expense_product_created_at'],
+            'expense_product_updated_at' => $row['expense_product_updated_at'],
+            'expense_product_is_del' => $row['expense_product_is_del']
+        ];
+    }
+}
+
+// If no records found
+if (empty($expenses)) {
+    echo json_encode(['status' => 'error', 'message' => 'No expense records found']);
+    $conn->close();
+    exit();
 }
 
 // Close database connection
 $conn->close();
 
 // Send JSON response
-echo json_encode($jsonData);
+// Re-index array to be a list
+echo json_encode(array_values($expenses));
+
+// Add helper functions to fetch names from ids
+function getExpenseTypeName($conn, $type_id) {
+    $stmt = $conn->prepare("SELECT expense_type_name FROM expense_types WHERE expense_type_id = ? LIMIT 1");
+    $stmt->bind_param("i", $type_id);
+    $stmt->execute();
+    $stmt->bind_result($name);
+    $stmt->fetch();
+    $stmt->close();
+    return $name ?: null;
+}
+function getExpenseHeadName($conn, $head_id) {
+    $stmt = $conn->prepare("SELECT expense_head_title FROM expense_heads WHERE expense_head_id = ? LIMIT 1");
+    $stmt->bind_param("i", $head_id);
+    $stmt->execute();
+    $stmt->bind_result($name);
+    $stmt->fetch();
+    $stmt->close();
+    return $name ?: null;
+}
 ?>

@@ -605,6 +605,9 @@ const ManageExpenseWeb = () => {
                 >
                   {expense.status}
                 </span>
+                {(expense.expense_type?.toLowerCase() === "Project Purpose" || expense.expense_type_id === 1) && (
+                  <span className="auto-approved-badge">Auto-approved (Project Purpose)</span>
+                )}
               </div>
               <div className="myexpensesdetails">
                 <div className="myexpensestitle-section">
@@ -996,7 +999,8 @@ const ManageExpenseWeb = () => {
               </div>
               {selectedExpense.status === "Unattended" &&
                 roleId !== null &&
-                (roleId < 5 || roleId === 8) && (
+                (roleId < 5 || roleId === 8) &&
+                !(selectedExpense.expense_type?.toLowerCase() === "Project Purpose" || selectedExpense.expense_type_id === 1) && (
                   <div className="modal-actions">
                     <button
                       className="modal-button approve"

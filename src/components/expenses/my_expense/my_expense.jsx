@@ -33,6 +33,62 @@ const ExpenseDetailsWeb = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
+  // --- Capping Info State ---
+  const [userCapping, setUserCapping] = useState(null);
+  const [todayTotal, setTodayTotal] = useState(0);
+
+  // Fetch capping info and today's total
+  useEffect(() => {
+    const fetchCappingInfo = async () => {
+      const userId = localStorage.getItem("userid");
+      const token = localStorage.getItem("authToken");
+      if (!userId || !token) return;
+      // Fetch capping
+      const cappingResponse = await fetch("https://demo-expense.geomaticxevs.in/ET-api/capping_amount_api.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ u_id: userId })
+      });
+      const cappingData = await cappingResponse.json();
+      if (cappingData.success && cappingData.data) {
+        setUserCapping(parseFloat(cappingData.data.total_expense_amount));
+      } else {
+        setUserCapping(null);
+      }
+      // Fetch today's expenses
+      const todayResponse = await fetch("https://demo-expense.geomaticxevs.in/ET-api/my-expenses.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId })
+      });
+      const todayData = await todayResponse.json();
+      if (todayData.status === "success" && todayData.data) {
+        const today = new Date().toISOString().split('T')[0];
+        const todayExpensesList = todayData.data.filter(expense => {
+          const expenseDate = new Date(expense.expense_date).toISOString().split('T')[0];
+          return expenseDate === today;
+        });
+        const total = todayExpensesList.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
+        setTodayTotal(total);
+      } else if (Array.isArray(todayData)) {
+        const today = new Date().toISOString().split('T')[0];
+        const todayExpensesList = todayData.filter(expense => {
+          const expenseDate = new Date(expense.expense_date).toISOString().split('T')[0];
+          return expenseDate === today;
+        });
+        const total = todayExpensesList.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
+        setTodayTotal(total);
+      }
+    };
+    fetchCappingInfo();
+  }, []);
+
   const fetchExpenses = useCallback(async () => {
     const userId = localStorage.getItem("userid");
     const token = localStorage.getItem("authToken");
@@ -169,6 +225,24 @@ const ExpenseDetailsWeb = () => {
   return (
     <div className="leaves-container">
       <h1 className="myexpenses-myexpensepage-title">My Expense</h1>
+      {userCapping !== null && (
+        <div className="capping-info">
+          <div className="capping-item">
+            <span className="capping-label">Daily Capping Limit:</span>
+            <span className="capping-value">₹{userCapping}</span>
+          </div>
+          <div className="capping-item">
+            <span className="capping-label">Today's Submitted:</span>
+            <span className="capping-value">₹{todayTotal}</span>
+          </div>
+          <div className="capping-item">
+            <span className="capping-label">Remaining Today:</span>
+            <span className={`capping-value ${(userCapping - todayTotal) < 0 ? 'capping-exceeded' : 'capping-remaining'}`}>
+              ₹{(userCapping - todayTotal).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      )}
       <div className="myexpenses-stats-grid">
         <div className="myexpenses-stat-card">
           <div
