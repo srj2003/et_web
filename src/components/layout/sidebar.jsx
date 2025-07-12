@@ -49,7 +49,7 @@ const ROLE_ACCESS = {
     all_work_report: [1, 2, 3, 4, 6, 8],
   },
   requisition: {
-    add_requisition: "all_except_8", // Available to all except 8
+    add_requisition: "all", // Available to everyone
     my_requisitions: "all", // Available to everyone
     all_requisitions: [1, 2, 3, 4, 5, 6, 8], // Assuming these roles can view all requisitions
     manage_requisitions: [1, 2, 3, 4, 5, 6, 8], // Assuming these roles can manage requisitions
@@ -245,9 +245,10 @@ const Sidebar = () => {
               return showUserAttendance && allowed;
             }
             const access = ROLE_ACCESS[item.id]?.[subItem.id];
-            if (access === "all") return true;
-            if (access === "all_except_8") return storedRoleId !== 8;
-            return Array.isArray(access) && access.includes(storedRoleId);
+            return (
+              access === "all" ||
+              (Array.isArray(access) && access.includes(storedRoleId))
+            );
           });
 
           return filteredSubItems.length > 0

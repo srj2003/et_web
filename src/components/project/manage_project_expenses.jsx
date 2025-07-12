@@ -22,6 +22,13 @@ import {
   Eye,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"; // Added for charts
+// Utility function to format date
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString();
+}
 
 // SearchableDropdownModal remains the same as in your original manage_project_expenses.jsx
 // For brevity, I'm not repeating it here but assume it's available.
@@ -167,7 +174,7 @@ const ProjectManagementDashboard = () => {
       }
 
       const data = await response.json();
-
+      console.log(data);
       // Check for error response
       if (data.status === "error") {
         console.error("API Error:", data.message);
@@ -179,34 +186,83 @@ const ProjectManagementDashboard = () => {
       // Check if data.data exists and is an array
       const projectsData = data.data || [];
       if (Array.isArray(projectsData)) {
-        const transformedData = projectsData.map((item) => ({
-          id: parseInt(item.expense_type_id),
-          name: item.expense_type_name || "Unnamed Project",
-          createdAt: item.expense_type_created_at,
-          createdBy: item.created_by || "Unknown",
-          isActive: parseInt(item.expense_type_is_active),
-          status:
-            parseInt(item.expense_type_is_active) === 1
-              ? "Active"
-              : "Completed",
-          startDate: item.expense_type_created_at,
-          endDate: new Date(
-            new Date(item.expense_type_created_at).getTime() +
-              (Math.random() * 30 + 7) * 24 * 60 * 60 * 1000
-          )
-            .toISOString()
-            .split("T")[0],
-          progress:
-            parseInt(item.expense_type_is_active) === 1
-              ? Math.floor(Math.random() * 100)
-              : 100,
-          tasks: [
-            { id: 1, name: "Initial Planning", status: "Completed" },
-            { id: 2, name: "Development", status: "In Progress" },
-            { id: 3, name: "Testing", status: "Pending" },
-          ],
-        }));
-        setProjects(transformedData);
+        // Map backend response to frontend state
+        const mappedProjects = projectsData.map((proj) => {
+          // Extract roles from team_members (preferred) or assigned_users (fallback)
+          let projectLead = "";
+          let teamLead = "";
+          let supervisor = "";
+          let teamMembers = [];
+          // Prefer team_members array for roles
+          if (
+            Array.isArray(proj.team_members) &&
+            proj.team_members.length > 0
+          ) {
+            for (const member of proj.team_members) {
+              if (
+                member.role === "Project Manager" ||
+                member.role === "Project Manager"
+              ) {
+                projectLead = member.full_name;
+              } else if (member.role === "Team Lead") {
+                teamLead = member.full_name;
+              } else if (member.role === "Supervisor") {
+                supervisor = member.full_name;
+              } else if (member.role === "Team Member") {
+                teamMembers.push(member.full_name);
+              }
+            }
+          }
+          // Fallback to assigned_users if team_members missing
+          if (
+            (!projectLead || !teamLead || !supervisor) &&
+            Array.isArray(proj.assigned_users)
+          ) {
+            for (const member of proj.assigned_users) {
+              if (
+                !projectLead &&
+                (member.role === "Project Manager" ||
+                  member.role === "Project Manager")
+              ) {
+                projectLead = member.full_Name;
+              } else if (!teamLead && member.role === "Team Lead") {
+                teamLead = member.full_Name;
+              } else if (!supervisor && member.role === "Supervisor") {
+                supervisor = member.full_Name;
+              } else if (member.role === "Team Member") {
+                if (!teamMembers.includes(member.full_Name))
+                  teamMembers.push(member.full_Name);
+              }
+            }
+          }
+          // Map status and other fields
+          let status =
+            proj.expense_type_is_active === 1 ? "Active" : "Completed";
+          let isActive = proj.expense_type_is_active;
+          // Progress is not in API, so mock as 0 or 100
+          let progress = status === "Active" ? 0 : 100;
+          // Budget fields not in API, so set as empty
+          return {
+            id: proj.expense_type_id,
+            name: proj.expense_type_name,
+            createdAt: proj.expense_type_created_at,
+            updatedAt: proj.expense_type_updated_at,
+            isActive,
+            status,
+            createdBy: proj.created_by,
+            projectLead,
+            teamLead,
+            supervisor,
+            teamMembers,
+            budgetAllotted: "",
+            budgetExpended: "",
+            progress,
+          };
+        });
+        setProjects(mappedProjects);
+        mappedProjects.map((proj) => {
+          console.log(proj.name, proj.projectLead);
+        });
       } else {
         setProjects([]);
         console.warn("API response data is not an array:", data);
@@ -290,8 +346,8 @@ const ProjectManagementDashboard = () => {
     }
   }, []);
 
-  // New function to fetch user projects, now accepts projectId
-  const fetchUserProjects = async (projectId = null) => {
+  // New function to fetch user projects
+  const fetchUserProjects = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
       window.location.href = "/";
@@ -301,20 +357,15 @@ const ProjectManagementDashboard = () => {
     setIsLoadingUserProjects(true);
     try {
       const userId = localStorage.getItem("userid");
-      const body = { user_id: userId };
-      if (projectId !== null && projectId !== undefined) {
-        body.project_id = String(projectId);
-      }
-      console.log("Fetching user projects with body:", body);
       const response = await fetch(
-        "https://demo-expense.geomaticxevs.in/ET-api/get_project_details.php",
+        "https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ user_id: userId }),
         }
       );
 
@@ -325,7 +376,6 @@ const ProjectManagementDashboard = () => {
       }
 
       const data = await response.json();
-      console.log(data);
       if (data.status === "success" && Array.isArray(data.projects)) {
         setUserProjects(data.projects);
       }
@@ -379,69 +429,64 @@ const ProjectManagementDashboard = () => {
     setShowFormModal(true);
   };
 
-  // New: Add or Edit Project with assignments and notifications
   const handleFormSubmit = async () => {
-    if (!currentProjectName.trim()) {
-      alert("Please enter the project name.");
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/";
       return;
     }
 
-    // Build assignments array
-    const assignments = [];
-    if (projectManager)
-      assignments.push({ u_id: projectManager, role: "Project Manager" });
-    if (teamLead) assignments.push({ u_id: teamLead, role: "Team Lead" });
-    if (supervisor) assignments.push({ u_id: supervisor, role: "Supervisor" });
-    generalEmployees.forEach((u_id) =>
-      assignments.push({ u_id, role: "Employee" })
-    );
+    if (!currentProjectName.trim()) {
+      alert("Please enter project name.");
+      return;
+    }
 
-    const createdBy = loggedInUserCreatedBy;
-    const createdById = localStorage.getItem("userid");
+    const apiUrl =
+      "https://demo-expense.geomaticxevs.in/ET-api/expense_types.php";
+    const isEditing = !!editingProjectId;
+
+    // Constructing a payload that might work with expense_types.php for add/edit
+    // This is an assumption as the original code used add_project.php
+    const apiPayload = isEditing
+      ? {
+          expense_type_id: editingProjectId,
+          expense_type_name: currentProjectName,
+          // expense_type_is_active might need to be set or defaulted
+        }
+      : {
+          expense_type_name: currentProjectName,
+          created_by: loggedInUserCreatedBy, // Or a user ID if backend expects that
+          expense_type_is_active: 1, // Default to active
+        };
 
     try {
-      const response = await fetch(
-        `https://demo-expense.geomaticxevs.in/ET-api/add_project.php`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            project_name: currentProjectName,
-            created_by: createdBy, // name (for display)
-            created_by_id: createdById, // user id (for assigned_by)
-            assigned_employees: assignments,
-          }),
-        }
-      );
+      const response = await fetch(apiUrl, {
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(apiPayload),
+      });
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = "/";
+        return;
+      }
 
       const result = await response.json();
-
-      if (result.success) {
-        // Send notification to all assigned employees (if you have such a function)
-        // await sendNotificationToUser({
-        //   title: `New Project Assignment: ${currentProjectName}`,
-        //   message: `You have been assigned to project "${currentProjectName}" by ${createdBy}.`,
-        //   createdBy,
-        //   createdById: Number(createdById),
-        //   recipientIds: assignments.map(a => Number(a.u_id)),
-        //   type: 'project'
-        // });
-
-        alert("Project added successfully!");
-        setCurrentProjectName("");
-        setGeneralEmployees([]);
-        setProjectManager(null);
-        setTeamLead(null);
-        setSupervisor(null);
-        setEditingProjectId(null);
-        fetchProjectsData(); // Refresh project list
-        setShowFormModal(false); // Close the modal
+      if (result.success || response.ok) {
+        alert(`Project ${isEditing ? "updated" : "added"} successfully!`);
+        fetchProjectsData();
+        setShowFormModal(false);
+        resetFormFields();
       } else {
-        throw new Error(result.message || "Failed to add project");
+        alert(result.error || "Operation failed. Please try again.");
       }
     } catch (error) {
-      console.error("Error adding project:", error);
-      alert("Failed to add project. Please try again.");
+      console.error("Error submitting form:", error);
+      alert("An error occurred while saving the project.");
     }
   };
 
@@ -561,7 +606,7 @@ const ProjectManagementDashboard = () => {
     return String(date.getDate()).padStart(2, "0");
   };
 
-  // Helper to open modal with project and fetch user projects for that projectId
+  // Helper to open modal with project
   const handleOpenProjectDetailModal = (project) => {
     setSelectedProject(project);
     setEditFields({
@@ -576,10 +621,6 @@ const ProjectManagementDashboard = () => {
     setEditMode(false);
     setShowProjectDetailModal(true);
     setShowTeamMembers(false);
-    // Fetch user projects filtered by this projectId (support both id and project_id)
-    if (project && (project.id || project.project_id)) {
-      fetchUserProjects(project.id || project.project_id);
-    }
   };
 
   // Handler for editing fields
@@ -642,7 +683,7 @@ const ProjectManagementDashboard = () => {
             className="icon-btn"
             onClick={() => {
               setShowUserProjectsModal(true);
-              fetchUserProjects(); // No projectId, fetch all for user
+              fetchUserProjects();
             }}
           >
             <UserCircle size={22} />
@@ -726,19 +767,19 @@ const ProjectManagementDashboard = () => {
                       <h3>{project.name}</h3>
                     </div>
                     <p className="project-card-detail">
-                      <Shield size={14} className="mr-1" /> Team Leader:
-                      Dipanwita
+                      <Shield size={14} className="mr-1" /> created by:{" "}
+                      {project.createdBy}
                     </p>
                     <p className="project-card-detail">
                       <Users size={14} className="mr-1" /> Total Members: 25
                     </p>
                     <p className="project-card-detail">
-                      <CalendarPlus size={14} className="mr-1" /> Created At:
-                      02.10.2025
+                      <CalendarPlus size={14} className="mr-1" /> created At:{" "}
+                      {formatDate(project.createdAt)}
                     </p>
                     <p className="project-card-detail">
-                      <CalendarCheck size={14} className="mr-1" /> Expected End
-                      Date: 01.01.2026
+                      <CalendarCheck size={14} className="mr-1" /> updated At:{" "}
+                      {formatDate(project.updatedAt)}
                     </p>
                     {/* Expense Progress Tracker - Consistent UI */}
                     <p className="project-card-detail">
@@ -758,7 +799,7 @@ const ProjectManagementDashboard = () => {
                           marginLeft: "0.3rem",
                         }}
                       >
-                        ₹1,500
+                        ₹0.0
                       </span>
                       <span style={{ color: "#a5b4fc", margin: "0 0.2rem" }} />
                     </p>
@@ -948,11 +989,6 @@ const ProjectManagementDashboard = () => {
                         className="sidebar-project-card"
                       >
                         <div className="project-card-content">
-                          <span
-                            className={`stsatus-badge status-${project.status?.toLowerCase()}`}
-                          >
-                            {project.status}
-                          </span>
                         </div>
                         <div className="project-meta">
                           <span className="project-id">
@@ -1242,7 +1278,7 @@ const ProjectManagementDashboard = () => {
                 <span className="row-icon">
                   <UserCircle size={18} />
                 </span>
-                <span className="row-label">Project Lead</span>
+                <span className="row-label">Project Manager</span>
                 {editMode ? (
                   <select
                     className="form-input team-members-dropdown"
@@ -1251,14 +1287,14 @@ const ProjectManagementDashboard = () => {
                       handleEditFieldChange("projectLead", e.target.value)
                     }
                   >
-                    <option value="">Select Project Lead...</option>
+                    <option value="">Select Project Manager...</option>
                     {employeeList
                       // Filter by designation if available, fallback to all
                       .filter(
                         (emp) =>
-                          emp.designation === "Project Lead" ||
+                          emp.designation === "Project Manager" ||
                           !employeeList.some(
-                            (e) => e.designation === "Project Lead"
+                            (e) => e.designation === "Project Manager"
                           )
                       )
                       .map((emp) => (
@@ -1269,9 +1305,9 @@ const ProjectManagementDashboard = () => {
                   </select>
                 ) : (
                   <span className="row-value row-value-pill">
-                    {employeeList.find(
-                      (e) => e.u_id === selectedProject.projectLead
-                    )?.name || (
+                    {selectedProject.projectLead ? (
+                      selectedProject.projectLead
+                    ) : (
                       <span className="row-value-unassigned">Not Assigned</span>
                     )}
                   </span>
@@ -1307,9 +1343,9 @@ const ProjectManagementDashboard = () => {
                   </select>
                 ) : (
                   <span className="row-value row-value-pill">
-                    {employeeList.find(
-                      (e) => e.u_id === selectedProject.teamLead
-                    )?.name || (
+                    {selectedProject.teamLead ? (
+                      selectedProject.teamLead
+                    ) : (
                       <span className="row-value-unassigned">Not Assigned</span>
                     )}
                   </span>
@@ -1345,9 +1381,9 @@ const ProjectManagementDashboard = () => {
                   </select>
                 ) : (
                   <span className="row-value row-value-pill">
-                    {employeeList.find(
-                      (e) => e.u_id === selectedProject.supervisor
-                    )?.name || (
+                    {selectedProject.supervisor ? (
+                      selectedProject.supervisor
+                    ) : (
                       <span className="row-value-unassigned">Not Assigned</span>
                     )}
                   </span>
