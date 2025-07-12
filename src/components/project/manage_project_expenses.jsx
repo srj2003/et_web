@@ -22,6 +22,13 @@ import {
   Eye,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"; // Added for charts
+// Utility function to format date
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString();
+}
 
 // SearchableDropdownModal remains the same as in your original manage_project_expenses.jsx
 // For brevity, I'm not repeating it here but assume it's available.
@@ -167,7 +174,7 @@ const ProjectManagementDashboard = () => {
       }
 
       const data = await response.json();
-
+      console.log(data);
       // Check for error response
       if (data.status === "error") {
         console.error("API Error:", data.message);
@@ -179,34 +186,83 @@ const ProjectManagementDashboard = () => {
       // Check if data.data exists and is an array
       const projectsData = data.data || [];
       if (Array.isArray(projectsData)) {
-        const transformedData = projectsData.map((item) => ({
-          id: parseInt(item.expense_type_id),
-          name: item.expense_type_name || "Unnamed Project",
-          createdAt: item.expense_type_created_at,
-          createdBy: item.created_by || "Unknown",
-          isActive: parseInt(item.expense_type_is_active),
-          status:
-            parseInt(item.expense_type_is_active) === 1
-              ? "Active"
-              : "Completed",
-          startDate: item.expense_type_created_at,
-          endDate: new Date(
-            new Date(item.expense_type_created_at).getTime() +
-              (Math.random() * 30 + 7) * 24 * 60 * 60 * 1000
-          )
-            .toISOString()
-            .split("T")[0],
-          progress:
-            parseInt(item.expense_type_is_active) === 1
-              ? Math.floor(Math.random() * 100)
-              : 100,
-          tasks: [
-            { id: 1, name: "Initial Planning", status: "Completed" },
-            { id: 2, name: "Development", status: "In Progress" },
-            { id: 3, name: "Testing", status: "Pending" },
-          ],
-        }));
-        setProjects(transformedData);
+        // Map backend response to frontend state
+        const mappedProjects = projectsData.map((proj) => {
+          // Extract roles from team_members (preferred) or assigned_users (fallback)
+          let projectLead = "";
+          let teamLead = "";
+          let supervisor = "";
+          let teamMembers = [];
+          // Prefer team_members array for roles
+          if (
+            Array.isArray(proj.team_members) &&
+            proj.team_members.length > 0
+          ) {
+            for (const member of proj.team_members) {
+              if (
+                member.role === "Project Manager" ||
+                member.role === "Project Manager"
+              ) {
+                projectLead = member.full_name;
+              } else if (member.role === "Team Lead") {
+                teamLead = member.full_name;
+              } else if (member.role === "Supervisor") {
+                supervisor = member.full_name;
+              } else if (member.role === "Team Member") {
+                teamMembers.push(member.full_name);
+              }
+            }
+          }
+          // Fallback to assigned_users if team_members missing
+          if (
+            (!projectLead || !teamLead || !supervisor) &&
+            Array.isArray(proj.assigned_users)
+          ) {
+            for (const member of proj.assigned_users) {
+              if (
+                !projectLead &&
+                (member.role === "Project Manager" ||
+                  member.role === "Project Manager")
+              ) {
+                projectLead = member.full_Name;
+              } else if (!teamLead && member.role === "Team Lead") {
+                teamLead = member.full_Name;
+              } else if (!supervisor && member.role === "Supervisor") {
+                supervisor = member.full_Name;
+              } else if (member.role === "Team Member") {
+                if (!teamMembers.includes(member.full_Name))
+                  teamMembers.push(member.full_Name);
+              }
+            }
+          }
+          // Map status and other fields
+          let status =
+            proj.expense_type_is_active === 1 ? "Active" : "Completed";
+          let isActive = proj.expense_type_is_active;
+          // Progress is not in API, so mock as 0 or 100
+          let progress = status === "Active" ? 0 : 100;
+          // Budget fields not in API, so set as empty
+          return {
+            id: proj.expense_type_id,
+            name: proj.expense_type_name,
+            createdAt: proj.expense_type_created_at,
+            updatedAt: proj.expense_type_updated_at,
+            isActive,
+            status,
+            createdBy: proj.created_by,
+            projectLead,
+            teamLead,
+            supervisor,
+            teamMembers,
+            budgetAllotted: "",
+            budgetExpended: "",
+            progress,
+          };
+        });
+        setProjects(mappedProjects);
+        mappedProjects.map((proj) => {
+          console.log(proj.name, proj.projectLead);
+        });
       } else {
         setProjects([]);
         console.warn("API response data is not an array:", data);
@@ -711,19 +767,19 @@ const ProjectManagementDashboard = () => {
                       <h3>{project.name}</h3>
                     </div>
                     <p className="project-card-detail">
-                      <Shield size={14} className="mr-1" /> Team Leader:
-                      Dipanwita
+                      <Shield size={14} className="mr-1" /> created by:{" "}
+                      {project.createdBy}
                     </p>
                     <p className="project-card-detail">
                       <Users size={14} className="mr-1" /> Total Members: 25
                     </p>
                     <p className="project-card-detail">
-                      <CalendarPlus size={14} className="mr-1" /> Created At:
-                      02.10.2025
+                      <CalendarPlus size={14} className="mr-1" /> created At:{" "}
+                      {formatDate(project.createdAt)}
                     </p>
                     <p className="project-card-detail">
-                      <CalendarCheck size={14} className="mr-1" /> Expected End
-                      Date: 01.01.2026
+                      <CalendarCheck size={14} className="mr-1" /> updated At:{" "}
+                      {formatDate(project.updatedAt)}
                     </p>
                     {/* Expense Progress Tracker - Consistent UI */}
                     <p className="project-card-detail">
@@ -743,7 +799,7 @@ const ProjectManagementDashboard = () => {
                           marginLeft: "0.3rem",
                         }}
                       >
-                        ₹1,500
+                        ₹0.0
                       </span>
                       <span style={{ color: "#a5b4fc", margin: "0 0.2rem" }} />
                     </p>
@@ -763,11 +819,6 @@ const ProjectManagementDashboard = () => {
                       <span className="progress-text">{project.progress}%</span>
                     </div>
                     <div className="project-card-footer">
-                      <span
-                        className={`status-badge status-${project.status.toLowerCase()}`}
-                      >
-                        {project.status}
-                      </span>
                       {userHasEditPermission && project.isActive === 1 && (
                         <div className="card-actions">
                           <button
@@ -938,11 +989,6 @@ const ProjectManagementDashboard = () => {
                         className="sidebar-project-card"
                       >
                         <div className="project-card-content">
-                          <span
-                            className={`status-badge status-${project.status?.toLowerCase()}`}
-                          >
-                            {project.status}
-                          </span>
                         </div>
                         <div className="project-meta">
                           <span className="project-id">
@@ -1232,7 +1278,7 @@ const ProjectManagementDashboard = () => {
                 <span className="row-icon">
                   <UserCircle size={18} />
                 </span>
-                <span className="row-label">Project Lead</span>
+                <span className="row-label">Project Manager</span>
                 {editMode ? (
                   <select
                     className="form-input team-members-dropdown"
@@ -1241,14 +1287,14 @@ const ProjectManagementDashboard = () => {
                       handleEditFieldChange("projectLead", e.target.value)
                     }
                   >
-                    <option value="">Select Project Lead...</option>
+                    <option value="">Select Project Manager...</option>
                     {employeeList
                       // Filter by designation if available, fallback to all
                       .filter(
                         (emp) =>
-                          emp.designation === "Project Lead" ||
+                          emp.designation === "Project Manager" ||
                           !employeeList.some(
-                            (e) => e.designation === "Project Lead"
+                            (e) => e.designation === "Project Manager"
                           )
                       )
                       .map((emp) => (
@@ -1259,9 +1305,9 @@ const ProjectManagementDashboard = () => {
                   </select>
                 ) : (
                   <span className="row-value row-value-pill">
-                    {employeeList.find(
-                      (e) => e.u_id === selectedProject.projectLead
-                    )?.name || (
+                    {selectedProject.projectLead ? (
+                      selectedProject.projectLead
+                    ) : (
                       <span className="row-value-unassigned">Not Assigned</span>
                     )}
                   </span>
@@ -1297,9 +1343,9 @@ const ProjectManagementDashboard = () => {
                   </select>
                 ) : (
                   <span className="row-value row-value-pill">
-                    {employeeList.find(
-                      (e) => e.u_id === selectedProject.teamLead
-                    )?.name || (
+                    {selectedProject.teamLead ? (
+                      selectedProject.teamLead
+                    ) : (
                       <span className="row-value-unassigned">Not Assigned</span>
                     )}
                   </span>
@@ -1335,9 +1381,9 @@ const ProjectManagementDashboard = () => {
                   </select>
                 ) : (
                   <span className="row-value row-value-pill">
-                    {employeeList.find(
-                      (e) => e.u_id === selectedProject.supervisor
-                    )?.name || (
+                    {selectedProject.supervisor ? (
+                      selectedProject.supervisor
+                    ) : (
                       <span className="row-value-unassigned">Not Assigned</span>
                     )}
                   </span>
