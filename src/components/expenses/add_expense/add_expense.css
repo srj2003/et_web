@@ -30,7 +30,7 @@ body {
     /* === Overflow Fix & Professional Layout === */
     margin: 20rem 10rem 20rem 10rem;
     /* Account for the 320px fixed sidebar */
-    padding: 2rem;
+    padding: .2rem;
     /* Consistent padding around the content */
     transition: margin-left 0.3s ease-in-out, padding-top 0.3s ease-in-out;
     /* Smooth transition for responsive sidebar */
@@ -152,6 +152,21 @@ body {
     }
 }
 
+.user-section-title {
+    font-size: 1.5rem;
+    /* Slightly refined size */
+    font-weight: 700;
+    /* Ensure strong weight */
+    color: #1e293b;
+    margin: .5rem 0rem .5rem 0rem;
+    /* Centered with bottom margin */
+    text-align: left;
+    position: relative;
+    letter-spacing: -0.5px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);
+    /* Softer shadow */
+}
+
 /* Form Title */
 .form-title {
     font-size: 2.25rem;
@@ -176,34 +191,70 @@ body {
     left: 50%;
     transform: translateX(-50%);
     width: 100px;
-    /* Slightly smaller underline */
     height: 3px;
-    /* Thinner underline */
     background: linear-gradient(90deg, #6366f1, #4f46e5);
     border-radius: 1.5px;
     box-shadow: 0 1px 3px rgba(99, 102, 241, 0.25);
-    /* Softer shadow */
+}
+
+.user-form-section {
+    /* background: rgba(255, 255, 255, 0.95); */
+    backdrop-filter: blur(3px);
+    border-radius: 16px;
+    padding: .5rem 0rem .5rem 0rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 30rem;
+    /* box-sizing: border-box;
+    box-shadow:
+        0 5px 15px -3px rgba(0, 0, 0, 0.07),
+        0 2px 8px -2px rgba(0, 0, 0, 0.05),
+        inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
+    position: relative;
+    overflow: visible;
+}
+
+.user-form-section:hover {
+    /* transform: translateY(-0.1px); */
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.08),
+        0 4px 10px -4px rgba(0, 0, 0, 0.06),
+        inset 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.user-form-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #4f46e5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.user-form-section:hover::before {
+    opacity: 1;
 }
 
 /* Form Sections */
 .form-section {
     background: rgba(255, 255, 255, 0.95);
-    /* Higher opacity for better readability */
     backdrop-filter: blur(8px);
-    /* Slightly reduced blur if performance is a concern */
     border-radius: 16px;
-    /* Consistent, slightly softer radius */
     padding: 2rem;
-    /* Generous internal padding */
     margin: 0 auto 2rem auto;
-    /* Centered, with bottom margin for separation */
     width: 100%;
     max-width: 960px;
-    /* Set a max-width for very wide screens for better readability */
     box-sizing: border-box;
     box-shadow:
         0 5px 15px -3px rgba(0, 0, 0, 0.07),
-        /* Refined shadow */
         0 2px 8px -2px rgba(0, 0, 0, 0.05),
         inset 0 1px 2px rgba(255, 255, 255, 0.6);
     border: 1px solid rgba(229, 231, 235, 0.8);
@@ -249,8 +300,8 @@ body {
     font-weight: 600;
     color: #2c3e50;
     /* Darker, professional blue-gray */
-    margin-bottom: 1.75rem;
-    padding-bottom: 0.875rem;
+    /* margin-bottom: .5rem; */
+    /* padding-bottom: 0.875rem; */
     border-bottom: 1px solid rgba(99, 102, 241, 0.15);
     /* Softer border */
     position: relative;
@@ -261,11 +312,9 @@ body {
     content: '';
     position: absolute;
     bottom: -1px;
-    /* Align with the border */
     left: 0;
     width: 70px;
     height: 2px;
-    /* Consistent height */
     background: linear-gradient(90deg, #6366f1, #4f46e5);
     border-radius: 1px;
 }
@@ -274,11 +323,294 @@ body {
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    /* Min item width */
     gap: 1.5rem;
-    /* Spacing between grid items */
     width: 100%;
     box-sizing: border-box;
+    margin-top: .1rem;
+}
+
+/* Personal Information Table Styles */
+.personal-info-table-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin: 0rem 0rem 0rem 0rem;
+    background-color: #f8f9fa;
+}
+
+.personal-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.personal-info-table thead {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.info-th th {
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.info-row {
+    transition: background-color 0.2s ease;
+}
+
+.info-row:hover {
+    background-color: #f8f9fa;
+}
+
+.info-row td {
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid #e0e6ed;
+    vertical-align: middle;
+}
+
+.info-row:last-child td {
+    border-bottom: none;
+}
+
+.info-value {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.info-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+    word-break: break-word;
+}
+
+/* Submit Form Section Table Styles */
+.submit-form-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 0 auto 2rem auto;
+    width: 100%;
+    max-width: 960px;
+    box-sizing: border-box;
+    box-shadow:
+        0 5px 15px -3px rgba(0, 0, 0, 0.07),
+        0 2px 8px -2px rgba(0, 0, 0, 0.05),
+        inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible;
+}
+
+.submit-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.75rem;
+    width: 100%;
+}
+
+.submit-section-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+    position: relative;
+    letter-spacing: -0.2px;
+}
+
+.submit-section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 70px;
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1, #4f46e5);
+    border-radius: 1px;
+}
+
+.expense-form-table-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+    background-color: #f8f9fa;
+}
+
+.expense-form-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.expense-form-table thead {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.expense-form-th th {
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.expense-form-row {
+    transition: background-color 0.2s ease;
+}
+
+.expense-form-row:hover {
+    background-color: #f8f9fa;
+}
+
+.expense-form-row td {
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid #e0e6ed;
+    vertical-align: middle;
+}
+
+.expense-form-row:last-child td {
+    border-bottom: none;
+}
+
+.expense-form-value {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.expense-form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e6ed;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #374151;
+    background: #ffffff;
+    transition: all 0.25s ease;
+    text-align: center;
+}
+
+.expense-form-input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.expense-form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e6ed;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #374151;
+    background: #ffffff;
+    transition: all 0.25s ease;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.expense-form-textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.expense-form-additional {
+    margin-top: 1.5rem;
+}
+
+.additional-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.additional-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.additional-field label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #34495e;
+    letter-spacing: 0.1px;
+}
+
+.additional-field label::after {
+    content: '*';
+    color: #e74c3c;
+    margin-left: 0.25rem;
+}
+
+/* Dropdown Styles */
+.expense-form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e6ed;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #374151;
+    background: #ffffff;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+}
+
+.expense-form-select:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.expense-form-select option {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Remove old modal styles */
+.modal-overlay,
+.modal-container,
+.modal-header,
+.search-bar,
+.modal-content,
+.modal-item {
+    display: none;
 }
 
 /* Form Group utility for better control over label-input pairs in the grid */
@@ -455,6 +787,7 @@ textarea {
 .file-upload {
     position: relative;
     margin-bottom: 1rem;
+    transition: all 0.3s ease;
 }
 
 .file-input {
@@ -483,6 +816,66 @@ textarea {
 .file-label:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 10px -2px rgba(99, 102, 241, 0.3);
+}
+
+/* Validation Styles */
+.validation-error .file-label {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 
+        0 3px 5px -1px rgba(239, 68, 68, 0.2),
+        0 0 0 3px rgba(239, 68, 68, 0.1),
+        0 0 20px rgba(239, 68, 68, 0.3);
+    animation: validationPulse 2s ease-in-out infinite;
+}
+
+.validation-error .file-label:hover {
+    box-shadow: 
+        0 5px 10px -2px rgba(239, 68, 68, 0.3),
+        0 0 0 3px rgba(239, 68, 68, 0.15),
+        0 0 25px rgba(239, 68, 68, 0.4);
+}
+
+.validation-error .additional-field {
+    border: 2px solid #ef4444;
+    border-radius: 8px;
+    padding: 0.5rem;
+    background: rgba(239, 68, 68, 0.05);
+    box-shadow: 
+        0 0 0 3px rgba(239, 68, 68, 0.1),
+        0 0 15px rgba(239, 68, 68, 0.2);
+    animation: validationPulse 2s ease-in-out infinite;
+}
+
+.required-indicator {
+    color: #ef4444;
+    font-weight: 700;
+    margin-left: 0.25rem;
+    font-size: 1.1em;
+}
+
+.validation-message {
+    color: #ef4444;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #ef4444;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes validationPulse {
+    0%, 100% {
+        box-shadow: 
+            0 0 0 3px rgba(239, 68, 68, 0.1),
+            0 0 15px rgba(239, 68, 68, 0.2);
+    }
+    50% {
+        box-shadow: 
+            0 0 0 3px rgba(239, 68, 68, 0.2),
+            0 0 25px rgba(239, 68, 68, 0.4);
+    }
 }
 
 .file-preview,
@@ -988,39 +1381,90 @@ textarea {
     border-color: rgba(79, 70, 229, 0.2);
 }
 
-/* Loading State (original is fine) */
+/* Loading States - Dashboard Style */
+.dash-loading-container {
+  position: fixed;
+  top: 0;
+  left: 10rem;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(248, 250, 252, 0.9);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+}
+
+.dash-loading-spinner {
+  width: 72px;
+  height: 72px;
+  border: 8px solid rgba(229, 231, 235, 0.3);
+  border-top: 8px solid #6366f1;
+  border-bottom: 8px solid #6366f1;
+  border-radius: 50%;
+  animation: 
+    spin 1.2s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite,
+    pulse 1.5s ease-in-out infinite alternate;
+  box-shadow: 
+    0 0 20px 4px rgba(99, 102, 241, 0.15),
+    inset 0 0 12px rgba(255, 255, 255, 0.8);
+  position: relative;
+}
+
+.dash-loading-text {
+  position: absolute;
+  margin-top: 100px;
+  color: #4b5563;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  animation: text-pulse 2s ease-in-out infinite;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+}
+
+@keyframes text-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { 
+    opacity: 0.9;
+    transform: scale(0.98);
+    border-top-color: #6366f1;
+    border-bottom-color: #6366f1;
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1.03);
+    border-top-color: #8183f2;
+    border-bottom-color: #8183f2;
+  }
+}
+
+/* Legacy loading styles (keeping for backward compatibility) */
 .loading-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    /* Should take full viewport if it's the only thing on page */
-    /* background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%); */
-    /* The main container background should cover this if loading is within it */
 }
 
 .loading-spinner {
     width: 45px;
-    /* Slightly smaller */
     height: 45px;
     border: 3px solid rgba(99, 102, 241, 0.15);
-    /* Softer border */
     border-top: 3px solid #4f46e5;
-    /* Accent color for spinner */
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-    /* Slightly faster spin */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
 }
 
 
@@ -1137,5 +1581,87 @@ textarea,
     
     .capping-item {
         padding: 0.5rem 0.75rem;
+    }
+}
+
+/* Responsive styles for personal info table */
+@media (max-width: 1200px) {
+    .personal-info-table {
+        font-size: 0.85rem;
+    }
+    
+    .info-th th,
+    .info-row td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .personal-info-table {
+        min-width: 600px;
+    }
+    
+    .info-th th,
+    .info-row td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .personal-info-table {
+        min-width: 500px;
+    }
+    
+    .info-text {
+        font-size: 0.75rem;
+    }
+}
+
+/* Responsive styles for expense form table */
+@media (max-width: 1200px) {
+    .expense-form-table {
+        font-size: 0.85rem;
+    }
+    
+    .expense-form-th th,
+    .expense-form-row td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .expense-form-table-container {
+        overflow-x: auto;
+    }
+    
+    .expense-form-table {
+        min-width: 700px;
+    }
+    
+    .expense-form-th th,
+    .expense-form-row td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    .additional-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .expense-form-table {
+        min-width: 600px;
+    }
+    
+    .expense-form-input,
+    .expense-form-textarea {
+        font-size: 0.75rem;
     }
 }

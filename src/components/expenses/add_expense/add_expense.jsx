@@ -20,6 +20,10 @@ const ExpenseFormWeb = () => {
     remarks: "",
     billDate: "",
   });
+  const [validationErrors, setValidationErrors] = useState({
+    billFile: false,
+    productImage: false,
+  });
   const [expenses, setExpenses] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [submittedToCategory, setSubmittedToCategory] = useState("");
@@ -28,18 +32,13 @@ const ExpenseFormWeb = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
-  const [showRoleModal, setShowRoleModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [showNameModal, setShowNameModal] = useState(false);
   const [headItems, setHeadItems] = useState([]);
   const [expenseHeadValue, setExpenseHeadValue] = useState(null);
-  const [showExpenseHeadModal, setShowExpenseHeadModal] = useState(false);
   const [expenseTypeItems, setExpenseTypeItems] = useState([]);
   const [expenseType, setExpenseType] = useState(null);
-  const [showExpenseTypeModal, setShowExpenseTypeModal] = useState(false);
   const [showBillDatePicker, setShowBillDatePicker] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [currentDate] = useState(new Date().toLocaleString());
   const [currentLocation, setCurrentLocation] = useState({
     latitude: "0",
@@ -294,16 +293,50 @@ const ExpenseFormWeb = () => {
   }, []);
 
   const handleAddExpense = () => {
-    // Find the selected expense type label
-    const selectedTypeObj = expenseTypeItems.find(
+    // Find the selected expense head label
+    const selectedHeadObj = expenseTypeItems.find(
       (item) => item.value === expenseType
     );
-    const selectedTypeLabel = selectedTypeObj?.label?.toLowerCase() || "";
+    const selectedHeadLabel = selectedHeadObj?.label?.toLowerCase() || "";
 
     // Determine if bill and image are required
     const isSpecialType =
-      selectedTypeLabel === "petrol" ||
-      selectedTypeLabel === "buying it product";
+      selectedHeadLabel === "petrol" ||
+      selectedHeadLabel === "buying it products" ||
+      selectedHeadLabel === "electric bill";
+    
+    // Debug logging
+    console.log("Selected Head Label:", selectedHeadLabel);
+    console.log("Is Special Type:", isSpecialType);
+    console.log("Has At Least One Upload:", hasAtLeastOneUpload());
+
+    // Reset validation errors
+    setValidationErrors({
+      billFile: false,
+      productImage: false,
+    });
+
+    // Check for validation errors
+    let hasValidationError = false;
+    const newValidationErrors = {
+      billFile: false,
+      productImage: false,
+    };
+
+    if (isSpecialType) {
+      // Check if at least one upload is provided
+      if (!hasAtLeastOneUpload()) {
+        // If no uploads provided, show error on both fields
+        newValidationErrors.billFile = true;
+        newValidationErrors.productImage = true;
+        hasValidationError = true;
+      }
+    }
+
+    // Set validation errors if any
+    if (hasValidationError) {
+      setValidationErrors(newValidationErrors);
+    }
 
     // Validation for all required fields
     if (
@@ -313,25 +346,12 @@ const ExpenseFormWeb = () => {
       !currentExpense.description ||
       !currentExpense.amount ||
       !currentExpense.billDate ||
-      (isSpecialType && !currentExpense.billFile) ||
-      (isSpecialType && !currentExpense.productImage)
+      hasValidationError
     ) {
-      if (isSpecialType) {
-        if (!currentExpense.billFile && !currentExpense.productImage) {
-          alert(
-            "For 'petrol' and 'Buying IT Product', both Bill and Product Image are required."
-          );
-        } else if (!currentExpense.billFile) {
-          alert(
-            "For 'petrol' and 'Buying IT Product', Bill Upload is required."
-          );
-        } else if (!currentExpense.productImage) {
-          alert(
-            "For 'petrol' and 'Buying IT Product', Product Image is required."
-          );
-        } else {
-          alert("Fill all the fields");
-        }
+      if (isSpecialType && hasValidationError) {
+        alert(
+          `For '${selectedHeadLabel}', either Bill Upload or Product Image is required.`
+        );
       } else {
         alert("Fill all the fields");
       }
@@ -402,6 +422,11 @@ const ExpenseFormWeb = () => {
             size: file.size,
           },
         });
+        // Clear validation errors when any file is uploaded
+        setValidationErrors({
+          billFile: false,
+          productImage: false,
+        });
       } else {
         setCurrentExpense({
           ...currentExpense,
@@ -411,6 +436,11 @@ const ExpenseFormWeb = () => {
             type: file.type,
             size: file.size,
           },
+        });
+        // Clear validation errors when any file is uploaded
+        setValidationErrors({
+          billFile: false,
+          productImage: false,
         });
       }
     }
@@ -432,7 +462,10 @@ const ExpenseFormWeb = () => {
     setSelectedRole(null);
     setSelectedUser(null);
     setUsers([]);
-    setSearchQuery("");
+    setValidationErrors({
+      billFile: false,
+      productImage: false,
+    });
   };
 
   // Helper to check if Project Purpose is selected in either dropdown
@@ -442,6 +475,29 @@ const ExpenseFormWeb = () => {
     const isPP = (obj) => obj && obj.label && obj.label.trim().toLowerCase().replace(/\s+/g, ' ') === "project purpose";
     return isPP(selectedTypeObj1) || isPP(selectedTypeObj2);
   })();
+
+  // Helper to check if current expense head requires mandatory uploads
+  const requiresMandatoryUploads = (() => {
+    const selectedHeadObj = expenseTypeItems.find((item) => item.value === expenseType);
+    if (!selectedHeadObj) return false;
+    
+    const expenseHeadLabel = selectedHeadObj.label?.trim().toLowerCase().replace(/\s+/g, ' ') || '';
+    const mandatoryHeads = [
+      'buying it products',
+      'petrol',
+      'electric bill'
+    ];
+    
+    const requiresUpload = mandatoryHeads.includes(expenseHeadLabel);
+    console.log("Requires Mandatory Uploads:", requiresUpload, "for head:", expenseHeadLabel);
+    
+    return requiresUpload;
+  })();
+
+  // Helper to check if at least one upload is provided
+  const hasAtLeastOneUpload = () => {
+    return currentExpense.billFile || currentExpense.productImage;
+  };
 
   const handleSubmitAllExpenses = async () => {
     if (expenses.length === 0) {
@@ -563,70 +619,47 @@ const ExpenseFormWeb = () => {
         }
 
         alert(message);
-        resetForm();
+        
+        // Clear all form data and expenses
         setExpenses([]);
         setExpenseHeadValue(null);
         setExpenseTitle("");
+        setExpenseType(null);
+        setCurrentExpense({
+          id: Math.random().toString(36).substring(7),
+          title: "",
+          type: null,
+          description: "",
+          amount: 0,
+          remarks: "",
+          billDate: "",
+        });
+        setSelectedRole(null);
+        setSelectedUser(null);
+        setUsers([]);
         setSubmittedToCategory("");
         setSubmittedToName("");
+        
+        return; // Exit early on success
       } else {
         throw new Error(result.message || "Failed to submit expenses");
       }
     } catch (error) {
       console.error("Submission error:", error);
-      alert("Failed to submit expenses. Please try again.");
+      
+      // Check if it's a network error or server error
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        alert("Network error. Please check your internet connection and try again.");
+      } else {
+        alert("Failed to submit expenses. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
   const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
-  const renderModal = (title, items, selectedValue, onSelect, onClose) => (
-    <div className="modal-overlay">
-      <div className="modal-container">
-        <div className="modal-header">
-          <h3>{title}</h3>
-          <button className="close-button" onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
-        <div className="search-bar">
-          <Search size={20} />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button className="clear-search" onClick={() => setSearchQuery("")}>
-              <X size={16} />
-            </button>
-          )}
-        </div>
-        <div className="modal-content">
-          {items
-            .filter((item) =>
-              item.label.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .map((item) => (
-              <div
-                key={item.value}
-                className={`modal-item ${
-                  selectedValue === item.value ? "selected" : ""
-                }`}
-                onClick={() => {
-                  onSelect(item.value);
-                  onClose();
-                }}
-              >
-                {item.label}
-              </div>
-            ))}
-        </div>
-      </div>
-    </div>
-  );
+
 
   const handleDateClick = (e) => {
     e.stopPropagation();
@@ -660,8 +693,9 @@ const ExpenseFormWeb = () => {
 
   if (isLoadingUser) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className="dash-loading-container">
+        <div className="dash-loading-spinner"></div>
+        <pre className='dash-loading-text'>  Loading Expense Form...</pre>
       </div>
     );
   }
@@ -689,44 +723,56 @@ const ExpenseFormWeb = () => {
       )}
 
       {/* Personal Information Section */}
-      <section className="form-section">
-        <h2 className="section-title">Personal Information</h2>
-        <div className="form-grid">
-          <div className="form-group">
-            <label>USER ID</label>
-            <input type="text" value={userData.userId} readOnly />
-          </div>
-          <div className="form-group">
-            <label>USER TYPE</label>
-            <input type="text" value={userData.role} readOnly />
-          </div>
-          <div className="form-group">
-            <label>FULL NAME</label>
-            <input
-              type="text"
-              value={`${userData.firstName} ${userData.middleName} ${userData.lastName}`.trim()}
-              readOnly
-            />
-          </div>
-          <div className="form-group">
-            <label>DATE & TIME</label>
-            <input type="text" value={currentDate} readOnly />
-          </div>
-          <div className="form-group">
-            <label>LOCATION</label>
-            <input
-              type="text"
-              value={`Lat: ${currentLocation.latitude}, Long: ${currentLocation.longitude}`}
-              readOnly
-            />
-          </div>
+      <section className="user-form-section">
+        <h2 className="user-section-title">Personal Information:-</h2>
+        <div className="personal-info-table-container">
+          <table className="personal-info-table">
+            <thead>
+              <tr className="info-th">
+                <th>USER ID</th>
+                <th>USER TYPE</th>
+                <th>FULL NAME</th>
+                <th>DATE & TIME</th>
+                <th>LOCATION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="info-row">
+                <td>
+                  <div className="info-value">
+                    <span className="info-text">{userData.userId}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className="info-value">
+                    <span className="info-text">{userData.role}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className="info-value">
+                    <span className="info-text">{`${userData.firstName} ${userData.middleName} ${userData.lastName}`.trim()}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className="info-value">
+                    <span className="info-text">{currentDate}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className="info-value">
+                    <span className="info-text">{`Lat: ${currentLocation.latitude}, Long: ${currentLocation.longitude}`}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
       {/* Expense Details Section */}
-      <section className="form-section">
-        <div className="section-header">
-          <h2 className="section-title">Expense Details</h2>
+      <section className="submit-form-section">
+        <div className="submit-section-header">
+          <h2 className="submit-section-title">Expense Details:-</h2>
           <div className="reset-button-container">
             <button className="reset-button" onClick={resetForm}>
               <Trash2 size={14} />
@@ -735,199 +781,257 @@ const ExpenseFormWeb = () => {
           </div>
         </div>
 
-        <div className="form-grid">
-          <div className="form-group">
-            <label>Expense Type</label>
-            <div
-              className="select-input"
-              onClick={() => setShowExpenseHeadModal(true)}
-            >
-              {expenseHeadValue
-                ? headItems.find((item) => item.value === expenseHeadValue)?.label
-                : "Select Expense type"}
-            </div>
-            {/* Show warning if Project Purpose is selected in Expense Type */}
-            {(() => {
-              const selectedTypeObj = headItems.find((item) => item.value === expenseHeadValue);
-              if (selectedTypeObj && selectedTypeObj.label && selectedTypeObj.label.trim().toLowerCase().replace(/\s+/g, ' ') === "project purpose") {
-                return (
-                  <div style={{ color: '#b91c1c', marginTop: '6px', fontWeight: 500, fontSize: '0.97em', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '8px 12px' }}>
-                    Use this only for personal expenses. If you choose a project purpose, it will reduce your daily limit.
+        <div className="expense-form-table-container">
+          <table className="expense-form-table">
+            <thead>
+              <tr className="expense-form-th">
+                <th>Expense Type</th>
+                <th>Expense Bill Title</th>
+                <th>Expense Head</th>
+                <th>Amount</th>
+                <th>Bill Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="expense-form-row">
+                <td>
+                  <div className="expense-form-value">
+                    <select
+                      value={expenseHeadValue || ""}
+                      onChange={(e) => setExpenseHeadValue(e.target.value)}
+                      className="expense-form-select"
+                    >
+                      <option value="">Select Expense type</option>
+                      {headItems.map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Show warning if Project Purpose is selected in Expense Type */}
+                    {(() => {
+                      const selectedTypeObj = headItems.find((item) => item.value === expenseHeadValue);
+                      if (selectedTypeObj && selectedTypeObj.label && selectedTypeObj.label.trim().toLowerCase().replace(/\s+/g, ' ') === "project purpose") {
+                        return (
+                          <div style={{ color: '#b91c1c', marginTop: '6px', fontWeight: 500, fontSize: '0.97em', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '8px 12px' }}>
+                            Use this only for personal expenses. If you choose a project purpose, it will reduce your daily limit.
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
-                );
-              }
-              return null;
-            })()}
-          </div>
-
-          <div className="form-group">
-            <label>Expense Bill Title </label>
-            <input
-              type="text"
-              value={expenseTitle}
-              onChange={(e) => setExpenseTitle(e.target.value)}
-              placeholder="Enter expense title"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Expense Head</label>
-            <div
-              className="select-input"
-              onClick={() => setShowExpenseTypeModal(true)}
-            >
-              {expenseType
-                ? expenseTypeItems.find((item) => item.value === expenseType)?.label
-                : "Select Expense Head"}
-            </div>
-            {/* Show warning if Project Purpose is selected in Expense Head */}
-            {/* {(() => {
-              const selectedTypeObj = expenseTypeItems.find((item) => item.value === expenseType);
-              if (selectedTypeObj && selectedTypeObj.label && selectedTypeObj.label.trim().toLowerCase().replace(/\s+/g, ' ') === "project purpose") {
-                return (
-                  <div style={{ color: '#b91c1c', marginTop: '6px', fontWeight: 500, fontSize: '0.97em', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '8px 12px' }}>
-                    Only for your personal expenses. Applying with Project Purpose will deduct from your daily expense
+                </td>
+                <td>
+                  <div className="expense-form-value">
+                    <input
+                      type="text"
+                      value={expenseTitle}
+                      onChange={(e) => setExpenseTitle(e.target.value)}
+                      placeholder="Enter expense title"
+                      className="expense-form-input"
+                    />
                   </div>
-                );
-              }
-              return null;
-            })()} */}
-          </div>
+                </td>
+                <td>
+                  <div className="expense-form-value">
+                    <select
+                      value={expenseType || ""}
+                      onChange={(e) => {
+                        setExpenseType(e.target.value);
+                        // Clear validation errors when expense type changes
+                        setValidationErrors({
+                          billFile: false,
+                          productImage: false,
+                        });
+                      }}
+                      className="expense-form-select"
+                    >
+                      <option value="">Select Expense Head</option>
+                      {expenseTypeItems.map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </td>
+                <td>
+                  <div className="expense-form-value">
+                    <input
+                      type="number"
+                      value={currentExpense.amount || ""}
+                      onChange={(e) =>
+                        setCurrentExpense({
+                          ...currentExpense,
+                          amount: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      placeholder="0.00"
+                      className="expense-form-input"
+                    />
+                    {cappingError && (
+                      <div style={{ color: 'red', marginTop: '5px', fontSize: '0.8rem' }}>
+                        {cappingError}
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td>
+                  <div className="expense-form-value">
+                    <input
+                      type="date"
+                      value={currentExpense.billDate}
+                      onChange={(e) =>
+                        setCurrentExpense({
+                          ...currentExpense,
+                          billDate: e.target.value,
+                        })
+                      }
+                      className="expense-form-input date-input"
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <div className="form-group full-width">
-            <label>Description </label>
-            <textarea
-              value={currentExpense.description}
-              onChange={(e) =>
-                setCurrentExpense({
-                  ...currentExpense,
-                  description: e.target.value,
-                })
-              }
-              placeholder="Enter expense description"
-              rows={4}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Amount </label>
-            <input
-              type="number"
-              value={currentExpense.amount || ""}
-              onChange={(e) =>
-                setCurrentExpense({
-                  ...currentExpense,
-                  amount: parseFloat(e.target.value) || 0,
-                })
-              }
-              placeholder="0.00"
-            />
-            {cappingError && (
-              <div style={{ color: 'red', marginTop: '5px' }}>
-                {cappingError}
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label>Bill Date </label>
-            <input
-              type="date"
-              value={currentExpense.billDate}
-              onChange={(e) =>
-                setCurrentExpense({
-                  ...currentExpense,
-                  billDate: e.target.value,
-                })
-              }
-              className="date-input"
-              max={new Date().toISOString().split("T")[0]}
-            />
-          </div>
-
-          <div className="form-group full-width">
-            <label>Remarks </label>
-            <textarea
-              value={currentExpense.remarks}
-              onChange={(e) =>
-                setCurrentExpense({
-                  ...currentExpense,
-                  remarks: e.target.value,
-                })
-              }
-              placeholder="Enter remarks"
-              rows={4}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Bill Upload</label>
-            <div className="file-upload">
-              <input
-                type="file"
-                id="bill-upload"
-                onChange={(e) => handleFileUpload(e, "bill")}
-                accept="image/*,.pdf"
-                className="file-input"
+        {/* Additional fields in separate sections */}
+        <div className="expense-form-additional">
+          <div className="additional-row">
+            <div className="additional-field">
+              <label>Description</label>
+              <textarea
+                value={currentExpense.description}
+                onChange={(e) =>
+                  setCurrentExpense({
+                    ...currentExpense,
+                    description: e.target.value,
+                  })
+                }
+                placeholder="Enter expense description"
+                rows={3}
+                className="expense-form-textarea"
               />
-              <label htmlFor="bill-upload" className="file-label">
-                <Upload size={20} />
-                Upload Bill
-              </label>
             </div>
-            {currentExpense.billFile && (
-              <div className="file-preview">
-                <span>📄 {currentExpense.billFile.name}</span>
-                <button
-                  className="remove-file"
-                  onClick={() =>
-                    setCurrentExpense((prev) => ({ ...prev, billFile: null }))
-                  }
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label>Product Picture</label>
-            <div className="file-upload">
-              <input
-                type="file"
-                id="image-upload"
-                onChange={(e) => handleFileUpload(e, "image")}
-                accept="image/*"
-                className="file-input"
+            <div className="additional-field">
+              <label>Remarks</label>
+              <textarea
+                value={currentExpense.remarks}
+                onChange={(e) =>
+                  setCurrentExpense({
+                    ...currentExpense,
+                    remarks: e.target.value,
+                  })
+                }
+                placeholder="Enter remarks"
+                rows={3}
+                className="expense-form-textarea"
               />
-              <label htmlFor="image-upload" className="file-label">
-                <Upload size={20} />
-                Upload Image
-              </label>
             </div>
-            {currentExpense.productImage && (
-              <div className="image-preview">
-                <img
-                  src={currentExpense.productImage.uri}
-                  alt="Product"
-                  className="preview-image"
+          </div>
+          
+          <div className="additional-row">
+            <div className={`additional-field ${validationErrors.billFile ? 'validation-error' : ''}`}>
+              <label>
+                Bill Upload
+                {requiresMandatoryUploads && <span className="required-indicator">*</span>}
+              </label>
+              <div className={`file-upload ${validationErrors.billFile ? 'validation-error' : ''}`}>
+                <input
+                  type="file"
+                  id="bill-upload"
+                  onChange={(e) => handleFileUpload(e, "bill")}
+                  accept="image/*,.pdf"
+                  className="file-input"
                 />
-                <div className="image-info">
-                  <span>🖼️ {currentExpense.productImage.name}</span>
+                <label htmlFor="bill-upload" className="file-label">
+                  <Upload size={20} />
+                  Upload Bill
+                </label>
+              </div>
+              {currentExpense.billFile && (
+                <div className="file-preview">
+                  <span>📄 {currentExpense.billFile.name}</span>
                   <button
                     className="remove-file"
-                    onClick={() =>
-                      setCurrentExpense((prev) => ({
-                        ...prev,
-                        productImage: null,
-                      }))
-                    }
+                    onClick={() => {
+                      setCurrentExpense((prev) => ({ ...prev, billFile: null }));
+                      // Check if validation error should be set after removal
+                      if (requiresMandatoryUploads && !hasAtLeastOneUpload()) {
+                        setValidationErrors({
+                          billFile: true,
+                          productImage: true,
+                        });
+                      }
+                    }}
                   >
                     <X size={16} />
                   </button>
                 </div>
+              )}
+              {validationErrors.billFile && (
+                <div className="validation-message">
+                  Either Bill Upload or Product Image is required for this expense type
+                </div>
+              )}
+            </div>
+            <div className={`additional-field ${validationErrors.productImage ? 'validation-error' : ''}`}>
+              <label>
+                Product Picture
+                {requiresMandatoryUploads && <span className="required-indicator">*</span>}
+              </label>
+              <div className={`file-upload ${validationErrors.productImage ? 'validation-error' : ''}`}>
+                <input
+                  type="file"
+                  id="image-upload"
+                  onChange={(e) => handleFileUpload(e, "image")}
+                  accept="image/*"
+                  className="file-input"
+                />
+                <label htmlFor="image-upload" className="file-label">
+                  <Upload size={20} />
+                  Upload Image
+                </label>
               </div>
-            )}
+              {currentExpense.productImage && (
+                <div className="image-preview">
+                  <img
+                    src={currentExpense.productImage.uri}
+                    alt="Product"
+                    className="preview-image"
+                  />
+                  <div className="image-info">
+                    <span>🖼️ {currentExpense.productImage.name}</span>
+                    <button
+                      className="remove-file"
+                      onClick={() => {
+                        setCurrentExpense((prev) => ({
+                          ...prev,
+                          productImage: null,
+                        }));
+                        // Check if validation error should be set after removal
+                        if (requiresMandatoryUploads && !hasAtLeastOneUpload()) {
+                          setValidationErrors({
+                            billFile: true,
+                            productImage: true,
+                          });
+                        }
+                      }}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+              {validationErrors.productImage && (
+                <div className="validation-message">
+                  Either Bill Upload or Product Image is required for this expense type
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1017,31 +1121,35 @@ const ExpenseFormWeb = () => {
           <div className="form-grid">
             <div className="form-group">
               <label>Role *</label>
-              <div
-                className="select-input"
-                onClick={() => {
-                  if (!isProjectPurposeSelected) setShowRoleModal(true);
-                }}
+              <select
+                value={selectedRole || ""}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="expense-form-select"
               >
-                {selectedRole
-                  ? roles.find((role) => role.value === selectedRole)?.label
-                  : "Select Role"}
-              </div>
+                <option value="">Select Role</option>
+                {roles.map((role) => (
+                  <option key={role.value} value={role.value}>
+                    {role.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {selectedRole && (
               <div className="form-group">
                 <label>Name *</label>
-                <div
-                  className="select-input"
-                  onClick={() => {
-                    if (!isProjectPurposeSelected) setShowNameModal(true);
-                  }}
+                <select
+                  value={selectedUser || ""}
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                  className="expense-form-select"
                 >
-                  {selectedUser
-                    ? users.find((user) => user.value === selectedUser)?.label
-                    : "Select Name"}
-                </div>
+                  <option value="">Select Name</option>
+                  {users.map((user) => (
+                    <option key={user.value} value={user.value}>
+                      {user.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
           </div>
@@ -1058,34 +1166,7 @@ const ExpenseFormWeb = () => {
         </button>
       </div>
 
-      {/* Modals */}
-      {showExpenseHeadModal &&
-        renderModal(
-          "Select Expense type",
-          headItems,
-          expenseHeadValue,
-          setExpenseHeadValue,
-          () => setShowExpenseHeadModal(false)
-        )}
 
-      {showExpenseTypeModal &&
-        renderModal(
-          "Select Expense Head",
-          expenseTypeItems,
-          expenseType,
-          setExpenseType,
-          () => setShowExpenseTypeModal(false)
-        )}
-
-      {showRoleModal &&
-        renderModal("Select Role", roles, selectedRole, setSelectedRole, () =>
-          setShowRoleModal(false)
-        )}
-
-      {showNameModal &&
-        renderModal("Select Name", users, selectedUser, setSelectedUser, () =>
-          setShowNameModal(false)
-        )}
     </div>
   );
 };
