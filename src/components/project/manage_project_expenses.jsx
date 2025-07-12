@@ -290,8 +290,8 @@ const ProjectManagementDashboard = () => {
     }
   }, []);
 
-  // New function to fetch user projects, now accepts projectId
-  const fetchUserProjects = async (projectId = null) => {
+  // New function to fetch user projects
+  const fetchUserProjects = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
       window.location.href = "/";
@@ -301,20 +301,15 @@ const ProjectManagementDashboard = () => {
     setIsLoadingUserProjects(true);
     try {
       const userId = localStorage.getItem("userid");
-      const body = { user_id: userId };
-      if (projectId !== null && projectId !== undefined) {
-        body.project_id = String(projectId);
-      }
-      console.log("Fetching user projects with body:", body);
       const response = await fetch(
-        "https://demo-expense.geomaticxevs.in/ET-api/get_project_details.php",
+        "https://demo-expense.geomaticxevs.in/ET-api/get_user_projects.php",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ user_id: userId }),
         }
       );
 
@@ -325,7 +320,6 @@ const ProjectManagementDashboard = () => {
       }
 
       const data = await response.json();
-      console.log(data);
       if (data.status === "success" && Array.isArray(data.projects)) {
         setUserProjects(data.projects);
       }
@@ -379,69 +373,64 @@ const ProjectManagementDashboard = () => {
     setShowFormModal(true);
   };
 
-  // New: Add or Edit Project with assignments and notifications
   const handleFormSubmit = async () => {
-    if (!currentProjectName.trim()) {
-      alert("Please enter the project name.");
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/";
       return;
     }
 
-    // Build assignments array
-    const assignments = [];
-    if (projectManager)
-      assignments.push({ u_id: projectManager, role: "Project Manager" });
-    if (teamLead) assignments.push({ u_id: teamLead, role: "Team Lead" });
-    if (supervisor) assignments.push({ u_id: supervisor, role: "Supervisor" });
-    generalEmployees.forEach((u_id) =>
-      assignments.push({ u_id, role: "Employee" })
-    );
+    if (!currentProjectName.trim()) {
+      alert("Please enter project name.");
+      return;
+    }
 
-    const createdBy = loggedInUserCreatedBy;
-    const createdById = localStorage.getItem("userid");
+    const apiUrl =
+      "https://demo-expense.geomaticxevs.in/ET-api/expense_types.php";
+    const isEditing = !!editingProjectId;
+
+    // Constructing a payload that might work with expense_types.php for add/edit
+    // This is an assumption as the original code used add_project.php
+    const apiPayload = isEditing
+      ? {
+          expense_type_id: editingProjectId,
+          expense_type_name: currentProjectName,
+          // expense_type_is_active might need to be set or defaulted
+        }
+      : {
+          expense_type_name: currentProjectName,
+          created_by: loggedInUserCreatedBy, // Or a user ID if backend expects that
+          expense_type_is_active: 1, // Default to active
+        };
 
     try {
-      const response = await fetch(
-        `https://demo-expense.geomaticxevs.in/ET-api/add_project.php`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            project_name: currentProjectName,
-            created_by: createdBy, // name (for display)
-            created_by_id: createdById, // user id (for assigned_by)
-            assigned_employees: assignments,
-          }),
-        }
-      );
+      const response = await fetch(apiUrl, {
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(apiPayload),
+      });
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = "/";
+        return;
+      }
 
       const result = await response.json();
-
-      if (result.success) {
-        // Send notification to all assigned employees (if you have such a function)
-        // await sendNotificationToUser({
-        //   title: `New Project Assignment: ${currentProjectName}`,
-        //   message: `You have been assigned to project "${currentProjectName}" by ${createdBy}.`,
-        //   createdBy,
-        //   createdById: Number(createdById),
-        //   recipientIds: assignments.map(a => Number(a.u_id)),
-        //   type: 'project'
-        // });
-
-        alert("Project added successfully!");
-        setCurrentProjectName("");
-        setGeneralEmployees([]);
-        setProjectManager(null);
-        setTeamLead(null);
-        setSupervisor(null);
-        setEditingProjectId(null);
-        fetchProjectsData(); // Refresh project list
-        setShowFormModal(false); // Close the modal
+      if (result.success || response.ok) {
+        alert(`Project ${isEditing ? "updated" : "added"} successfully!`);
+        fetchProjectsData();
+        setShowFormModal(false);
+        resetFormFields();
       } else {
-        throw new Error(result.message || "Failed to add project");
+        alert(result.error || "Operation failed. Please try again.");
       }
     } catch (error) {
-      console.error("Error adding project:", error);
-      alert("Failed to add project. Please try again.");
+      console.error("Error submitting form:", error);
+      alert("An error occurred while saving the project.");
     }
   };
 
@@ -561,7 +550,7 @@ const ProjectManagementDashboard = () => {
     return String(date.getDate()).padStart(2, "0");
   };
 
-  // Helper to open modal with project and fetch user projects for that projectId
+  // Helper to open modal with project
   const handleOpenProjectDetailModal = (project) => {
     setSelectedProject(project);
     setEditFields({
@@ -576,10 +565,6 @@ const ProjectManagementDashboard = () => {
     setEditMode(false);
     setShowProjectDetailModal(true);
     setShowTeamMembers(false);
-    // Fetch user projects filtered by this projectId (support both id and project_id)
-    if (project && (project.id || project.project_id)) {
-      fetchUserProjects(project.id || project.project_id);
-    }
   };
 
   // Handler for editing fields
@@ -642,7 +627,7 @@ const ProjectManagementDashboard = () => {
             className="icon-btn"
             onClick={() => {
               setShowUserProjectsModal(true);
-              fetchUserProjects(); // No projectId, fetch all for user
+              fetchUserProjects();
             }}
           >
             <UserCircle size={22} />
@@ -778,6 +763,11 @@ const ProjectManagementDashboard = () => {
                       <span className="progress-text">{project.progress}%</span>
                     </div>
                     <div className="project-card-footer">
+                      <span
+                        className={`status-badge status-${project.status.toLowerCase()}`}
+                      >
+                        {project.status}
+                      </span>
                       {userHasEditPermission && project.isActive === 1 && (
                         <div className="card-actions">
                           <button
@@ -949,7 +939,7 @@ const ProjectManagementDashboard = () => {
                       >
                         <div className="project-card-content">
                           <span
-                            className={`stsatus-badge status-${project.status?.toLowerCase()}`}
+                            className={`status-badge status-${project.status?.toLowerCase()}`}
                           >
                             {project.status}
                           </span>

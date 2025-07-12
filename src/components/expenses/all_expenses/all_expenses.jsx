@@ -180,8 +180,7 @@ const AllExpensesWeb = () => {
     }
   }, []);
 
-  // Filter expenses based on search, status, and date range (using fromDate/toDate from UI)
-  // Filtered expenses and stats based on all filters (search, status, date)
+  // Filter expenses based on search, status, and date range
   const filteredExpenses = useCallback(() => {
     return expenses.filter((expense) => {
       const matchesSearch =
@@ -195,53 +194,15 @@ const AllExpensesWeb = () => {
       const matchesStatus =
         selectedStatus === "All" || expense.status === selectedStatus;
 
-      // Use fromDate/toDate from date pickers if set, else fallback to startDate/endDate (quick-selects)
-      let filterFrom = fromDate
-        ? moment(fromDate, "YYYY-MM-DD").startOf("day")
-        : startDate
-        ? moment(startDate).startOf("day")
-        : null;
-      let filterTo = toDate
-        ? moment(toDate, "YYYY-MM-DD").endOf("day")
-        : endDate
-        ? moment(endDate).endOf("day")
-        : null;
       let matchesDate = true;
-      if (filterFrom && filterTo) {
-        const expenseDate = moment(expense.date, "MMM D, YYYY");
-        matchesDate =
-          expenseDate.isSameOrAfter(filterFrom) &&
-          expenseDate.isSameOrBefore(filterTo);
-      } else if (filterFrom) {
-        const expenseDate = moment(expense.date, "MMM D, YYYY");
-        matchesDate = expenseDate.isSameOrAfter(filterFrom);
-      } else if (filterTo) {
-        const expenseDate = moment(expense.date, "MMM D, YYYY");
-        matchesDate = expenseDate.isSameOrBefore(filterTo);
+      if (startDate && endDate) {
+        const expenseDate = moment(expense.date, "MMM D, YYYY").toDate();
+        matchesDate = expenseDate >= startDate && expenseDate <= endDate;
       }
 
       return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [
-    expenses,
-    searchQuery,
-    selectedStatus,
-    fromDate,
-    toDate,
-    startDate,
-    endDate,
-  ]);
-
-  // Stats for filtered expenses
-  const filteredStats = (() => {
-    const filtered = filteredExpenses();
-    return {
-      total: filtered.length,
-      Unattended: filtered.filter((exp) => exp.status === "Unattended").length,
-      approved: filtered.filter((exp) => exp.status === "Approved").length,
-      rejected: filtered.filter((exp) => exp.status === "Rejected").length,
-    };
-  })();
+  }, [expenses, searchQuery, selectedStatus, startDate, endDate]);
 
   const handleFilterSelect = (status) => {
     setSelectedStatus(status);
@@ -311,7 +272,7 @@ const AllExpensesWeb = () => {
           </div>
           <div className="allexpense-stat-info">
             <h3>Total Expenses</h3>
-            <div className="allexpense-stat-value">{filteredStats.total}</div>
+            <div className="allexpense-stat-value">{stats.total}</div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -326,9 +287,7 @@ const AllExpensesWeb = () => {
           </div>
           <div className="allexpense-stat-info">
             <h3>Approved</h3>
-            <div className="allexpense-stat-value">
-              {filteredStats.approved}
-            </div>
+            <div className="allexpense-stat-value">{stats.approved}</div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -343,9 +302,7 @@ const AllExpensesWeb = () => {
           </div>
           <div className="allexpense-stat-info">
             <h3>Unattended</h3>
-            <div className="allexpense-stat-value">
-              {filteredStats.Unattended}
-            </div>
+            <div className="allexpense-stat-value">{stats.Unattended}</div>
           </div>
         </div>
         <div className="allexpense-stat-card">
@@ -360,9 +317,7 @@ const AllExpensesWeb = () => {
           </div>
           <div className="allexpense-stat-info">
             <h3>Rejected</h3>
-            <div className="allexpense-stat-value">
-              {filteredStats.rejected}
-            </div>
+            <div className="allexpense-stat-value">{stats.rejected}</div>
           </div>
         </div>
       </div>

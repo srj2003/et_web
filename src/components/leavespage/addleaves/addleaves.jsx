@@ -58,7 +58,7 @@ const AddLeaves = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+              "Authorization": `Bearer ${token}`,
             },
             body: JSON.stringify({ userId }),
           }
@@ -70,7 +70,7 @@ const AddLeaves = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
             },
             body: JSON.stringify({ user_id: userId }),
           }
@@ -113,7 +113,7 @@ const AddLeaves = () => {
           {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
             },
           }
         );
@@ -141,11 +141,11 @@ const AddLeaves = () => {
       const response = await fetch(
         `https://demo-expense.geomaticxevs.in/ET-api/add-leaves1.php?role_id=${roleId}`,
         {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        }
+              method: "GET",
+              headers: {
+               "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              }
+            }
       );
       const data = await response.json();
       if (data.status === "success" && data.users) {
@@ -189,10 +189,11 @@ const AddLeaves = () => {
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/add-leaves1.php",
         {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
+          
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+              },
           body: formData,
         }
       );
@@ -229,14 +230,7 @@ const AddLeaves = () => {
 
   return (
     <div className="expense-form-container">
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "1.5rem",
-        }}
-      >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
         <h1 className="form-title">Apply for Leave</h1>
         <button
           className="leave-policy-btn"
@@ -253,89 +247,38 @@ const AddLeaves = () => {
           <div className="leave-policy-card">
             <div className="leave-policy-header">
               <span className="leave-policy-logo">
-                <svg
-                  width="38"
-                  height="38"
-                  viewBox="0 0 38 38"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="19" cy="19" r="19" fill="#6366f1" />
-                  <path d="M19 8L27 30H11L19 8Z" fill="#fff" />
-                  <circle cx="19" cy="19" r="5" fill="#4f46e5" />
+                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="19" cy="19" r="19" fill="#6366f1"/>
+                  <path d="M19 8L27 30H11L19 8Z" fill="#fff"/>
+                  <circle cx="19" cy="19" r="5" fill="#4f46e5"/>
                 </svg>
               </span>
               <h3 className="leave-policy-title">Leave Policy</h3>
-              <button
-                className="modal-close"
-                onClick={() => setShowLeavePolicy(false)}
-              >
+              <button className="modal-close" onClick={() => setShowLeavePolicy(false)}>
                 <X size={18} />
               </button>
             </div>
             <div className="leave-policy-body">
               <ol>
-                <li>
-                  On confirmation, you will be entitled to earn{" "}
-                  <b>12 Privilege Leaves (PL)</b> and <b>9 Sick Leaves (SL)</b>.
-                  <br />
+                <li>On confirmation, you will be entitled to earn <b>12 Privilege Leaves (PL)</b> and <b>9 Sick Leaves (SL)</b>.<br/>
                   <ul>
                     <li>Privilege Leaves (PL): 12 per year</li>
                     <li>Sick Leaves (SL): 9 per year (0.75 per month)</li>
                   </ul>
                 </li>
-                <li>
-                  No other holiday / leave / off will be clubbed or considered
-                  with any of the confirmed financial year holidays by the
-                  company.
-                </li>
-                <li>
-                  Any PL need to be applied a week before or at least 3 days in
-                  advance (proper email/ official WhatsApp/ET App communication
-                  should be maintained).
-                </li>
-                <li>
-                  Any long leave needs to be applied one month in advance and is
-                  subject to approval.
-                </li>
-                <li>
-                  Long leaves and/or absence from work would also include
-                  weekend. For example: if an employee is on leave from Mon to
-                  Sat then the following weekend (Sunday) would be calculated as
-                  leave/absence.
-                </li>
-                <li>
-                  If an employee is absent on last day of the week and the first
-                  day of the following week then the weekend will be considered
-                  as leave. <b>Sandwich Policy:</b> relaxation allowed up to 5
-                  days (based on the approval).
-                </li>
-                <li>
-                  SL application for more than 3 days requires medical
-                  certificate for approval / Proper communication with the
-                  immediate reporting authority.
-                </li>
-                <li>
-                  All the leave approval is on first come first serve basis and
-                  can be rejected depending on the work load/pressure.
-                </li>
-                <li>
-                  As per the policy, unapproved leaves (without prior
-                  information) on the operational date will lead to salary
-                  deduction.
-                </li>
-                <li>
-                  A maximum of 3 leaves can be carried forward to the next
-                  financial year.
-                </li>
-                <li>
-                  All applied leaves are subject to Management approval and
-                  consideration.
-                </li>
+                <li>No other holiday / leave / off will be clubbed or considered with any of the confirmed financial year holidays by the company.</li>
+                <li>Any PL need to be applied a week before or at least 3 days in advance (proper email/ official WhatsApp/ET App communication should be maintained).</li>
+                <li>Any long leave needs to be applied one month in advance and is subject to approval.</li>
+                <li>Long leaves and/or absence from work would also include weekend. For example: if an employee is on leave from Mon to Sat then the following weekend (Sunday) would be calculated as leave/absence.</li>
+                <li>If an employee is absent on last day of the week and the first day of the following week then the weekend will be considered as leave. <b>Sandwich Policy:</b> relaxation allowed up to 5 days (based on the approval).</li>
+                <li>SL application for more than 3 days requires medical certificate for approval / Proper communication with the immediate reporting authority.</li>
+                <li>All the leave approval is on first come first serve basis and can be rejected depending on the work load/pressure.</li>
+                <li>As per the policy, unapproved leaves (without prior information) on the operational date will lead to salary deduction.</li>
+                <li>A maximum of 3 leaves can be carried forward to the next financial year.</li>
+                <li>All applied leaves are subject to Management approval and consideration.</li>
               </ol>
               <div className="leave-policy-note">
-                <b>Note:</b> The management reserves the right to modify or
-                update this policy as required.
+                <b>Note:</b> The management reserves the right to modify or update this policy as required.
               </div>
             </div>
           </div>
@@ -473,55 +416,29 @@ const AddLeaves = () => {
       <section className="form-section">
         <h2 className="section-title">Submit To</h2>
         <div className="form-grid">
-          <div
-            className="form-group"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-            }}
-          >
-            <label className="role-label">Role *</label>
-            <select
-              className="select-input role-select"
-              value={selectedRole || ""}
-              onChange={(e) => {
-                setSelectedRole(e.target.value);
-                setSelectedUser(null);
-              }}
+          <div className="form-group">
+            <label>Role *</label>
+            <div
+              className="select-input"
+              onClick={() => setShowRoleModal(true)}
             >
-              <option value="">Select Role</option>
-              {roles.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
+              {selectedRole
+                ? roles.find((role) => role.value === selectedRole)?.label
+                : "Select Role"}
+            </div>
           </div>
 
           {selectedRole && (
-            <div
-              className="form-group"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-              }}
-            >
-              <label style={{ marginBottom: 6 }}>Name *</label>
-              <select
+            <div className="form-group">
+              <label>Name *</label>
+              <div
                 className="select-input"
-                style={{ width: "100%", minWidth: 180 }}
-                value={selectedUser || ""}
-                onChange={(e) => setSelectedUser(e.target.value)}
+                onClick={() => setShowNameModal(true)}
               >
-                <option value="">Select Name</option>
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
+                {selectedUser
+                  ? users.find((user) => user.id === selectedUser)?.name
+                  : "Select Name"}
+              </div>
             </div>
           )}
         </div>

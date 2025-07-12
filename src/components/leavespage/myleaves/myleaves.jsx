@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import moment from "moment";
 import "./myleaves.css";
 import {
   Calendar,
@@ -10,9 +9,6 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  DollarSign,
-  X,
-  Calendar1,
 } from "lucide-react";
 
 const MyLeaves = () => {
@@ -30,10 +26,6 @@ const MyLeaves = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 16;
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  // View mode toggle: "card" or "table"
-  const [viewMode, setViewMode] = useState("card");
 
   useEffect(() => {
     const fetchLeaves = async () => {
@@ -151,56 +143,23 @@ const MyLeaves = () => {
     }
   };
 
-  // Filtered leaves and live-updating stats based on all filters (search, status, date)
   const filteredLeaves = leaves.filter((leave) => {
     const matchesStatus =
       selectedStatus === "All" ? true : leave.leave_status === selectedStatus;
     const matchesSearch = leave.leave_type
       ? leave.leave_type.toLowerCase().includes(searchQuery.toLowerCase())
       : false;
-    // Use moment for robust date comparison
-    let matchesDateRange = true;
-    let filterFrom = fromDate
-      ? moment(fromDate, "YYYY-MM-DD").startOf("day")
-      : null;
-    let filterTo = toDate ? moment(toDate, "YYYY-MM-DD").endOf("day") : null;
-    if (filterFrom && filterTo) {
-      const leaveFrom = moment(leave.from_date, "YYYY-MM-DD");
-      const leaveTo = moment(leave.to_date, "YYYY-MM-DD");
-      matchesDateRange =
-        leaveFrom.isSameOrAfter(filterFrom) &&
-        leaveFrom.isSameOrBefore(filterTo);
-    } else if (filterFrom) {
-      const leaveFrom = moment(leave.from_date, "YYYY-MM-DD");
-      matchesDateRange = leaveFrom.isSameOrAfter(filterFrom);
-    } else if (filterTo) {
-      const leaveFrom = moment(leave.from_date, "YYYY-MM-DD");
-      matchesDateRange = leaveFrom.isSameOrBefore(filterTo);
-    }
-    return matchesStatus && matchesSearch && matchesDateRange;
+    return matchesStatus && matchesSearch;
   });
-
-  // Live update stats based on filteredLeaves
-  const liveStats = {
-    total: filteredLeaves.length,
-    approved: filteredLeaves.filter(
-      (leave) => leave.leave_status === "Approved"
-    ).length,
-    pending: filteredLeaves.filter((leave) => leave.leave_status === "Pending")
-      .length,
-    rejected: filteredLeaves.filter(
-      (leave) => leave.leave_status === "Rejected"
-    ).length,
-    unattended: filteredLeaves.filter(
-      (leave) => leave.leave_status === "Unattended"
-    ).length,
-  };
 
   const totalPages = Math.ceil(filteredLeaves.length / itemsPerPage);
   const paginatedLeaves = filteredLeaves.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // View mode toggle: "card" or "table"
+  const [viewMode, setViewMode] = useState("card");
 
   if (loading) {
     return (
@@ -228,65 +187,41 @@ const MyLeaves = () => {
       <h1 className="myleavespage-title">My Leaves</h1>
 
       {/* Stats Grid */}
-      <div className="allexpense-stats-grid">
-        <div className="allexpense-stat-card">
-          <div
-            className="allexpense-stat-icon"
-            style={{
-              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-              color: "#fff",
-            }}
-          >
-            <Calendar1 size={28} />
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon">
+            <Calendar size={24} color="#6366f1" />
           </div>
-          <div className="allexpense-stat-info">
+          <div className="stat-info">
             <h3>Total Leaves</h3>
-            <div className="allexpense-stat-value">{liveStats.total}</div>
+            <p className="stat-value">{stats.total}</p>
           </div>
         </div>
-        <div className="allexpense-stat-card">
-          <div
-            className="allexpense-stat-icon"
-            style={{
-              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
-              color: "#fff",
-            }}
-          >
-            <CheckCircle size={28} />
+        <div className="stat-card">
+          <div className="stat-icon">
+            <CheckCircle size={24} color="#10b981" />
           </div>
-          <div className="allexpense-stat-info">
+          <div className="stat-info">
             <h3>Approved</h3>
-            <div className="allexpense-stat-value">{liveStats.approved}</div>
+            <p className="stat-value">{stats.approved}</p>
           </div>
         </div>
-        <div className="allexpense-stat-card">
-          <div
-            className="allexpense-stat-icon"
-            style={{
-              background: "linear-gradient(135deg, #64748b 0%, #334155 100%)",
-              color: "#fff",
-            }}
-          >
-            <Clock size={28} />
+        <div className="stat-card">
+          <div className="stat-icon">
+            <Clock size={24} color="#f59e0b" />
           </div>
-          <div className="allexpense-stat-info">
+          <div className="stat-info">
             <h3>Unattended</h3>
-            <div className="allexpense-stat-value">{liveStats.unattended}</div>
+            <p className="stat-value">{stats.unattended}</p>
           </div>
         </div>
-        <div className="allexpense-stat-card">
-          <div
-            className="allexpense-stat-icon"
-            style={{
-              background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
-              color: "#fff",
-            }}
-          >
-            <X size={28} />
+        <div className="stat-card">
+          <div className="stat-icon">
+            <XCircle size={24} color="#ef4444" />
           </div>
-          <div className="allexpense-stat-info">
+          <div className="stat-info">
             <h3>Rejected</h3>
-            <div className="allexpense-stat-value">{liveStats.rejected}</div>
+            <p className="stat-value">{stats.rejected}</p>
           </div>
         </div>
       </div>
@@ -313,62 +248,26 @@ const MyLeaves = () => {
           <option>Approved</option>
           <option>Rejected</option>
         </select>
-        <div>
-          <button
-            className="requestedrequesitionfilter-reset-btn"
-            onClick={() => {
-              setSearchQuery("");
-              setSelectedStatus("All");
-              setFromDate("");
-              setToDate("");
-            }}
-          >
-            <X size={18} />
-          </button>
-        </div>
       </div>
 
-      <div className="myrequisition-filter-row">
-        <div className="requestedrequesitiondatefilter-container requestedrequesitiondatefilter-row">
-          <label className="requestedrequesitiondatefilter-label label-margin-right">
-            From:
-          </label>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-from input-margin-right"
-            max={toDate || undefined}
-          />
-          <label className="requestedrequesitiondatefilter-label label-margin-right">
-            To:
-          </label>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            className="requestedrequesitiondatefilter-input requestedrequesitiondatefilter-input-to"
-            min={fromDate || undefined}
-          />
-        </div>
-        <div className="myexpenses-view-toggle view-toggle-align">
-          <button
-            className={`myexpenses-view-btn${
-              viewMode === "card" ? " active" : ""
-            }`}
-            onClick={() => setViewMode("card")}
-          >
-            Card View
-          </button>
-          <button
-            className={`myexpenses-view-btn${
-              viewMode === "table" ? " active" : ""
-            }`}
-            onClick={() => setViewMode("table")}
-          >
-            Table View
-          </button>
-        </div>
+      {/* View Toggle */}
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "card" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${
+            viewMode === "table" ? " active" : ""
+          }`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
       </div>
 
       {viewMode === "card" ? (
