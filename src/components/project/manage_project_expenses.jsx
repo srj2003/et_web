@@ -422,10 +422,15 @@ const ProjectManagementDashboard = () => {
 
   const handleOpenEditModal = (project) => {
     resetFormFields();
+    console.log("Editing project:", project);
     setEditingProjectId(project.id);
     setCurrentProjectName(project.name);
-    // TODO: Set PM, TL, Sup, Employees if this data is available on the project object
-    // For now, these will be reset and need to be re-selected on edit.
+    setProjectManager(project.projectLead || null);
+    setTeamLead(project.teamLead || null);
+    setSupervisor(project.supervisor || null);
+    setGeneralEmployees(
+      Array.isArray(project.teamMembers) ? project.teamMembers : []
+    );
     setShowFormModal(true);
   };
 
@@ -442,22 +447,37 @@ const ProjectManagementDashboard = () => {
     }
 
     const apiUrl =
-      "https://demo-expense.geomaticxevs.in/ET-api/expense_types.php";
+      "https://demo-expense.geomaticxevs.in/ET-api/add_project.php";
     const isEditing = !!editingProjectId;
 
-    // Constructing a payload that might work with expense_types.php for add/edit
-    // This is an assumption as the original code used add_project.php
-    const apiPayload = isEditing
-      ? {
-          expense_type_id: editingProjectId,
-          expense_type_name: currentProjectName,
-          // expense_type_is_active might need to be set or defaulted
-        }
-      : {
-          expense_type_name: currentProjectName,
-          created_by: loggedInUserCreatedBy, // Or a user ID if backend expects that
-          expense_type_is_active: 1, // Default to active
-        };
+    // Build assigned_employees array
+    const assigned_employees = [];
+    if (projectManager) {
+      assigned_employees.push({
+        u_id: projectManager,
+        role: "Project Manager",
+      });
+    }
+    if (teamLead) {
+      assigned_employees.push({ u_id: teamLead, role: "Team Lead" });
+    }
+    if (supervisor) {
+      assigned_employees.push({ u_id: supervisor, role: "Supervisor" });
+    }
+    generalEmployees.forEach((u_id) => {
+      assigned_employees.push({ u_id, role: "Team Member" });
+    });
+
+    // Get created_by_id from localStorage (assuming userId is stored)
+    const created_by_id = localStorage.getItem("userid");
+
+    // New payload for backend
+    const apiPayload = {
+      project_name: currentProjectName,
+      created_by: loggedInUserCreatedBy,
+      created_by_id,
+      assigned_employees,
+    };
 
     try {
       const response = await fetch(apiUrl, {
@@ -771,7 +791,8 @@ const ProjectManagementDashboard = () => {
                       {project.createdBy}
                     </p>
                     <p className="project-card-detail">
-                      <Users size={14} className="mr-1" /> Total Members: 25
+                      <Users size={14} className="mr-1" /> Total Members:{" "}
+                      {project.teamMembers.length}
                     </p>
                     <p className="project-card-detail">
                       <CalendarPlus size={14} className="mr-1" /> created At:{" "}
@@ -988,8 +1009,7 @@ const ProjectManagementDashboard = () => {
                         key={project.project_id}
                         className="sidebar-project-card"
                       >
-                        <div className="project-card-content">
-                        </div>
+                        <div className="project-card-content"></div>
                         <div className="project-meta">
                           <span className="project-id">
                             #{project.project_id}
@@ -1058,8 +1078,7 @@ const ProjectManagementDashboard = () => {
                   className="employee-select-btn-modal"
                   onClick={() => setShowPMModal(true)}
                 >
-                  {employeeList.find((e) => e.u_id === projectManager)?.name ||
-                    "Select Project Manager"}
+                  {projectManager || "Select Project Manager"}
                   <ChevronDown size={16} />
                 </button>
               </div>
@@ -1069,8 +1088,7 @@ const ProjectManagementDashboard = () => {
                   className="employee-select-btn-modal"
                   onClick={() => setShowTLModal(true)}
                 >
-                  {employeeList.find((e) => e.u_id === teamLead)?.name ||
-                    "Select Team Lead"}
+                  {teamLead || "Select Team Lead"}
                   <ChevronDown size={16} />
                 </button>
               </div>
@@ -1080,8 +1098,7 @@ const ProjectManagementDashboard = () => {
                   className="employee-select-btn-modal"
                   onClick={() => setShowSupModal(true)}
                 >
-                  {employeeList.find((e) => e.u_id === supervisor)?.name ||
-                    "Select Supervisor"}
+                  {supervisor || "Select Supervisor"}
                   <ChevronDown size={16} />
                 </button>
               </div>
@@ -1355,7 +1372,7 @@ const ProjectManagementDashboard = () => {
                 <span className="row-icon">
                   <Users size={18} />
                 </span>
-                <span className="row-label">Project Team Supervisor</span>
+                <span className="row-label">Supervisor</span>
                 {editMode ? (
                   <select
                     className="form-input team-members-dropdown"
