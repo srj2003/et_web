@@ -585,7 +585,7 @@ const ExpenseFormWeb = () => {
       for (let [key, value] of formData.entries()) {
         console.log(`${key}:`, value instanceof File ? value.name : value);
       }
-
+      console.log("FormData:", formData.get("expense_track_title"));      
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php",
         {
@@ -1120,7 +1120,7 @@ const ExpenseFormWeb = () => {
           <h2 className="section-title">Submit To</h2>
           <div className="form-grid">
             <div className="form-group">
-              <label>Role *</label>
+              <label>Role </label>
               <select
                 value={selectedRole || ""}
                 onChange={(e) => setSelectedRole(e.target.value)}
@@ -1137,7 +1137,7 @@ const ExpenseFormWeb = () => {
 
             {selectedRole && (
               <div className="form-group">
-                <label>Name *</label>
+                <label>Name </label>
                 <select
                   value={selectedUser || ""}
                   onChange={(e) => setSelectedUser(e.target.value)}
@@ -1156,7 +1156,7 @@ const ExpenseFormWeb = () => {
         </section>
       )}
 
-      <div className="submit-button-container">
+      <div className="expense-submit-button-container">
         <button
           className={`submit-all-button ${isSubmitting ? "loading" : ""}`}
           onClick={handleSubmitAllExpenses}

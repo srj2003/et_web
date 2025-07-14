@@ -1385,7 +1385,8 @@ textarea {
 .dash-loading-container {
   position: fixed;
   top: 0;
-  left: 10rem;
+  left: 20rem;
+  right: 20rem;
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -1398,8 +1399,8 @@ textarea {
 }
 
 .dash-loading-spinner {
-  width: 72px;
-  height: 72px;
+  width: 4.5rem;
+  height: 4.5rem;
   border: 8px solid rgba(229, 231, 235, 0.3);
   border-top: 8px solid #6366f1;
   border-bottom: 8px solid #6366f1;
@@ -1469,16 +1470,18 @@ textarea {
 
 
 /* Submit Button Container - Placed at the bottom */
-.submit-button-container {
+.expense-submit-button-container {
+    display: flex;
+    justify-content: flex-end;
     position: relative;
     width: 100%;
-    padding: 1rem 0;
+    padding: 0px 40rem 0rem 0rem;
     /* Vertical padding, horizontal handled by parent or max-width */
-    margin-top: 1.5rem;
-    max-width: 960px;
+    /* margin-top: 1.5rem;
+    max-width: 960px; */
     /* Match .form-section max-width */
-    margin-left: auto;
-    margin-right: auto;
+    /* margin-left: auto;
+    margin-right: auto; */
 }
 
 /* .submit-all-button margin-bottom was removed as parent now handles bottom padding */

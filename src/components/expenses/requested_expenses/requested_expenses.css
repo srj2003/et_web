@@ -1080,3 +1080,86 @@
   box-shadow: 0 4px 16px rgba(99,102,241,0.15);
   transform: translateY(-2px) scale(1.03);
 }
+
+.date-range-filter-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  max-width: 420px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.date-range-label {
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.date-range-fields {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.date-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.date-label {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.date-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 2px 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.calendar-icon {
+  font-size: 1.1rem;
+  color: #64748b;
+  margin-right: 6px;
+}
+
+.date-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+  padding: 4px 0;
+  color: #334155;
+}
+
+.date-input:focus {
+  background: #f1f5f9;
+}
+
+.date-clear-btn {
+  background: #f87171;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.date-clear-btn:hover {
+  background: #dc2626;
+}
