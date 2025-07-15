@@ -13,7 +13,7 @@ import AllRequisitions from "./components/requisitionpage/allrequisition";
 import MyRequisitions from "./components/requisitionpage/myrequisition";
 import RequisitionsWeb from "./components/requisitionpage/requested_requisition";
 import Users from "./components/users/users";
-import UserAnalytics from "./components/analytics/user_analytics/user_analytics"
+import UserAnalytics from "./components/analytics/user_analytics/user_analytics";
 import AdminAnalytics from "./components/analytics/admin_analytics/admin_analytics";
 import ManageProjectExpenses from "./components/project/manage_project_expenses";
 import AddLeaves from "./components/leavespage/addleaves/addleaves";
@@ -24,69 +24,91 @@ import ManageLeaves from "./components/leavespage/requestedleaves/requestedleave
 import MyLeaves from "./components/leavespage/myleaves/myleaves";
 import RequisitionReport from "./components/accounts/requisition_report/requisition_report";
 import ProfileScreen from "./components/profile/profile";
-import MyAttendance from './components/attendance/my_attendance/myattendance';
+import MyAttendance from "./components/attendance/my_attendance/myattendance";
 import Help from "./components/help/help";
 import MyProjects from "./components/project/my_projects";
 import AddWorkReport from "./components/workreport/addworkreport/add_work_report";
 import MyWorkReport from "./components/workreport/myworkreport/my_work_report";
 import AllWorkReport from "./components/workreport/allworkreport/all_work_report";
 import HolidayList from "./components/holiday/holiday";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import Project_wise_attendance from "./components/attendance/project_wise_attendance/project_wise_attendance"
-import Reports from "./components/reports/reports"
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import Project_wise_attendance from "./components/attendance/project_wise_attendance/project_wise_attendance";
+import Reports from "./components/reports/reports";
 import CustomAnalyticsScreen from "./components/attendance/custom_user_analytics/custom_user_analytics";
-import AttendanceMapView from "./components/attendance/attendance_map_view/attendance_map_view"
+import AttendanceMapView from "./components/attendance/attendance_map_view/attendance_map_view";
 
 function App() {
   return (
     <BrowserRouter>
-      {/* <Routes>
-        <Route path="/" element={<LoginWeb />} />
-        <Route element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/attendance/my" element={<MyAttendance/>} />
-          <Route path="/attendance/userattendance" element={<UserAttendance />} />
-          <Route path="/leaves/add" element={<AddLeaves />} />
-          <Route path="/leaves/my" element={<MyLeaves />} />
-          <Route path="/leaves/all" element={<AllLeaves />} />
-          <Route path="/leaves/manage" element={<ManageLeaves />} />
-          <Route path="/expenses/addexpense" element={<AddExpense />} />
-          <Route path="/expenses/myexpense" element={<MyExpense />} />
-          <Route path="/expenses/allexpenses" element={<AllExpenses />} />
-          <Route path="/expenses/requestedexpenses" element={<RequestedExpenses />} />
-          <Route path="/requisition/add" element={<RequisitionFormWeb />} />
-          <Route path="/requisition/my" element={<MyRequisitions />} />
-          <Route path="/requisition/all" element={<AllRequisitions />} />
-          <Route path="/requisition/manage" element={<RequisitionsWeb />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/analytics/useranalytics" element={<UserAnalytics />} />
-          <Route path="/analytics/adminanalytics" element={<AdminAnalytics />} />
-          <Route path="/accounts/expensereport" element={<ExpenseReport />} />
-          <Route path="/accounts/requisitionreport" element={<RequisitionReport />} />
-          <Route path="/profile" element={<ProfileScreen />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/project/my" element={<MyProjects />} />
-          <Route path="/project/manage" element={<ManageProjectExpenses />} />
-          <Route path="/workreport/add" element={<AddWorkReport />} />
-          <Route path="/workreport/my" element={<MyWorkReport />} />
-          <Route path="/workreport/all" element={<AllWorkReport />} />
-          <Route path="/holiday" element={<HolidayList />} />
-          <Route path="/attendance/projectwiseattendance" element={<Project_wise_attendance />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/attendance/customanalytics" element={<CustomAnalyticsScreen />} />
-          <Route path="/attendance/mapview" element={<AttendanceMapView />} />
-        </Route>
-       
-      </Routes> */}
-      <AttendanceMapView/>
+      {
+        <Routes>
+          <Route path="/" element={<LoginWeb />} />
+          <Route
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/attendance/my" element={<MyAttendance />} />
+            <Route
+              path="/attendance/userattendance"
+              element={<UserAttendance />}
+            />
+            <Route path="/leaves/add" element={<AddLeaves />} />
+            <Route path="/leaves/my" element={<MyLeaves />} />
+            <Route path="/leaves/all" element={<AllLeaves />} />
+            <Route path="/leaves/manage" element={<ManageLeaves />} />
+            <Route path="/expenses/addexpense" element={<AddExpense />} />
+            <Route path="/expenses/myexpense" element={<MyExpense />} />
+            <Route path="/expenses/allexpenses" element={<AllExpenses />} />
+            <Route
+              path="/expenses/requestedexpenses"
+              element={<RequestedExpenses />}
+            />
+            <Route path="/requisition/add" element={<RequisitionFormWeb />} />
+            <Route path="/requisition/my" element={<MyRequisitions />} />
+            <Route path="/requisition/all" element={<AllRequisitions />} />
+            <Route path="/requisition/manage" element={<RequisitionsWeb />} />
+            <Route path="/users" element={<Users />} />
+            <Route
+              path="/analytics/useranalytics"
+              element={<UserAnalytics />}
+            />
+            <Route
+              path="/analytics/adminanalytics"
+              element={<AdminAnalytics />}
+            />
+            <Route path="/accounts/expensereport" element={<ExpenseReport />} />
+            <Route
+              path="/accounts/requisitionreport"
+              element={<RequisitionReport />}
+            />
+            <Route path="/profile" element={<ProfileScreen />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/project/my" element={<MyProjects />} />
+            <Route path="/project/manage" element={<ManageProjectExpenses />} />
+            <Route path="/workreport/add" element={<AddWorkReport />} />
+            <Route path="/workreport/my" element={<MyWorkReport />} />
+            <Route path="/workreport/all" element={<AllWorkReport />} />
+            <Route path="/holiday" element={<HolidayList />} />
+            <Route
+              path="/attendance/projectwiseattendance"
+              element={<Project_wise_attendance />}
+            />
+            <Route path="/reports" element={<Reports />} />
+            <Route
+              path="/attendance/customanalytics"
+              element={<CustomAnalyticsScreen />}
+            />
+            <Route path="/attendance/mapview" element={<AttendanceMapView />} />
+          </Route>
+        </Routes>
+      }
     </BrowserRouter>
 
     // <UserAnalytics/>
-    
   );
 }
 
