@@ -35,11 +35,12 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Project_wise_attendance from "./components/attendance/project_wise_attendance/project_wise_attendance"
 import Reports from "./components/reports/reports"
 import CustomAnalyticsScreen from "./components/attendance/custom_user_analytics/custom_user_analytics";
+import AttendanceMapView from "./components/attendance/attendance_map_view/attendance_map_view"
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      {/* <Routes>
         <Route path="/" element={<LoginWeb />} />
         <Route element={
           <ProtectedRoute>
@@ -77,10 +78,11 @@ function App() {
           <Route path="/attendance/projectwiseattendance" element={<Project_wise_attendance />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/attendance/customanalytics" element={<CustomAnalyticsScreen />} />
+          <Route path="/attendance/mapview" element={<AttendanceMapView />} />
         </Route>
        
-      </Routes>
-      {/* <CustomAnalyticsScreen/> */}
+      </Routes> */}
+      <AttendanceMapView/>
     </BrowserRouter>
 
     // <UserAnalytics/>

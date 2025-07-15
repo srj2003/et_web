@@ -5,7 +5,7 @@
   <title>Attendance Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    html, body { height: 100%; margin: 0; padding: 0; }
+    html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
     #map { width: 100vw; height: 100vh; }
     .gm-ui-hover-effect { display: none !important; }
     .map-controls {
@@ -235,18 +235,32 @@
       color: #34254e;
       margin-bottom: 0.3rem;
     }
+
+    .filter-section{
+      /* margin: 20px 20px 20px 20px; */
+      /* position: absolute; */
+      height: 100px;
+      width: 400px;
+      background-color: white;
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
-  <div class="map-controls">
+  <div class="filter-section"> <div class="map-controls">
     <button id="viewAllBtn">View All Users</button>
   </div>
-  <div class="user-select-section">
-    <label for="userSelect" id="userSelectHeading">Select Users:</label>
-    <select id="userSelect" multiple>
-      <option value="">All Users</option>
-    </select>
-  </div>
+</div>
+
+
+
+
+<!--  
+  <div id="choices-user-select-container" style="position:fixed;top:24px;left:32px;z-index:1001;background:rgba(255,255,255,0.97);border-radius:14px;box-shadow:0 2px 12px rgba(99,102,241,0.07);padding:1rem 2rem 1.2rem 2rem;min-width:260px;display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem;">
+    <input id="customUserSearch" type="text" placeholder="Search users..." style="width:100%;margin-bottom:0.5rem;padding:0.5rem 1rem;border-radius:8px;border:1.5px solid #c7d2fe;font-size:1rem;" />
+    <label for="choicesUserSelect" id="userSelectHeading" style="font-family:Inter,sans-serif;font-weight:600;font-size:1rem;color:#34254e;margin-bottom:0.3rem;">Select Users:</label>
+    <select id="choicesUserSelect" multiple></select>
+  </div> -->
   <div id="map"></div>
   <script>
     let map, infoWindow, allCoords = [], allAttendance = [], allMarkers = [], allNameLabels = [], allInfoWindows = [];
@@ -341,7 +355,7 @@
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'ATTENDANCE_MAP_DATA') {
         renderMap(event.data.payload);
-        const select = document.getElementById('userSelect');
+        const select = document.getElementById('choicesUserSelect');
         select.innerHTML = '<option value="__select_all__">Select All Users</option>';
         const users = (typeof event.data.payload === 'string' ? JSON.parse(event.data.payload) : event.data.payload)
           .map(u => ({
@@ -359,8 +373,31 @@
         });
       }
     });
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('userSelect').addEventListener('change', function() {
+    // Custom search bar filtering for users
+    function filterUserOptions(searchValue) {
+      const select = document.getElementById('choicesUserSelect');
+      const filter = searchValue.trim().toLowerCase();
+      Array.from(select.options).forEach(option => {
+        if (option.value === '' || option.value === '__select_all__') {
+          option.style.display = '';
+          return;
+        }
+        const text = option.textContent.toLowerCase();
+        option.style.display = text.includes(filter) ? '' : 'none';
+      });
+      if (window.Choices && window.choicesInstance) {
+        // Remove open dropdown to force refresh
+        window.choicesInstance.hideDropdown();
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('customUserSearch');
+      if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+          filterUserOptions(e.target.value);
+        });
+      }
+      document.getElementById('choicesUserSelect').addEventListener('change', function() {
         const selectedOptions = Array.from(this.selectedOptions);
         const hasSelectAll = selectedOptions.some(opt => opt.value === '__select_all__');
         const hasAllUsers = selectedOptions.some(opt => opt.value === '');
@@ -391,7 +428,7 @@
       document.getElementById('viewAllBtn').addEventListener('click', function() {
         renderMap(allAttendance, []);
         // Clear all selections
-        const select = document.getElementById('userSelect');
+        const select = document.getElementById('choicesUserSelect');
         Array.from(select.options).forEach(option => option.selected = false);
       });
     });
