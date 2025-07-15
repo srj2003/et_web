@@ -110,6 +110,17 @@ const Users = () => {
   const [userCappingEdit, setUserCappingEdit] = useState(null);
   const [userCappingSaving, setUserCappingSaving] = useState(false);
 
+  // Add at the top of the Users component:
+  const profileSections = [
+    { key: "personal", label: "Personal Information" },
+    { key: "organization", label: "Organization Details" },
+    { key: "location", label: "Location" },
+    { key: "documents", label: "Documents" },
+    { key: "capping", label: "Capping Amount" },
+    { key: "additional", label: "Additional Information" },
+  ];
+  const [activeProfileSection, setActiveProfileSection] = useState("personal");
+
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -974,6 +985,230 @@ const Users = () => {
       setUserCappingSaving(false);
     }
   };
+
+  if (showUserProfile && editedUser) {
+    return (
+      <div className="profile-page-container">
+        <div className="profile-page-header">
+          <button
+            className="back-button"
+            onClick={() => {
+              setShowUserProfile(false);
+              setIsEditing(false);
+              setEditedUser(null);
+            }}
+          >
+            <ArrowLeft size={24} />
+            <span>Back</span>
+          </button>
+          <h2 className="profile-page-title">User Profile</h2>
+          <button
+            className="edit-button"
+            onClick={async () => {
+              if (isEditing) {
+                await handleSaveCapping();
+                handleSave(editedUser.u_id);
+                setIsEditing(false);
+              } else {
+                setIsEditing(true);
+              }
+            }}
+          >
+            {isEditing ? (
+              <>
+                <Check size={20} />
+                <span>Save</span>
+              </>
+            ) : (
+              <>
+                <Edit2 size={20} />
+                <span>Edit</span>
+              </>
+            )}
+          </button>
+        </div>
+        <div className="profile-table-section-content">
+          {/* Personal Information */}
+          <h3 className="profile-section-heading">Personal Information</h3>
+          <div className="profile-personal-container">
+            <div className="profile-image-outer">
+              <div className="profile-image-container">
+                <img
+                  src={imageUri || editedUser.u_pro_img || defaultAvatar}
+                  alt="Profile"
+                  className="profile-image"
+                />
+                {isEditing && (
+                  <div className="profile-image-actions-container">
+                    {(imageUri || editedUser.u_pro_img) && (
+                      <button
+                        className="image-action-button remove"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageUri(null);
+                          setEditedUser({
+                            ...editedUser,
+                            u_pro_img: null
+                          });
+                        }}
+                      >
+                        <Trash2 size={16} />
+                        <span>Remove</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+                <input
+                  type="file"
+                  id="editProfileImage"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setImageUri(reader.result);
+                        setEditedUser({
+                          ...editedUser,
+                          u_pro_img: reader.result
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  style={{ display: "none" }}
+                />
+              </div>
+              {isEditing && (
+                <button
+                  className="image-action-button update"
+                  onClick={() =>
+                    document.getElementById("editProfileImage").click()
+                  }
+                >
+                  <Upload size={16} />
+                  Update
+                </button>
+              )}
+            </div>
+            <div className="profile-personal-info-container">
+              <div className="profile-personal-info-item"><strong>First Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_fname} onChange={e => setEditedUser({ ...editedUser, u_fname: e.target.value })} />) : editedUser.u_fname}</div>
+              <div className="profile-personal-info-item"><strong>Middle Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_mname} onChange={e => setEditedUser({ ...editedUser, u_mname: e.target.value })} />) : editedUser.u_mname}</div>
+              <div className="profile-personal-info-item"><strong>Last Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_lname} onChange={e => setEditedUser({ ...editedUser, u_lname: e.target.value })} />) : editedUser.u_lname}</div>
+              <div className="profile-personal-info-item"><strong>Email: </strong> {isEditing ? (<input type="email" value={editedUser.u_email} onChange={e => setEditedUser({ ...editedUser, u_email: e.target.value })} />) : editedUser.u_email}</div>
+            </div>
+          </div>
+
+          {/* Organization Details */}
+          <h3 className="profile-section-heading">Organization Details</h3>
+          <div className="profile-organization-container">
+            <div><strong>Organization: </strong> {isEditing ? (<input type="text" value={editedUser.u_organization} onChange={e => setEditedUser({ ...editedUser, u_organization: e.target.value })} />) :<span style={{fontSize: '1rem'}}>{ editedUser.u_organization}</span>}</div>
+            <div><strong>Role: </strong> {isEditing ? (
+              <div className="role-select-input" onClick={() => setShowUserRoleModal(true)}>
+                <span>{editedUser.role_name}</span>
+                <Edit2 size={10} />
+              </div>
+            ) : (
+              <span style={{fontSize: '1.2rem'}}>{editedUser.role_name}</span>
+            )}</div>
+          </div>
+
+          {/* Location */}
+          <h3 className="profile-section-heading">Location</h3>
+          <div className="profile-location-container">
+            <div><strong>City: </strong> {isEditing ? (<input type="text" value={editedUser.u_city} onChange={e => setEditedUser({ ...editedUser, u_city: e.target.value })} />) : editedUser.u_city}</div>
+            <div><strong>State: </strong> {isEditing ? (<input type="text" value={editedUser.u_state} onChange={e => setEditedUser({ ...editedUser, u_state: e.target.value })} />) : editedUser.u_state}</div>
+            <div><strong>Country: </strong> {isEditing ? (<input type="text" value={editedUser.u_country} onChange={e => setEditedUser({ ...editedUser, u_country: e.target.value })} />) : editedUser.u_country}</div>
+          </div>
+
+          {/* Documents */}
+          <h3 className="profile-section-heading">Documents</h3>
+          <div className="profile-documents-container">
+            <div>
+              <strong>CV/Resume: </strong>
+              {editedUser.u_cv ? (
+                <div className="document-container">
+                  <span className="document-text">
+                    {editedUser.u_cv.split("/").pop()}
+                  </span>
+                  <button className="view-button">View</button>
+                </div>
+              ) : (
+                <span style={{fontSize: '1rem'}}>No document uploaded </span>
+              )}
+              {isEditing && (
+                <button
+                  className="upload-document-button"
+                  onClick={() =>
+                    document.getElementById("editCVFile").click()
+                  }
+                >
+                  <Upload size={16} />
+                  <span style={{fontSize: '1rem', marginLeft: '.1rem', padding: '.5rem'}}>
+                    {editedUser.u_cv ? " Update CV" : " Upload CV"}
+                  </span>
+                </button>
+              )}
+              <input
+                type="file"
+                id="editCVFile"
+                accept=".pdf"
+                onChange={handleCVUpload}
+                style={{ display: "none" }}
+              />
+            </div>
+          </div>
+
+          {/* Capping Amount */}
+          <h3 className="profile-section-heading">Capping Amount</h3>
+          <div className="capping-container">
+            <strong>Capping: </strong>{" "}
+            {userCappingLoading ? (
+              <span>Loading... </span>
+            ) : userCappingError ? (
+              <span className="error-message">{userCappingError}</span>
+            ) : isEditing ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
+                <input
+                  type="number"
+                  min={0}
+                  max={100000}
+                  value={userCappingEdit ?? ""}
+                  onChange={e => {
+                    const val = parseFloat(e.target.value);
+                    if (e.target.value === "" || ( !isNaN(val) && val >= 0 && val <= 100000 )) {
+                      setUserCappingEdit(e.target.value);
+                    }
+                  }}
+                  style={{ width: '120px' }}
+                />
+              </div>
+            ) : (
+              <span>{userCapping !== null && userCapping !== undefined ? userCapping : 'Not set'}</span>
+            )}
+          </div>
+
+          {/* Additional Information */}
+          <h3 className="profile-section-heading">Additional Information</h3>
+          <div className="profile-additional-container">
+            <div>
+              <strong>Created At: </strong>
+              {new Date(editedUser.u_created_at).toLocaleDateString(
+                "en-US",
+                {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="users-container">
@@ -1925,378 +2160,6 @@ const Users = () => {
                   >
                     Cancel
                   </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* User Profile Modal */}
-      {showUserProfile && editedUser && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-header">
-              <button
-                className="back-button"
-                onClick={() => {
-                  setShowUserProfile(false);
-                  setIsEditing(false);
-                  setEditedUser(null);
-                }}
-              >
-                <ArrowLeft size={24} />
-              </button>
-              <h2 className="modal-title">User Profile</h2>
-              <button
-                className="edit-button"
-                onClick={() =>
-                  isEditing ? handleSave(editedUser.u_id) : setIsEditing(true)
-                }
-              >
-                {isEditing ? (
-                  <>
-                    <Check size={20} />
-                    <span>Save</span>
-                  </>
-                ) : (
-                  <>
-                    <Edit2 size={20} />
-                    <span>Edit</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            <div className="modal-scrollable">
-              <div className="profile-content">
-                <div className="profile-image-container">
-                  <img
-                    src={
-                      imageUri || editedUser.u_pro_img || defaultAvatar
-                    }
-                    alt="Profile"
-                    className="profile-image"
-                  />
-                  {isEditing && (
-                    <div className="profile-image-actions-container">
-                      {(imageUri || editedUser.u_pro_img) && (
-                        <button
-                          className="image-action-button remove"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setImageUri(null);
-                            setEditedUser({
-                              ...editedUser,
-                              u_pro_img: null
-                            });
-                          }}
-                        >
-                          <Trash2 size={16} />
-                          <span>Remove</span>
-                        </button>
-                      )}
-                      <button
-                        className="image-action-button update"
-                        onClick={() =>
-                          document.getElementById("editProfileImage").click()
-                        }
-                      >
-                        <Upload size={16} />
-                        <span>Update</span>
-                      </button>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    id="editProfileImage"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setImageUri(reader.result);
-                          setEditedUser({
-                            ...editedUser,
-                            u_pro_img: reader.result
-                          });
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    style={{ display: "none" }}
-                  />
-                </div>
-
-                <div className="profile-section">
-                  <h3 className="section-title">Personal Information</h3>
-                  <div className="profile-details">
-                    <div className="detail-group">
-                      <label>First Name</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedUser.u_fname}
-                          onChange={(e) =>
-                            setEditedUser({
-                              ...editedUser,
-                              u_fname: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <span>{editedUser.u_fname}</span>
-                      )}
-                    </div>
-
-                    <div className="detail-group">
-                      <label>Middle Name</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedUser.u_mname}
-                          onChange={(e) =>
-                            setEditedUser({
-                              ...editedUser,
-                              u_mname: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <span>{editedUser.u_mname}</span>
-                      )}
-                    </div>
-
-                    <div className="detail-group">
-                      <label>Last Name</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedUser.u_lname}
-                          onChange={(e) =>
-                            setEditedUser({
-                              ...editedUser,
-                              u_lname: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <span>{editedUser.u_lname}</span>
-                      )}
-                    </div>
-
-                    <div className="detail-group">
-                      <label>Email</label>
-                      {isEditing ? (
-                        <input
-                          type="email"
-                          value={editedUser.u_email}
-                          onChange={(e) =>
-                            setEditedUser({
-                              ...editedUser,
-                              u_email: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <span>{editedUser.u_email}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="profile-section">
-                  <h3 className="section-title">Organization Details</h3>
-                  <div className="profile-details">
-                    <div className="detail-group">
-                      <label>Organization</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedUser.u_organization}
-                          onChange={(e) =>
-                            setEditedUser({
-                              ...editedUser,
-                              u_organization: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <span>{editedUser.u_organization}</span>
-                      )}
-                    </div>
-
-                    <div className="detail-group">
-                      <label>Role</label>
-                      {isEditing ? (
-                        <div 
-                          className="role-select-input"
-                          onClick={() => setShowUserRoleModal(true)}
-                        >
-                          <span>{editedUser.role_name}</span>
-                          <Edit2 size={16} />
-                        </div>
-                      ) : (
-                        <span>{editedUser.role_name}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="profile-section">
-                  <h3 className="section-title">Location</h3>
-                  <div className="profile-details">
-                    <div className="detail-group">
-                      <label>City</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedUser.u_city}
-                          onChange={(e) =>
-                            setEditedUser({
-                              ...editedUser,
-                              u_city: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <span>{editedUser.u_city}</span>
-                      )}
-                    </div>
-
-                    <div className="detail-group">
-                      <label>State</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedUser.u_state}
-                          onChange={(e) =>
-                            setEditedUser({
-                              ...editedUser,
-                              u_state: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <span>{editedUser.u_state}</span>
-                      )}
-                    </div>
-
-                    <div className="detail-group">
-                      <label>Country</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedUser.u_country}
-                          onChange={(e) =>
-                            setEditedUser({
-                              ...editedUser,
-                              u_country: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <span>{editedUser.u_country}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="profile-section">
-                  <h3 className="section-title">Documents</h3>
-                  <div className="profile-details">
-                    <div className="detail-group">
-                      <label>CV/Resume</label>
-                      {editedUser.u_cv ? (
-                        <div className="document-container">
-                          <span className="document-text">
-                            {editedUser.u_cv.split("/").pop()}
-                          </span>
-                          <button className="view-button">View</button>
-                        </div>
-                      ) : (
-                        <span className="no-document">No document uploaded</span>
-                      )}
-                      {isEditing && (
-                        <button
-                          className="upload-document-button"
-                          onClick={() =>
-                            document.getElementById("editCVFile").click()
-                          }
-                        >
-                          <Upload size={16} />
-                          <span>
-                            {editedUser.u_cv ? "Update CV" : "Upload CV"}
-                          </span>
-                        </button>
-                      )}
-                      <input
-                        type="file"
-                        id="editCVFile"
-                        accept=".pdf"
-                        onChange={handleCVUpload}
-                        style={{ display: "none" }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="profile-section">
-                  <h3 className="section-title">Capping Amount</h3>
-                  <div className="profile-details">
-                    {userCappingLoading ? (
-                      <span>Loading...</span>
-                    ) : userCappingError ? (
-                      <span className="error-message">{userCappingError}</span>
-                    ) : isEditing ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
-                        <input
-                          type="number"
-                          min={0}
-                          max={100000}
-                          value={userCappingEdit ?? ""}
-                          onChange={e => {
-                            const val = parseFloat(e.target.value);
-                            if (e.target.value === "" || ( !isNaN(val) && val >= 0 && val <= 100000 )) {
-                              setUserCappingEdit(e.target.value);
-                            }
-                          }}
-                          style={{ width: '120px' }}
-                        />
-                        <button
-                          className="submit-button"
-                          onClick={handleSaveCapping}
-                          disabled={userCappingSaving}
-                        >
-                          {userCappingSaving ? 'Saving...' : 'Save'}
-                        </button>
-                      </div>
-                    ) : (
-                      <span>{userCapping !== null && userCapping !== undefined ? userCapping : 'Not set'}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="profile-section">
-                  <h3 className="section-title">Additional Information</h3>
-                  <div className="profile-details">
-                    <div className="detail-group">
-                      <label>Created At</label>
-                      <span>
-                        {new Date(editedUser.u_created_at).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
