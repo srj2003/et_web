@@ -507,12 +507,7 @@ const Attendance = () => {
                   className="view-details-user-btn"
                   style={{margin: '1rem auto 0.5rem auto', display: 'block'}}
                   onClick={() => {
-                    navigate('/reports', {
-                      state: {
-                        userId: selectedUser.u_id,
-                        userName: [selectedUser.u_fname, selectedUser.u_mname, selectedUser.u_lname].filter(Boolean).join(' ')
-                      }
-                    });
+                    navigate('/attendance/customanalytics');
                   }}
                 >
                   View details

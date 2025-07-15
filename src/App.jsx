@@ -34,6 +34,7 @@ import HolidayList from "./components/holiday/holiday";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Project_wise_attendance from "./components/attendance/project_wise_attendance/project_wise_attendance"
 import Reports from "./components/reports/reports"
+import CustomAnalyticsScreen from "./components/attendance/custom_user_analytics/custom_user_analytics";
 
 function App() {
   return (
@@ -75,10 +76,11 @@ function App() {
           <Route path="/holiday" element={<HolidayList />} />
           <Route path="/attendance/projectwiseattendance" element={<Project_wise_attendance />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/attendance/customanalytics" element={<CustomAnalyticsScreen />} />
         </Route>
        
       </Routes>
-      {/* <Reports/> */}
+      {/* <CustomAnalyticsScreen/> */}
     </BrowserRouter>
 
     // <UserAnalytics/>

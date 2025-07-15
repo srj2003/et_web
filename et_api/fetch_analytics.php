@@ -39,6 +39,15 @@ try {
     exit();
 }
 
+// Read and decode JSON input
+$json = file_get_contents('php://input');
+$data = json_decode($json, true);
+
+if (!isset($data['startDate']) || !isset($data['endDate'])) {
+    echo json_encode(['error' => 'Missing parameters']);
+    exit();
+}
+
 $startDate = $data['startDate'];
 $endDate = $data['endDate'];
 
@@ -180,14 +189,14 @@ if ($attendedDays > 0) {
 
     $avgCheckIn = sprintf(
         "%02d:%02d",
-        floor($avgCheckInMinutes / 60),
-        $avgCheckInMinutes % 60
+        (int)floor($avgCheckInMinutes / 60),
+        (int)floor($avgCheckInMinutes) % 60
     );
 
     $avgCheckOut = sprintf(
         "%02d:%02d",
-        floor($avgCheckOutMinutes / 60),
-        $avgCheckOutMinutes % 60
+        (int)floor($avgCheckOutMinutes / 60),
+        (int)floor($avgCheckOutMinutes) % 60
     );
 } else {
     $avgCheckIn = null;
@@ -196,6 +205,34 @@ if ($attendedDays > 0) {
 
 // Calculate daily average work hours
 $dailyAvgWorkHours = ($attendedDays > 0) ? ($totalHoursWorked / $attendedDays) : 0;
+
+// --- BREAK AGGREGATION LOGIC START ---
+// Query to sum break durations for the user in the date range
+$break_sql = "SELECT break_start_timestamp, break_end_timestamp FROM user_break_logs WHERE u_id = ? AND created_at >= ? AND created_at <= ? AND break_end_timestamp IS NOT NULL";
+$break_stmt = $conn->prepare($break_sql);
+$break_stmt->bind_param("iss", $user_id, $startDate, $endDate);
+$break_stmt->execute();
+$break_result = $break_stmt->get_result();
+
+$totalBreakSeconds = 0;
+$breakDays = [];
+while ($break_row = $break_result->fetch_assoc()) {
+    $start = strtotime($break_row['break_start_timestamp']);
+    $end = strtotime($break_row['break_end_timestamp']);
+    if ($end > $start) {
+        $totalBreakSeconds += ($end - $start);
+        $breakDays[date('Y-m-d', $start)] = true;
+    }
+}
+$total_break_hours = $totalBreakSeconds / 3600;
+$distinct_break_days = count($breakDays);
+$days_for_avg = $totalWorkingDays > 0 ? $totalWorkingDays : 1; // Avoid division by zero
+$daily_avg_break_hours = $total_break_hours / $days_for_avg;
+// --- BREAK AGGREGATION LOGIC END ---
+
+// Update totalHoursWorked and dailyAvgWorkHours to subtract break hours
+$totalHoursWorkedNet = $totalHoursWorked - $total_break_hours;
+$dailyAvgWorkHoursNet = ($attendedDays > 0) ? ($totalHoursWorkedNet / $attendedDays) : 0;
 
 $response = [
     'status' => 'success',
@@ -212,8 +249,10 @@ $response = [
     'lateEntryDays' => $lateEntryDays,
     'avgCheckInTime' => $avgCheckIn,
     'avgCheckOutTime' => $avgCheckOut,
-    'totalHoursWorked' => round($totalHoursWorked, 2),
-    'dailyAvgWorkHours' => round($dailyAvgWorkHours, 2)
+    'total_break_hours' => round($total_break_hours, 2),
+    'daily_avg_break_hours' => round($daily_avg_break_hours, 2),
+    'totalHoursWorked' => round($totalHoursWorkedNet, 2),
+    'dailyAvgWorkHours' => round($dailyAvgWorkHoursNet, 2)
 ];
 
 echo json_encode($response);
