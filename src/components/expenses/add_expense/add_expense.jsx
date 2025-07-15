@@ -585,7 +585,6 @@ const ExpenseFormWeb = () => {
       for (let [key, value] of formData.entries()) {
         console.log(`${key}:`, value instanceof File ? value.name : value);
       }
-      console.log("FormData:", formData.get("expense_track_title"));      
       const response = await fetch(
         "https://demo-expense.geomaticxevs.in/ET-api/add_expense.php",
         {
