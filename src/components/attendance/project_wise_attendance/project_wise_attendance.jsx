@@ -377,7 +377,7 @@ const Attendance = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button className="map-view-btn" onClick={handleShowAllUsersOnMap}>View Attendance in Map</button>
+        <button className="map-view-btn" onClick={()=>{window.open('/attendance/mapview','_blank')}}>View Attendance in Map</button>
       </div>
 
       {activeTab === "all" ? (

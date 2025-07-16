@@ -40,6 +40,7 @@ import AttendanceMapView from "./components/attendance/attendance_map_view/atten
 function App() {
   return (
     <BrowserRouter>
+<<<<<<< Updated upstream
       {
         <Routes>
           <Route path="/" element={<LoginWeb />} />
@@ -106,6 +107,55 @@ function App() {
           </Route>
         </Routes>
       }
+=======
+      <Routes>
+        <Route path="/" element={<LoginWeb />} />
+        <Route element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/attendance/my" element={<MyAttendance/>} />
+          <Route path="/attendance/userattendance" element={<UserAttendance />} />
+          <Route path="/leaves/add" element={<AddLeaves />} />
+          <Route path="/leaves/my" element={<MyLeaves />} />
+          <Route path="/leaves/all" element={<AllLeaves />} />
+          <Route path="/leaves/manage" element={<ManageLeaves />} />
+          <Route path="/expenses/addexpense" element={<AddExpense />} />
+          <Route path="/expenses/myexpense" element={<MyExpense />} />
+          <Route path="/expenses/allexpenses" element={<AllExpenses />} />
+          <Route path="/expenses/requestedexpenses" element={<RequestedExpenses />} />
+          <Route path="/requisition/add" element={<RequisitionFormWeb />} />
+          <Route path="/requisition/my" element={<MyRequisitions />} />
+          <Route path="/requisition/all" element={<AllRequisitions />} />
+          <Route path="/requisition/manage" element={<RequisitionsWeb />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/analytics/useranalytics" element={<UserAnalytics />} />
+          <Route path="/analytics/adminanalytics" element={<AdminAnalytics />} />
+          <Route path="/accounts/expensereport" element={<ExpenseReport />} />
+          <Route path="/accounts/requisitionreport" element={<RequisitionReport />} />
+          <Route path="/profile" element={<ProfileScreen />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/project/my" element={<MyProjects />} />
+          <Route path="/project/manage" element={<ManageProjectExpenses />} />
+          <Route path="/workreport/add" element={<AddWorkReport />} />
+          <Route path="/workreport/my" element={<MyWorkReport />} />
+          <Route path="/workreport/all" element={<AllWorkReport />} />
+          <Route path="/holiday" element={<HolidayList />} />
+          <Route path="/attendance/projectwiseattendance" element={<Project_wise_attendance />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/attendance/customanalytics" element={<CustomAnalyticsScreen />} />
+          
+        </Route>
+
+        <Route>
+        <Route path="/attendance/mapview" element={<AttendanceMapView />} />
+        </Route>
+       
+      </Routes>
+      {/* <AttendanceMapView/> */}
+>>>>>>> Stashed changes
     </BrowserRouter>
 
     // <UserAnalytics/>
