@@ -111,7 +111,7 @@ const ProjectManagementDashboard = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loggedInUserCreatedBy, setLoggedInUserCreatedBy] = useState("");
   const [userHasEditPermission, setUserHasEditPermission] = useState(false);
-
+  const [myvar, setMyVar] = useState(0); // Example variable to reset
   const [employeeList, setEmployeeList] = useState([]);
   const [projectManager, setProjectManager] = useState(null);
   const [teamLead, setTeamLead] = useState(null);
@@ -423,6 +423,7 @@ const ProjectManagementDashboard = () => {
   const handleOpenEditModal = (project) => {
     resetFormFields();
     console.log("Editing project:", project);
+    setMyVar(0);
     setEditingProjectId(project.id);
     setCurrentProjectName(project.name);
     setProjectManager(project.projectLead || null);
@@ -431,6 +432,21 @@ const ProjectManagementDashboard = () => {
     setGeneralEmployees(
       Array.isArray(project.teamMembers) ? project.teamMembers : []
     );
+    // Print all employee names for debugging
+    console.log(
+      "All employee names:",
+      employeeList.map((e) => e.name)
+    );
+    // Compare names ignoring spaces
+    console.log(
+      employeeList.find(
+        (e) =>
+          e.name.replace(/\s+/g, "").toLowerCase() ===
+          String(project.projectLead).replace(/\s+/g, "").toLowerCase()
+      )
+    );
+    console.log(project.projectLead);
+    console.log("General Employees:", generalEmployees);
     setShowFormModal(true);
   };
 
@@ -449,6 +465,7 @@ const ProjectManagementDashboard = () => {
     const apiUrl =
       "https://demo-expense.geomaticxevs.in/ET-api/add_project.php";
     const isEditing = !!editingProjectId;
+    console.log("Editing:", isEditing);
 
     // Build assigned_employees array
     const assigned_employees = [];
@@ -475,10 +492,10 @@ const ProjectManagementDashboard = () => {
     const apiPayload = {
       project_name: currentProjectName,
       created_by: loggedInUserCreatedBy,
-      created_by_id,
       assigned_employees,
+      ...(isEditing && { expense_type_id: editingProjectId }),
     };
-
+    console.log(apiPayload);
     try {
       const response = await fetch(apiUrl, {
         method: isEditing ? "PUT" : "POST",
@@ -1088,7 +1105,8 @@ const ProjectManagementDashboard = () => {
                   className="employee-select-btn-modal"
                   onClick={() => setShowTLModal(true)}
                 >
-                  {teamLead || "Select Team Lead"}
+                  {employeeList.find((e) => e.u_id === teamLead)?.name ||
+                    "Select Team Lead"}
                   <ChevronDown size={16} />
                 </button>
               </div>
@@ -1111,11 +1129,11 @@ const ProjectManagementDashboard = () => {
                   Add Team Members <Plus size={16} />
                 </button>
                 <div className="selected-employees-tags">
-                  {generalEmployees.map((u_id) => {
-                    const emp = employeeList.find((e) => e.u_id === u_id);
+                  {generalEmployees.map((u_id, idx) => {
+                    const emp = generalEmployees[idx];
                     return emp ? (
                       <div key={u_id} className="employee-tag-item">
-                        <span>{emp.name}</span>
+                        <span>{emp}</span>
                         <button
                           className="icon-btn"
                           onClick={() =>
@@ -1127,7 +1145,9 @@ const ProjectManagementDashboard = () => {
                           <X size={14} />
                         </button>
                       </div>
-                    ) : null;
+                    ) : (
+                      generalEmployees[0]
+                    );
                   })}
                 </div>
               </div>
