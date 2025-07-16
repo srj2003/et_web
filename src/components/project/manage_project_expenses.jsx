@@ -426,24 +426,33 @@ const ProjectManagementDashboard = () => {
     setMyVar(0);
     setEditingProjectId(project.id);
     setCurrentProjectName(project.name);
-    setProjectManager(project.projectLead || null);
-    setTeamLead(project.teamLead || null);
-    setSupervisor(project.supervisor || null);
+    setProjectManager(employeeList.find(
+      (e) =>
+        e.name.replace(/\s+/g, "").toLowerCase() ===
+        String(project.projectLead).replace(/\s+/g, "").toLowerCase()
+    ).u_id || null);
+    setTeamLead(employeeList.find(
+      (e) =>
+        e.name.replace(/\s+/g, "").toLowerCase() ===
+        String(project.teamLead).replace(/\s+/g, "").toLowerCase()
+    ).u_id || null);
+    setSupervisor(employeeList.find(
+      (e) =>
+        e.name.replace(/\s+/g, "").toLowerCase() ===
+        String(project.supervisor).replace(/\s+/g, "").toLowerCase()
+    ).u_id || null);
     setGeneralEmployees(
-      Array.isArray(project.teamMembers) ? project.teamMembers : []
-    );
-    // Print all employee names for debugging
-    console.log(
-      "All employee names:",
-      employeeList.map((e) => e.name)
-    );
-    // Compare names ignoring spaces
-    console.log(
-      employeeList.find(
-        (e) =>
-          e.name.replace(/\s+/g, "").toLowerCase() ===
-          String(project.projectLead).replace(/\s+/g, "").toLowerCase()
-      )
+      Array.isArray(project.teamMembers)
+          ? project.teamMembers
+              .map((name) =>
+                employeeList.find(
+                  (e) =>
+                    e.name.replace(/\s+/g, "").toLowerCase() ===
+                    String(name).replace(/\s+/g, "").toLowerCase()
+                )?.u_id
+              )
+              .filter(Boolean)
+          : []
     );
     console.log(project.projectLead);
     console.log("General Employees:", generalEmployees);
@@ -1095,7 +1104,7 @@ const ProjectManagementDashboard = () => {
                   className="employee-select-btn-modal"
                   onClick={() => setShowPMModal(true)}
                 >
-                  {projectManager || "Select Project Manager"}
+                  {employeeList.find((e) => e.u_id === projectManager)?.name || "Select Project Manager"}
                   <ChevronDown size={16} />
                 </button>
               </div>
@@ -1116,7 +1125,7 @@ const ProjectManagementDashboard = () => {
                   className="employee-select-btn-modal"
                   onClick={() => setShowSupModal(true)}
                 >
-                  {supervisor || "Select Supervisor"}
+                  {employeeList.find((e) => e.u_id === supervisor)?.name || "Select Supervisor"}
                   <ChevronDown size={16} />
                 </button>
               </div>
@@ -1129,8 +1138,8 @@ const ProjectManagementDashboard = () => {
                   Add Team Members <Plus size={16} />
                 </button>
                 <div className="selected-employees-tags">
-                  {generalEmployees.map((u_id, idx) => {
-                    const emp = generalEmployees[idx];
+                  {generalEmployees.map((u_id) => {
+                    const emp = employeeList.find((e) => e.u_id === u_id).name;
                     return emp ? (
                       <div key={u_id} className="employee-tag-item">
                         <span>{emp}</span>
