@@ -68,13 +68,20 @@ const ExpenseDetailsWeb = () => {
         body: JSON.stringify({ userId })
       });
       const todayData = await todayResponse.json();
-      if (todayData.status === "success" && todayData.data) {
+      console.log(todayData);
+      if (todayData) {
         const today = new Date().toISOString().split('T')[0];
-        const todayExpensesList = todayData.data.filter(expense => {
+        const todayExpensesList = todayData.filter(expense => {
           const expenseDate = new Date(expense.expense_date).toISOString().split('T')[0];
           return expenseDate === today;
         });
-        const total = todayExpensesList.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
+        console.log(todayExpensesList);
+        const tod=todayExpensesList.filter(expense => {
+          const project_id = expense.expense_type;
+          return project_id === 1;
+        });
+        console.log(tod);
+        const total = tod.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
         setTodayTotal(total);
       } else if (Array.isArray(todayData)) {
         const today = new Date().toISOString().split('T')[0];
@@ -83,7 +90,7 @@ const ExpenseDetailsWeb = () => {
           return expenseDate === today;
         });
         const total = todayExpensesList.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
-        setTodayTotal(total);
+        setTodayTotal(Math.round(total));
       }
     };
     fetchCappingInfo();
@@ -229,16 +236,16 @@ const ExpenseDetailsWeb = () => {
         <div className="capping-info">
           <div className="capping-item">
             <span className="capping-label">Daily Capping Limit:</span>
-            <span className="capping-value">₹{userCapping}</span>
+            <span className="capping-value">₹{Math.round(userCapping)}</span>
           </div>
           <div className="capping-item">
             <span className="capping-label">Today's Submitted:</span>
-            <span className="capping-value">₹{todayTotal}</span>
+            <span className="capping-value">₹{Math.round(todayTotal)}</span>
           </div>
           <div className="capping-item">
             <span className="capping-label">Remaining Today:</span>
             <span className={`capping-value ${(userCapping - todayTotal) < 0 ? 'capping-exceeded' : 'capping-remaining'}`}>
-              ₹{(userCapping - todayTotal).toFixed(2)}
+              ₹{Math.round(userCapping - todayTotal)}
             </span>
           </div>
         </div>
@@ -439,7 +446,7 @@ const ExpenseDetailsWeb = () => {
                   <div className="myexpenses-date-item">
                     <span className="myexpenses-date-label">Amount:</span>
                     <span className="myexpenses-date-value">
-                      ₹{expense.expense_amount}
+                      ₹{Math.round(expense.expense_amount)}
                     </span>
                   </div>
                   <div className="myexpenses-date-item">

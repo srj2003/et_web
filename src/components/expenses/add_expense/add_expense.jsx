@@ -710,16 +710,16 @@ const ExpenseFormWeb = () => {
         <div className="capping-info">
           <div className="capping-item">
             <span className="capping-label">Daily Capping Limit:</span>
-            <span className="capping-value">₹{userCapping}</span>
+            <span className="capping-value">₹{Math.round(userCapping)}</span>
           </div>
           <div className="capping-item">
             <span className="capping-label">Today's Submitted:</span>
-            <span className="capping-value">₹{todayTotal}</span>
+            <span className="capping-value">₹{Math.round(todayTotal)}</span>
           </div>
           <div className="capping-item">
             <span className="capping-label">Remaining Today:</span>
             <span className={`capping-value ${(userCapping - todayTotal) < 0 ? 'capping-exceeded' : 'capping-remaining'}`}>
-              ₹{(userCapping - todayTotal).toFixed(2)}
+              ₹{Math.round(userCapping - todayTotal)}
             </span>
           </div>
         </div>
