@@ -128,7 +128,7 @@ const ExpenseFormWeb = () => {
           body: JSON.stringify({ userId })
         });
         const todayData = await todayResponse.json();
-        
+        console.log(todayData);
         if (todayData.status === "success" && todayData.data) {
           const today = new Date().toISOString().split('T')[0];
           const todayExpensesList = todayData.data.filter(expense => {
@@ -145,8 +145,13 @@ const ExpenseFormWeb = () => {
             const expenseDate = new Date(expense.expense_date).toISOString().split('T')[0];
             return expenseDate === today;
           });
-          setTodayExpenses(todayExpensesList);
-          const total = todayExpensesList.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
+          const tod=todayExpensesList.filter(expense => {
+            const project_id = expense.expense_type;
+            return project_id === 1;
+          });
+          setTodayExpenses(tod);
+          console.log(tod);
+          const total = tod.reduce((sum, exp) => sum + (parseFloat(exp.expense_amount) || 0), 0);
           setTodayTotal(total);
         }
 
@@ -367,9 +372,8 @@ const ExpenseFormWeb = () => {
     // Calculate total including today's already submitted expenses
     const totalTodaySubmitted = todayTotal;
     const proposedTotal = sameDayTotal + (Number(currentExpense.amount) || 0) + totalTodaySubmitted;
-
-    if (userCapping !== null && proposedTotal > userCapping) {
-      const remaining = (userCapping - totalTodaySubmitted - sameDayTotal).toFixed(2);
+    if (userCapping !== null && proposedTotal > userCapping&&expenseHeadValue==="1") {
+      const remaining = (userCapping - totalTodaySubmitted).toFixed(2);
       setCappingError(`Cannot exceed limit. You have already submitted ₹${totalTodaySubmitted} today. You can only add ₹${remaining} more for ${billDate}`);
       return;
     } else {
