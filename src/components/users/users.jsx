@@ -1031,6 +1031,12 @@ const Users = () => {
           {/* Personal Information */}
           <h3 className="profile-section-heading">Personal Information</h3>
           <div className="profile-personal-container">
+            <div className="profile-personal-info-container">
+              <div className="profile-personal-info-item"><strong>First Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_fname} onChange={e => setEditedUser({ ...editedUser, u_fname: e.target.value })} />) : editedUser.u_fname}</div>
+              <div className="profile-personal-info-item"><strong>Middle Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_mname} onChange={e => setEditedUser({ ...editedUser, u_mname: e.target.value })} />) : editedUser.u_mname}</div>
+              <div className="profile-personal-info-item"><strong>Last Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_lname} onChange={e => setEditedUser({ ...editedUser, u_lname: e.target.value })} />) : editedUser.u_lname}</div>
+              <div className="profile-personal-info-item"><strong>Email: </strong> {isEditing ? (<input type="email" value={editedUser.u_email} onChange={e => setEditedUser({ ...editedUser, u_email: e.target.value })} />) : editedUser.u_email}</div>
+            </div>
             <div className="profile-image-outer">
               <div className="profile-image-container">
                 <img
@@ -1091,12 +1097,6 @@ const Users = () => {
                 </button>
               )}
             </div>
-            <div className="profile-personal-info-container">
-              <div className="profile-personal-info-item"><strong>First Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_fname} onChange={e => setEditedUser({ ...editedUser, u_fname: e.target.value })} />) : editedUser.u_fname}</div>
-              <div className="profile-personal-info-item"><strong>Middle Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_mname} onChange={e => setEditedUser({ ...editedUser, u_mname: e.target.value })} />) : editedUser.u_mname}</div>
-              <div className="profile-personal-info-item"><strong>Last Name: </strong> {isEditing ? (<input type="text" value={editedUser.u_lname} onChange={e => setEditedUser({ ...editedUser, u_lname: e.target.value })} />) : editedUser.u_lname}</div>
-              <div className="profile-personal-info-item"><strong>Email: </strong> {isEditing ? (<input type="email" value={editedUser.u_email} onChange={e => setEditedUser({ ...editedUser, u_email: e.target.value })} />) : editedUser.u_email}</div>
-            </div>
           </div>
 
           {/* Organization Details */}
@@ -1106,10 +1106,10 @@ const Users = () => {
             <div><strong>Role: </strong> {isEditing ? (
               <div className="role-select-input" onClick={() => setShowUserRoleModal(true)}>
                 <span>{editedUser.role_name}</span>
-                <Edit2 size={10} />
+                <Edit2 size={9} />
               </div>
             ) : (
-              <span style={{fontSize: '1.2rem'}}>{editedUser.role_name}</span>
+              <span style={{fontSize: '1rem'}}>{editedUser.role_name}</span>
             )}</div>
           </div>
 
@@ -1161,7 +1161,7 @@ const Users = () => {
 
           {/* Capping Amount */}
           <h3 className="profile-section-heading">Capping Amount</h3>
-          <div className="capping-container">
+          <div className="profile-capping-container">
             <strong>Capping: </strong>{" "}
             {userCappingLoading ? (
               <span>Loading... </span>
@@ -1399,7 +1399,7 @@ const Users = () => {
                   <span>Back to Roles</span>
                 </button>
               </div>
-              <div className="search-container">
+              <div className="user-search-container">
                 <Search size={20} />
                 <input
                   type="text"
@@ -2143,7 +2143,6 @@ const Users = () => {
                 </div>
 
                 <div className="button-container">
-                  
                   <button
                     className="submit-button"
                     onClick={handleSubmitUserRole}
@@ -2250,7 +2249,8 @@ const Users = () => {
               <h2 className="modal-title">Edit Role</h2>
             </div>
             <div className="modal-scrollable">
-              <div className="form-container">
+              <div className="profile-table-section-content">
+                <h3 className="profile-section-heading">Edit Role Details</h3>
                 {/* Full-page loader overlay */}
                 {roleDetailsLoading && (
                   <div className="modal-fullpage-loader">
@@ -2259,59 +2259,84 @@ const Users = () => {
                   </div>
                 )}
                 {!roleDetailsLoading && (
-                  <div className="form-section">
-                    <div className="form-group">
-                      <label>Role id</label>
+                  <>
+                    <div className="profile-personal-info-item" style={{marginBottom: '1rem'}}>
+                      <strong>Role id</strong>
                       <input
                         type="text"
                         value={roleDetails.role_id ?? ""}
                         readOnly
+                        style={{width: '100%'}}
                       />
                     </div>
-                    <div className="form-group">
-                      <label>Role name</label>
+                    <div className="profile-personal-info-item" style={{marginBottom: '1rem'}}>
+                      <strong>Role name</strong>
                       <input
                         type="text"
                         value={roleDetails.role_name ?? ""}
                         onChange={e =>
                           setRoleDetails({ ...roleDetails, role_name: e.target.value })
                         }
+                        style={{width: '100%'}}
                       />
                     </div>
-                    <div className="form-group">
-                      <label>Active status</label>
-                      <select
-                        value={roleDetails.role_active ?? ""}
-                        onChange={e =>
-                          setRoleDetails({ ...roleDetails, role_active: e.target.value })
-                        }
-                      >
-                        <option value="1">Active</option>
-                        <option value="0">Inactive</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Created at</label>
+                    <div className="profile-personal-info-item" style={{ marginBottom: '1.5rem' }}>
+                        <label 
+                          htmlFor="active-status" 
+                          style={{
+                            display: 'block',
+                            marginBottom: '0.5rem',
+                            fontWeight: '600',
+                            color: '#333',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          Active Status
+                        </label>
+                        <select
+                          id="active-status"
+                          value={roleDetails.role_active ?? ""}
+                          onChange={e => setRoleDetails({ ...roleDetails, role_active: e.target.value })}
+                          style={{
+                            width: '76%',
+                            padding: '0.75rem',
+                            marginLeft: '1rem',
+                            borderRadius: '6px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#fff',
+                            fontSize: '0.9rem',
+                            color: '#333',
+                            cursor: 'pointer',
+                            transition: 'border-color 0.2s',
+                            outline: 'none'
+                          }}
+                        >
+                          <option value="1">Active</option>
+                          <option value="0">Inactive</option>
+                        </select>
+                      </div>
+                    <div className="profile-personal-info-item" style={{marginBottom: '1rem'}}>
+                      <strong>Created at</strong>
                       <input
                         type="text"
                         value={roleDetails.created_at ?? ""}
-                        onChange={e =>
-                          setRoleDetails({ ...roleDetails, created_at: e.target.value })
-                        }
+                        readOnly
+                        style={{width: '100%'}}
                       />
                     </div>
-                    <div className="form-group">
-                      <label>Updated at</label>
+                    <div className="profile-personal-info-item" style={{marginBottom: '1rem'}}>
+                      <strong>Updated at</strong>
                       <input
                         type="text"
                         value={roleDetails.updated_at ?? ""}
                         onChange={e =>
                           setRoleDetails({ ...roleDetails, updated_at: e.target.value })
                         }
+                        style={{width: '100%'}}
                       />
                     </div>
-                    <div className="form-group">
-                      <label>Capping Amount</label>
+                    <div className="profile-personal-info-item" style={{marginBottom: '1rem'}}>
+                      <strong>Capping Amount</strong>
                       <input
                         type="number"
                         value={
@@ -2322,11 +2347,12 @@ const Users = () => {
                         onChange={e =>
                           setRoleDetails({ ...roleDetails, total_expense_amount: e.target.value })
                         }
+                        style={{width: '100%'}}
                       />
                     </div>
-                  </div>
+                  </>
                 )}
-                <div className="button-container">
+                <div className="role-button-container">
                   <button
                     className="submit-button"
                     onClick={handleSaveRoleDetails}

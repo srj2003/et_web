@@ -80,7 +80,7 @@
   font-size: 24px;
 }
 
-.filter-container {
+.myattendance-filter-container {
   margin-bottom: 24px;
   display: flex;
   gap: 16px;
@@ -149,7 +149,7 @@
   animation: spin 1s linear infinite;
 }
 
-.filter-header {
+.myattendance-filter-header {
   /* display: flex;
   align-items: center;
   justify-content: center; */
@@ -717,14 +717,26 @@ span {
 }
 
 /* Filter Button Styles */
-.filter-buttons {
+.myattendance-filter-buttons {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
   margin-top: 10px;
 }
 
-.filter-button {
+@keyframes glowingButton {
+  0% {
+    box-shadow: 0 0 0 0 rgb(171, 255, 195);
+  }
+  50% {
+    box-shadow: 0 0 12px 4px rgba(3, 255, 45, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(173, 255, 180);
+  }
+}
+
+.myattendance-filter-button {
   min-width: 150px !important;
   padding: 12px 24px !important;
   border-radius: 12px !important;
@@ -735,57 +747,107 @@ span {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
 }
 
-.filter-button#present.MuiButton-contained {
+.myattendance-filter-button#present.MuiButton-contained {
   background-color: #10b981 !important;
   color: white !important;
 }
 
-.filter-button#present.MuiButton-outlined {
+.myattendance-filter-button#present.MuiButton-outlined {
   border-color: #10b981 !important;
   color: #10b981 !important;
   border-width: 2px !important;
 }
 
-.filter-button#absent.MuiButton-contained {
+.myattendance-filter-button#absent.MuiButton-contained {
   background-color: #ef4444 !important;
   color: white !important;
 }
 
-.filter-button#absent.MuiButton-outlined {
+.myattendance-filter-button#absent.MuiButton-outlined {
   border-color: #ef4444 !important;
   color: #ef4444 !important;
   border-width: 2px !important;
 }
 
-.filter-button#not-logged-out.MuiButton-contained {
+.myattendance-filter-button#not-logged-out.MuiButton-contained {
   background-color: #f59e0b !important;
   color: white !important;
 }
 
-.filter-button#not-logged-out.MuiButton-outlined {
+.myattendance-filter-button#not-logged-out.MuiButton-outlined {
   border-color: #f59e0b !important;
   color: #f59e0b !important;
   border-width: 2px !important;
 }
 
-.filter-button#show-all.MuiButton-contained {
+.myattendance-filter-button#show-all.MuiButton-contained {
   background-color: #6366f1 !important;
   color: white !important;
 }
 
-.filter-button#show-all.MuiButton-outlined {
+.myattendance-filter-button#show-all.MuiButton-outlined {
   border-color: #6366f1 !important;
   color: #6366f1 !important;
   border-width: 2px !important;
 }
 
-.filter-button:hover {
+.myattendance-filter-button:hover {
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
-.filter-button:active {
-  transform: translateY(0) !important;
+.myattendance-filter-button {
+  transition: all 0.3s ease-out;
+}
+
+/* Present - Green */
+.myattendance-filter-button#present:hover, 
+.myattendance-filter-button#present:active {
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2), 
+              0 0 12px 4px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+  animation: glowingButton 1.5s infinite;
+}
+
+/* Absent - Red */
+.myattendance-filter-button#absent:hover, 
+.myattendance-filter-button#absent:active {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2), 
+              0 0 12px 4px rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+  animation: glowingButton 1.5s infinite;
+}
+
+/* Not Logged Out - Amber */
+.myattendance-filter-button#not-logged-out:hover, 
+.myattendance-filter-button#not-logged-out:active {
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2), 
+              0 0 12px 4px rgba(245, 158, 11, 0.4);
+  transform: translateY(-1px);
+  animation: glowingButton 1.5s infinite;
+}
+
+/* Approved Leave - Blue */
+.myattendance-filter-button#approved-leave:hover, 
+.myattendance-filter-button#approved-leave:active {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2), 
+              0 0 12px 4px rgba(37, 99, 235, 0.4);
+  transform: translateY(-1px);  
+  animation: glowingButton 1.5s infinite;
+}
+
+/* Show All - Indigo */
+.myattendance-filter-button#show-all:hover, 
+.myattendance-filter-button#show-all:active {
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 
+              0 0 12px 4px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+  animation: glowingButton 1.5s infinite;
+}
+
+/* Active state scaling */
+.myattendance-filter-button:active {
+  transform: translateY(0) scale(0.98);
 }
 
 /* Calendar Tile Styles */

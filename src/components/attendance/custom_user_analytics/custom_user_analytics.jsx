@@ -550,35 +550,36 @@ const CustomAnalyticsScreen = () => {
                         {error}
                     </div>
                 )}
-                <div className="custom-analytics-main-row">
-                    {/* Left: Stat Cards 2x2 grid */}
-                    <div className="custom-analytics-stat-cards-col">
-                        <div className="custom-analytics-stat-cards-grid">
+                <div className="custom-analytics-stat-cards-grid">
                             <StatCard 
+                                className="custom-analytics-stat-card"
                                 icon={<CalendarIcon style={{ fontSize: 34 }} />}
                                 title="Total Working Days"
                                 value={stats.totalDays}
                                 subValue={stats.trend}
                             />
                             <StatCard
+                                className="custom-analytics-stat-card"
                                 icon={<UserCheckIcon style={{ fontSize: 24 }} />}
                                 title="Present Days"
                                 value={stats.presentDays}
                                 subValue={null}
                             />
                             <StatCard
+                                className="custom-analytics-stat-card"
                                 icon={<UserXIcon style={{ fontSize: 24 }} />}
                                 title="Absent Days"
                                 value={stats.absentDays}
                                 subValue={null}
                             />
                             <StatCard
+                                className="custom-analytics-stat-card"
                                 icon={<ClockIcon style={{ fontSize: 24 }} />}
                                 title="Attendance Rate"
                                 value={stats.attendanceRate}
                                 subValue={null}
                             />
-                            <div className="stat-card graph-card">
+                            <div className="custom-analytics-stat-card graph-card">
                                 <h3 className="stat-card-title" style={{ textAlign: 'center' }}>Attendance Breakdown</h3>
                                 <ResponsiveContainer width="100%" height={160}>
                                     <PieChart>
@@ -603,6 +604,10 @@ const CustomAnalyticsScreen = () => {
                                 </ResponsiveContainer>
                             </div>
                         </div>
+                <div className="custom-analytics-main-row">
+                    {/* Left: Stat Cards 2x2 grid */}
+                    <div className="custom-analytics-stat-cards-col">
+                        
                     </div>
                     {/* Right: Time Analysis and Work Hours in the same container */}
                    

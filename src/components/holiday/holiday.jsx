@@ -129,8 +129,8 @@ const HolidayList = () => {
 
   return (
     <>
-      <div className="holiday-bg-blob1"></div>
-      <div className="holiday-bg-blob2"></div>
+      {/* <div className="holiday-bg-blob1"></div>
+      <div className="holiday-bg-blob2"></div> */}
       <Container maxWidth={false} className={classes.root}>
         <Typography variant="h3" component="h1">
           Holiday Calendar 2025-2026
@@ -161,9 +161,9 @@ const HolidayList = () => {
             ))}
         </div>
       </Container>
-      <div className="holiday-ocean">
+      {/* <div className="holiday-ocean">
         <svg viewBox="0 0 1440 320"><path fill="#b6e0fe" fillOpacity="1" d="M0,224L48,202.7C96,181,192,139,288,144C384,149,480,203,576,197.3C672,192,768,128,864,128C960,128,1056,192,1152,197.3C1248,203,1344,149,1392,122.7L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>
-      </div>
+      </div> */}
     </>
   );
 };

@@ -413,17 +413,17 @@ export default function MyAttendance() {
             </div>
 
             {dataLoaded && (
-              <div className="filter-section">
-                <div className="filter-header">
+              <div className="myattendance-filter-section">
+                <div className="myattendance-filter-header">
                   <FilterAltIcon style={{ fontSize: '24px', marginRight: '10px' }} color="primary" />
                   <span>Filter Attendance</span>
                 </div>
-                <div className="filter-buttons">
+                <div className="myattendance-filter-buttons">
                   <Button
                     variant={filterStatus === "Present" ? "contained" : "outlined"}
                     color="success"
                     onClick={() => handleFilterStatus("Present")}
-                    className="filter-button" id = "present"
+                    className="myattendance-filter-button" id = "present"
                   >
                     Present
                   </Button>
@@ -431,7 +431,7 @@ export default function MyAttendance() {
                     variant={filterStatus === "Absent" ? "contained" : "outlined"}
                     color="error"
                     onClick={() => handleFilterStatus("Absent")}
-                    className="filter-button" id = "absent"
+                    className="myattendance-filter-button" id = "absent"
                   >
                     Absent
                   </Button>
@@ -439,15 +439,15 @@ export default function MyAttendance() {
                     variant={filterStatus === "Not Logged Out" ? "contained" : "outlined"}
                     color="warning"
                     onClick={() => handleFilterStatus("Not Logged Out")}
-                    className="filter-button" id = "not-logged-out"
+                    className="myattendance-filter-button" id = "not-logged-out"
                   >
                     Not Logged Out
                   </Button>
                   <Button
                     variant={filterStatus === "Approved Leave" ? "contained" : "outlined"}
-                    style={{ backgroundColor: filterStatus === "Approved Leave" ? '#2563eb' : '', color: filterStatus === "Approved Leave" ? '#fff' : '#2563eb', borderColor: '#2563eb', borderWidth: 2, marginLeft: 0, marginRight: 0 }}
+                    // style={{ backgroundColor: filterStatus === "Approved Leave" ? '#2563eb' : '', color: filterStatus === "Approved Leave" ? '#fff' : '#2563eb', borderColor: '#2563eb', borderWidth: 2, marginLeft: 0, marginRight: 0 }}
                     onClick={() => handleFilterStatus("Approved Leave")}
-                    className="filter-button" id = "approved-leave"
+                    className="myattendance-filter-button" id = "approved-leave"
                   >
                     Approved Leave
                   </Button>
@@ -455,7 +455,7 @@ export default function MyAttendance() {
                     variant={filterStatus === null ? "contained" : "outlined"}
                     color="primary"
                     onClick={() => handleFilterStatus(null)}
-                    className="filter-button" id = "show-all"
+                    className="myattendance-filter-button" id = "show-all"
                   >
                     Show All
                   </Button>

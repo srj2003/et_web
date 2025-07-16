@@ -152,7 +152,7 @@
 /* Grid Layout */
 .holiday-grid {
   display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-columns: repeat(3, 1fr) !important;
   gap: 2rem !important;
   width: 100% !important;
 }
@@ -161,6 +161,9 @@
 @media (max-width: 1200px) {
   .MuiContainer-root {
     padding: 2rem !important;
+  }
+  .holiday-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
@@ -207,7 +210,7 @@
   height: 100% !important;
   background-image: var(--holiday-bg-image) !important;
   background-size: cover !important;
-  background-position: right top !important;
+  background-position: calc(100% + 1rem) top !important;
   opacity: 1 !important;
   z-index: 0 !important;
   mask-image: linear-gradient(
@@ -304,8 +307,15 @@
 body, .MuiContainer-root {
   background: linear-gradient(135deg, #e0eafc 0%, #f9f6ff 100%) !important;
   min-height: 100vh !important;
+  width: 100vw;
   position: relative;
   overflow-x: hidden;
+  background-image: url('../../assets/images.jpg'), linear-gradient(135deg, #e0eafc 0%, #f9f6ff 100%) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border-radius: 10px;
+  margin-top: 1rem;
 }
 
 /* Decorative floating blobs */
@@ -344,10 +354,11 @@ body, .MuiContainer-root {
 }
 
 /* Oceanic wavy effect at the bottom */
-.holiday-ocean {
+/* .holiday-ocean {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  height: 160px;
+  height: 10rem;
+  width: 85rem;
   z-index: 0;
   pointer-events: none;
   background: none;
@@ -356,4 +367,4 @@ body, .MuiContainer-root {
   width: 100vw;
   height: 160px;
   display: block;
-}
+} */

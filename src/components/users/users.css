@@ -113,12 +113,17 @@ body {
     padding: 0.75rem;
     border-radius: 12px;
     transition: all 0.3s ease;
+    width: 10rem;
+    margin-top: 1.5rem;
 }
 
 .back-button:hover {
     background: rgba(99, 102, 241, 0.05);
     border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2),
+    0 2px 4px -1px rgba(99, 102, 241, 0.1); 
     transform: translateY(-1px);
+    color: #475569;
 }
 
 .add-button {
@@ -734,7 +739,7 @@ body {
 .categories-header {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: .1rem;
     margin-bottom: 1.5rem;
     padding: 1rem;
     background: rgba(255, 255, 255, 0.9);
@@ -1522,6 +1527,7 @@ input[type="email"]:focus {
   display: flex;
   align-items: center;
   gap: 2rem;
+  height: 2rem;
 }
 
 .header-content .title {
@@ -1776,8 +1782,17 @@ input[type="email"]:focus {
     display: flex;
     gap: 1rem;
     justify-content: flex-end;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
+    margin-top: .2rem;
+    padding-top: .5rem;
+    border-top: 1px solid rgba(99, 102, 241, 0.1);
+}
+.role-button-container {
+    display: flex;
+    gap: 7rem;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: flex-end;
+    padding-top: .5rem;
     border-top: 1px solid rgba(99, 102, 241, 0.1);
 }
 
@@ -2126,7 +2141,7 @@ input[type="email"]:focus {
   border-radius: 24px;
   box-shadow: 0 8px 32px rgba(99,102,241,0.08);
   width: 100%;
-  margin: 0;
+  margin: 1rem 1rem 0 1.5rem;
   max-width: none;
   padding: 0;
   position: relative;
@@ -2136,35 +2151,153 @@ input[type="email"]:focus {
 .profile-page-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
   background: #f8fafc;
   border-radius: 16px 16px 0 0;
-  padding: 2rem 2rem 1.2rem 2rem;
+  padding: 2rem 2rem .3rem 2rem;
   box-shadow: 0 2px 8px rgba(99,102,241,0.04);
 }
 
 .profile-page-title {
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 700;
   color: #1e293b;
   margin: 0;
   letter-spacing: -0.5px;
 }
 
-.profile-personal-container{
+.profile-personal-container {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 3rem;
-  margin: 1rem 1rem;
+  justify-content: flex-start;
+  gap: 22rem;
+  margin: 0rem .1rem;
+  height: auto;
+  width: 100%;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.04);
+  background-color: #dfddff;
+  padding: 1.5rem 1rem 0rem 1rem;
 }
 
-.profile-personal-info-container{
+.profile-personal-info-container {
+  flex: 2 1 0;
+  min-width: 0;
+  max-width: 600px;
+  width: 100%;
+}
+
+.profile-image-outer {
+  flex: 1 1 0;
+  min-width: 120px;
+  max-width: 200px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   justify-content: center;
+  align-items: flex-start;
+}
+    /* display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: left;
+    gap: 1rem; */
+
+.profile-personal-info-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: left;
+    gap: 1rem;
+  font-size: 1.08rem;
+  width: 100%;
+}
+
+.profile-personal-info-item strong {
+  min-width: 120px;
+  font-weight: 600;
+  color: #262626;
+  font-size: 1.05rem;
+}
+
+.profile-personal-info-item input[type="text"],
+.profile-personal-info-item input[type="email"] {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #e0e7ef;
+  background: #fff;
+  color: #334155;
+  font-size: 1.05rem;
+  font-family: inherit;
+  box-shadow: 0 1px 4px rgba(99,102,241,0.04);
+  transition: border 0.18s, box-shadow 0.18s;
+  margin-left: 0.2rem;
+}
+
+.profile-personal-info-item input[type="text"]:focus,
+.profile-personal-info-item input[type="email"]:focus {
+  border: 1.5px solid #6366f1;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+}
+
+@media (max-width: 900px) {
+  .profile-personal-container {
+    flex-direction: column;
+    gap: 1.2rem;
+    height: auto;
+    padding: 0.5rem 0.5rem;
+  }
+  .profile-personal-info-container {
+    max-width: 100%;
+    width: 100%;
+  }
+  .profile-image-outer {
+    max-width: 100%;
+    min-width: 0;
+    margin-bottom: 1rem;
+  }
+}
+
+.profile-organization-container{
+  margin: 0rem .1rem;
+  height: 100%;
+  width: 100%;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.04);
+  background-color: #dfddff;
+  padding: 1rem 1rem;
+}
+
+.profile-location-container{
+  margin: 0rem .1rem;
+  height: 100%;
+  width: 100%;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.04);
+  background-color: #dfddff;
+  padding: 1rem 1rem;
+}
+
+.profile-documents-container{
+  margin: 0rem .1rem;
+  height: 100%;
+  width: 100%;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.04);
+  background-color: #dfddff;
+  padding: 1rem 1rem;
+}
+
+.profile-capping-container{
+  margin: 0rem .1rem;
+  height: 100%;
+  width: 100%;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.04);
+  background-color: #dfddff;
+  padding: 1rem 1rem;
 }
 
 .profile-image-actions-container{
@@ -2207,17 +2340,51 @@ input[type="email"]:focus {
   color: #6366f1;
 }
 
-.profile-table-section-content {
+.edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+  width: 8rem;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #4f46e5; 
+  border-radius: 6px;
+  border: none;
+  color: white;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.5;
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2),
+    0 2px 4px -1px rgba(99, 102, 241, 0.1); 
+  color: #ffffff;
+}
+
+.edit-button:hover {
+  background: #4338ca; /* Slightly darker shade */
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.edit-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* .profile-table-section-content {
   background: #e8e8e8;
   border-radius: 0 0 18px 18px;
   box-shadow: 0 4px 16px rgba(99,102,241,0.04);
-  padding: 2rem 2.5rem;
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
   margin: 0;
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
+} */
 
 .profile-personal-info-container{
   display: flex;
@@ -2227,22 +2394,22 @@ input[type="email"]:focus {
   gap: .5rem;
 }
 
-.profile-personal-info-item{
+/* .profile-personal-info-item{
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-}
+} */
 
-.profile-location-container{
+/* .profile-location-container{
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   margin: 1rem 1rem;
   gap: .5rem;
-}
+} */
 
 @media (max-width: 1024px) {
   .profile-page-header {
@@ -2275,8 +2442,8 @@ input[type="email"]:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 140px;
-  height: 140px;
+  width: 9rem;
+  height: 9rem;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, #f1f5f9 0%, #e0e7ef 100%);
@@ -2311,15 +2478,15 @@ input[type="email"]:focus {
   justify-content: center;
   gap: 0.5rem;
   position: absolute;
-  right: 8px;
+  right: 2rem;
   bottom: 8px;
   z-index: 2;
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: #fff;
   border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  border-radius: 9px;
+  width: 7rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2349,18 +2516,18 @@ input[type="email"]:focus {
   font-size: 1.25rem;
   font-weight: 700;
   color: #6366f1;
-  margin-top: 2.2rem;
-  margin-bottom: 1.1rem;
+  margin-top: .2rem;
+  margin-bottom: .1rem;
   letter-spacing: -0.5px;
   border-bottom: 1.5px solid #e0e7ef;
   padding-bottom: 0.3rem;
 }
 
 .profile-table-section-content {
-  background: #e8e8e8;
+  background: #f5f4ff;
   border-radius: 0 0 18px 18px;
   box-shadow: 0 4px 16px rgba(99,102,241,0.04);
-  padding: 2rem 2.5rem;
+  padding: 1rem 2.5rem;
   margin: 0;
   width: 100%;
   display: flex;
