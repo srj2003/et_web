@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Select from 'react-select';
 import './attendance_map_view.css';
+import { useNavigate } from 'react-router-dom';
 
 const selectAllOption = { value: '__all__', label: 'Select All' };
 
@@ -390,6 +391,8 @@ const AttendanceMap = () => {
     clearMarkersAndLabels();
   }, [clearMarkersAndLabels]);
 
+  const navigate = useNavigate();
+
   return (
     <div className="attendance-map-root">
       {/* Show Filter floating button */}
@@ -540,7 +543,9 @@ const AttendanceMap = () => {
                   );
                 })()}
               </div>
-              <button className="amap-user-details-view-btn" >View More Details</button>
+              <button className="amap-user-details-view-btn" onClick={() => navigate("/reports")}>
+                View More Details
+              </button>
             </div>
           </div>
         </div>
