@@ -2181,6 +2181,80 @@ input[type="email"]:focus {
   background-color: #dfddff;
   padding: 1.5rem 1rem 0rem 1rem;
 }
+.add-user-profile-personal-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 22rem;
+  margin: 0rem .1rem;
+  height: auto;
+  width: 100%;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.04);
+  background-color: #dfddff;
+  padding: 1.5rem 1rem 1.5rem 1rem;
+}
+
+.save-user-button-container{
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 69%;
+}
+
+.mobile-input{
+  width: 100%;
+  padding: 1.5%;
+  border-radius: 8px;
+  border: 1.5px solid #e0e7ef;
+  background: #fff;
+  color: #334155;
+  font-size: 1.05rem;
+  font-family: inherit;
+  box-shadow: 0 1px 4px rgba(99,102,241,0.04);
+}
+
+.password-input{
+  width: 100%;
+  padding: 1.5%;
+  border-radius: 8px;
+  border: 1.5px solid #e0e7ef;
+  background: #fff;
+  color: #334155;
+  font-size: 1.05rem;
+  font-family: inherit;
+  box-shadow: 0 1px 4px rgba(99,102,241,0.04);
+}
+
+.role-select-input{
+  width: 100%;
+  padding: .5%;
+  border-radius: 8px;
+  border: 1.5px solid #e0e7ef;
+  background: #fff;
+  color: #334155;
+  font-size: 1.05rem;
+  font-family: inherit;
+  box-shadow: 0 1px 4px rgba(99,102,241,0.04);
+}
+
+.upload-document-button{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: none;
+}
+
+.document-text{
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #262626;
+  margin-left: 1rem;
+}
 
 .profile-personal-info-container {
   flex: 2 1 0;

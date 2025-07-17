@@ -3,12 +3,19 @@
 /* Main Container & Page Styling */
 .user-attendance-container {
     flex-direction: column;
-    padding: 2rem;
+    padding: .2rem;
     background-color: #f0f4ff; /* Light background for the page */
     min-height: calc(100vh - 4rem); /* Full height minus padding */
     font-family: 'Inter', sans-serif;
     color: #333;
     animation: fadeIn 0.5s ease-in-out;
+}
+.user-attendance-header{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
 }
 
 @keyframes fadeIn {
@@ -564,11 +571,11 @@
     .map-canvas { height: 300px; }
 }
 
-@media (max-width: 480px) {
+/* @media (max-width: 480px) { */
     /* Hide less critical columns or make table scroll more obviously */
-    .header-cell:nth-child(4), .data-cell:nth-child(4) { /* Example: Hide 'Last Active' on very small screens */
+    /* .header-cell:nth-child(4), .data-cell:nth-child(4) { Example: Hide 'Last Active' on very small screens */
         /* display: none; */ /* Or reduce flex significantly */
-    }
+    /* }
     .search-input { font-size: 0.9rem; }
     .button { font-size: 0.875rem; padding: 0.5rem 1rem; }
-}
+} */

@@ -284,7 +284,10 @@ const UserAttendance = () => {
 
     return (
         <div className="user-attendance-container">
-            <h1 className="page-title">User Attendance</h1>
+            <div className="user-attendance-header">
+                <h1 >User Attendance</h1>
+            </div>
+            
 
             <div className="controls-container card">
                 <div className="search-container">

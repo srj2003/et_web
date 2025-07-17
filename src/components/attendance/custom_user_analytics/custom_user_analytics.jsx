@@ -579,7 +579,7 @@ const CustomAnalyticsScreen = () => {
                                 value={stats.attendanceRate}
                                 subValue={null}
                             />
-                            <div className="custom-analytics-stat-card graph-card">
+                            <div className="custom-analytics-stat-card-graph-card">
                                 <h3 className="stat-card-title" style={{ textAlign: 'center' }}>Attendance Breakdown</h3>
                                 <ResponsiveContainer width="100%" height={160}>
                                     <PieChart>
