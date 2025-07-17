@@ -160,41 +160,41 @@ export default function AllLeaves() {
       <h1 className="allleavespage-title">All Leaves</h1>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
+      <div className="myleavesstats-grid">
+        <div className="myleavesstat-card">
+          <div className="myleavesstat-icon">
             <Calendar size={24} color="#6366f1" />
           </div>
-          <div className="stat-info">
+          <div className="myleavesstat-info">
             <h3>Total Leaves</h3>
-            <p className="stat-value">{stats.total}</p>
+            <p className="myleavesstat-value">{stats.total}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="myleavesstat-card">
+          <div className="myleavesstat-icon">
             <Clock size={24} color="#64748b" />
           </div>
-          <div className="stat-info">
+          <div className="myleavesstat-info">
             <h3>Unattended</h3>
-            <p className="stat-value">{stats.unattended}</p>
+            <p className="myleavesstat-value">{stats.unattended}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="myleavesstat-card">
+          <div className="myleavesstat-icon">
             <CheckCircle size={24} color="#10b981" />
           </div>
-          <div className="stat-info">
+          <div className="myleavesstat-info">
             <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
+            <p className="myleavesstat-value">{stats.approved}</p>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
+        <div className="myleavesstat-card">
+          <div className="myleavesstat-icon">
             <XCircle size={24} color="#ef4444" />
           </div>
-          <div className="stat-info">
+          <div className="myleavesstat-info">
             <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
+            <p className="myleavesstat-value">{stats.rejected}</p>
           </div>
         </div>
       </div>
