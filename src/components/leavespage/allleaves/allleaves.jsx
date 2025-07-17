@@ -42,6 +42,12 @@ export default function AllLeaves() {
   const [openMenuRow, setOpenMenuRow] = useState(null);
   const itemsPerPage = 16;
 
+  // Add viewMode state for card/table toggle
+  const [viewMode, setViewMode] = useState("card");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  // Add openMenuRow state for three-dot menu in table view
+
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
@@ -109,21 +115,22 @@ export default function AllLeaves() {
       const matchesStatus =
         selectedStatus === "All" ||
         leave.leave_track_status_text === selectedStatus;
-      return matchesSearch && matchesStatus;
+      const leaveFrom = new Date(leave.leave_from_date);
+      const fromFilter = fromDate ? new Date(fromDate) : null;
+      const toFilter = toDate ? new Date(toDate) : null;
+      const matchesFrom = fromFilter ? leaveFrom >= fromFilter : true;
+      const matchesTo = toFilter ? leaveFrom <= toFilter : true;
+      return matchesSearch && matchesStatus && matchesFrom && matchesTo;
     });
     setFiltered(filteredData);
     setCurrentPage(1);
-  }, [searchQuery, selectedStatus, leaves]);
+  }, [searchQuery, selectedStatus, leaves, fromDate, toDate]);
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginated = filtered.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  // Add viewMode state for card/table toggle
-  const [viewMode, setViewMode] = useState("card");
-  // Add openMenuRow state for three-dot menu in table view
 
   if (loading) {
     return (
@@ -215,7 +222,11 @@ export default function AllLeaves() {
           <option>Rejected</option>
         </select>
       </div>
-
+      
+      <div className="myleaves-date-filter-container">
+          <label>From: <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} /></label>
+          <label>To: <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+        </div>
       {/* Card/Table View Toggle */}
       <div className="myexpenses-view-toggle">
         <button

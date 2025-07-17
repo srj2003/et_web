@@ -86,6 +86,8 @@ export default function MyRequisitions() {
     partiallyApproved: 0,
   });
   const itemsPerPage = 10;
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   useEffect(() => {
     const fetchRequisitions = async () => {
@@ -177,11 +179,16 @@ export default function MyRequisitions() {
         r.requisition_title?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus =
         selectedStatus === "All" || r.requisition_status === selectedStatus;
-      return matchesSearch && matchesStatus;
+      const reqDate = new Date(r.requisition_date);
+      const fromFilter = fromDate ? new Date(fromDate) : null;
+      const toFilter = toDate ? new Date(toDate) : null;
+      const matchesFrom = fromFilter ? reqDate >= fromFilter : true;
+      const matchesTo = toFilter ? reqDate <= toFilter : true;
+      return matchesSearch && matchesStatus && matchesFrom && matchesTo;
     });
     setFiltered(filteredData);
     setCurrentPage(1);
-  }, [searchQuery, selectedStatus, requisitions]);
+  }, [searchQuery, selectedStatus, requisitions, fromDate, toDate]);
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginated = filtered.slice(
@@ -333,7 +340,11 @@ export default function MyRequisitions() {
           <option>Partially Approved</option>
         </select>
       </div>
-
+      
+      <div className="requisition-date-filter-container">
+          <label>From: <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} /></label>
+          <label>To: <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+        </div>
       {/* Card/Table View Toggle */}
       <div className="myexpenses-view-toggle">
         <button

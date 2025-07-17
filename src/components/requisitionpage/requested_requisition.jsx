@@ -43,10 +43,12 @@ const RequisitionsWeb = () => {
     Unattended: 0,
     Approved: 0,
     Rejected: 0,
-    "Partially Approved": 0,
+    PartiallyApproved: 0,
   });
   const ITEMS_PER_PAGE = 16;
   const [viewMode, setViewMode] = useState("card"); // Added viewMode state
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -113,13 +115,13 @@ const RequisitionsWeb = () => {
             Unattended: transformedData.filter(
               (req) => req.requisition_status === "Unattended"
             ).length,
-            approved: transformedData.filter(
+            Approved: transformedData.filter(
               (req) => req.requisition_status === "Approved"
             ).length,
-            rejected: transformedData.filter(
+            Rejected: transformedData.filter(
               (req) => req.requisition_status === "Rejected"
             ).length,
-            partiallyApproved: transformedData.filter(
+            PartiallyApproved: transformedData.filter(
               (req) => req.requisition_status === "Partially Approved"
             ).length,
           });
@@ -217,7 +219,13 @@ const RequisitionsWeb = () => {
       selectedStatus === "All" ||
       requisition.requisition_status === selectedStatus;
 
-    return matchesSearch && matchesStatus;
+    const reqDate = new Date(requisition.requisition_date);
+    const fromFilter = fromDate ? new Date(fromDate) : null;
+    const toFilter = toDate ? new Date(toDate) : null;
+    const matchesFrom = fromFilter ? reqDate >= fromFilter : true;
+    const matchesTo = toFilter ? reqDate <= toFilter : true;
+
+    return matchesSearch && matchesStatus && matchesFrom && matchesTo;
   });
 
   const totalPages = Math.ceil(filteredRequisitions.length / ITEMS_PER_PAGE);
@@ -276,7 +284,7 @@ const RequisitionsWeb = () => {
             <div className="stat-icon"><Check size={24} color="#fbbf24" /></div>
             <div className="stat-info">
               <h3>Partially Approved</h3>
-              <p className="stat-value">{stats["Partially Approved"]}</p>
+              <p className="stat-value">{stats.PartiallyApproved}</p>
             </div>
           </div>
           <div className="requestedleaves-stat-card">
@@ -311,6 +319,11 @@ const RequisitionsWeb = () => {
           <option>Partially Approved</option>
         </select>
       </div>
+      
+      <div className="requisition-date-filter-container">
+          <label>From: <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} /></label>
+          <label>To: <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+        </div>
       {/* Card/Table View Toggle */}
       <div className="myexpenses-view-toggle">
         <button

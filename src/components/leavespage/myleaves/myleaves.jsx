@@ -143,13 +143,23 @@ const MyLeaves = () => {
     }
   };
 
+  // View mode toggle: "card" or "table"
+  const [viewMode, setViewMode] = useState("card");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
   const filteredLeaves = leaves.filter((leave) => {
     const matchesStatus =
       selectedStatus === "All" ? true : leave.leave_status === selectedStatus;
     const matchesSearch = leave.leave_type
       ? leave.leave_type.toLowerCase().includes(searchQuery.toLowerCase())
       : false;
-    return matchesStatus && matchesSearch;
+    const leaveFrom = new Date(leave.from_date);
+    const fromFilter = fromDate ? new Date(fromDate) : null;
+    const toFilter = toDate ? new Date(toDate) : null;
+    const matchesFrom = fromFilter ? leaveFrom >= fromFilter : true;
+    const matchesTo = toFilter ? leaveFrom <= toFilter : true;
+    return matchesStatus && matchesSearch && matchesFrom && matchesTo;
   });
 
   const totalPages = Math.ceil(filteredLeaves.length / itemsPerPage);
@@ -157,9 +167,6 @@ const MyLeaves = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  // View mode toggle: "card" or "table"
-  const [viewMode, setViewMode] = useState("card");
 
   if (loading) {
     return (
@@ -249,6 +256,10 @@ const MyLeaves = () => {
           <option>Rejected</option>
         </select>
       </div>
+      <div className="myleaves-date-filter-container">
+          <label>From: <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} /></label>
+          <label>To: <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+        </div>
 
       {/* View Toggle */}
       <div className="myexpenses-view-toggle">

@@ -13,6 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  DollarSign,
+  CheckCircle
 } from "lucide-react";
 
 const getStatusColor = (status) => {
@@ -82,6 +84,8 @@ export default function AllRequisitions() {
     partiallyApproved: 0,
   });
   const itemsPerPage = 10;
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   useEffect(() => {
     const fetchRequisitions = async () => {
@@ -161,11 +165,16 @@ export default function AllRequisitions() {
         r.requisition_title?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus =
         selectedStatus === "All" || r.requisition_status === selectedStatus;
-      return matchesSearch && matchesStatus;
+      const reqDate = new Date(r.requisition_date);
+      const fromFilter = fromDate ? new Date(fromDate) : null;
+      const toFilter = toDate ? new Date(toDate) : null;
+      const matchesFrom = fromFilter ? reqDate >= fromFilter : true;
+      const matchesTo = toFilter ? reqDate <= toFilter : true;
+      return matchesSearch && matchesStatus && matchesFrom && matchesTo;
     });
     setFiltered(filteredData);
     setCurrentPage(1);
-  }, [searchQuery, selectedStatus, requisitions]);
+  }, [searchQuery, selectedStatus, requisitions, fromDate, toDate]);
 
   const [viewMode, setViewMode] = useState("card");
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -214,53 +223,86 @@ export default function AllRequisitions() {
       <h1 className="requisition-page-title">All Requisitions</h1>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
-            <AlertCircle size={24} color="#6366f1" />
+      <div className="allexpense-stats-grid">
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              color: "#fff",
+            }}
+          >
+            <DollarSign size={28} />
           </div>
-          <div className="stat-info">
-            <h3>Total Requisitions</h3>
-            <p className="stat-value">{stats.total}</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Clock size={24} color="#f59e0b" />
-          </div>
-          <div className="stat-info">
-            <h3>Unattended</h3>
-            <p className="stat-value">{stats.unattended}</p>
+          <div className="allexpense-stat-info">
+            <h3>Total Expenses</h3>
+            <div className="allexpense-stat-value">{stats.total}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Check size={24} color="#10b981" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+              color: "#fff",
+            }}
+          >
+            <CheckCircle size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
             <h3>Approved</h3>
-            <p className="stat-value">{stats.approved}</p>
+            <div className="allexpense-stat-value">{stats.approved}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <AlertTriangle size={24} color="#ef4444" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg,rgb(255, 106, 0) 0%, #334155 100%)",
+              color: "#fff",
+            }}
+          >
+            <CheckCircle size={28} />
           </div>
-          <div className="stat-info">
-            <h3>partiallyApproved</h3>
-            <p className="stat-value">{stats.partiallyApproved}</p>
+          <div className="allexpense-stat-info">
+            <h3>Partially Approved</h3>
+            <div className="allexpense-stat-value">
+              {stats.partiallyApproved}
+            </div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">
-            <X size={24} color="#ef4444" />
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #64748b 0%, #334155 100%)",
+              color: "#fff",
+            }}
+          >
+            <Clock size={28} />
           </div>
-          <div className="stat-info">
+          <div className="allexpense-stat-info">
+            <h3>Unattended</h3>
+            <div className="allexpense-stat-value">{stats.unattended}</div>
+          </div>
+        </div>
+        <div className="allexpense-stat-card">
+          <div
+            className="allexpense-stat-icon"
+            style={{
+              background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+              color: "#fff",
+            }}
+          >
+            <X size={28} />
+          </div>
+          <div className="allexpense-stat-info">
             <h3>Rejected</h3>
-            <p className="stat-value">{stats.rejected}</p>
+            <div className="allexpense-stat-value">{stats.rejected}</div>
           </div>
         </div>
       </div>
+
 
       {/* Search and Filters */}
       <div className="requisition-filters-section">
@@ -287,6 +329,11 @@ export default function AllRequisitions() {
           <option>Partially Approved</option>
         </select>
       </div>
+      
+      <div className="requisition-date-filter-container">
+          <label>From: <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} /></label>
+          <label>To: <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+        </div>
 
       {/* View Toggle */}
       <div className="myexpenses-view-toggle">
