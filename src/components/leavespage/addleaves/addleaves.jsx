@@ -224,7 +224,12 @@ const AddLeaves = () => {
   };
 
   if (isLoadingUser) {
-    return <div className="loading-spinner" />;
+    return (
+      <div className="requestedleaves-loading-container">
+        <div className="requestedleaves-loading-spinner"></div>
+        <div className="requestedleaves-loading-text">Loading leaves form...</div>
+      </div>
+    );
   }
 
   return (

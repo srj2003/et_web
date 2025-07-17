@@ -176,11 +176,9 @@ export default function AllRequisitions() {
 
   if (loading) {
     return (
-      <div className="requestedrequisition-loading-container">
-        <div className="requestedrequisition-loading-spinner"></div>
-        <div className="requestedrequisition-loading-text">
-          Loading Requisition...
-        </div>
+      <div className="requestedleaves-loading-container">
+        <div className="requestedleaves-loading-spinner"></div>
+        <div className="requestedleaves-loading-text">Loading requisitions...</div>
       </div>
     );
   }
@@ -307,51 +305,55 @@ export default function AllRequisitions() {
       </div>
 
       {viewMode === "card" ? (
-        <div className="requisition-requisitions-grid">
+        <div className="leaves-grid">
           {paginated.map((item, idx) => (
             <div
-              className="requisition-requisition-card"
-              key={idx}
+              className="leave-card"
+              key={item.requisition_id || idx}
               data-status={item.requisition_status}
-              style={{ background: getStatusBg(item.requisition_status) }}
+              style={{ background: getStatusBg(item.requisition_status), position: 'relative' }}
               onClick={() => setSelected(item)}
             >
-              <div className="requisition-card-header">
-                <div className="requisition-submission-flow">
-                  <div className="requisition-name-container">
-                    <h3 className="requisition-employee-name">
-                      {item.created_by_full_name}
-                    </h3>
-                    <div className="requisition-submission-arrow">
-                      <ArrowRight size={16} color="#6366f1" />
-                      <span>
-                        {item.submitted_to_full_name || "Not submitted"}
-                      </span>
-                    </div>
+              <div className="leave-header">
+                <div className="leave-header-content">
+                  <span className="leave-type">{item.requisition_title}</span>
+                </div>
+                <span
+                  className={`status-badge status-${item.requisition_status?.toLowerCase?.()}`}
+                  title={item.requisition_status}
+                >
+                  {item.requisition_status}
+                </span>
+              </div>
+              <div className="requestedleaves-leave-details">
+                <div className="requestedleaves-leave-dates">
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Amount:</span>
+                    <span className="requestedleaves-date-value">₹{Number(item.requisition_req_amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
                   </div>
-                  <span
-                    className="requisition-status-badge"
-                    style={{
-                      backgroundColor: getStatusColor(item.requisition_status),
-                    }}
-                  >
-                    {item.requisition_status}
-                  </span>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Date:</span>
+                    <span className="requestedleaves-date-value">{item.requisition_date}</span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Created By:</span>
+                    <span className="requestedleaves-date-value">{item.created_by_full_name}</span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Submitted To:</span>
+                    <span className="requestedleaves-date-value">{item.submitted_to_full_name || "Not submitted"}</span>
+                  </div>
                 </div>
               </div>
-              <div className="requisition-requisition-details">
-                <h4 className="requisition-requisition-title">
-                  {item.requisition_title}
-                </h4>
-                <span className="requisition-amount">
-                  ₹{parseFloat(item.requisition_req_amount).toFixed(2)}
-                </span>
-              </div>
-              <div className="requisition-requisition-meta">
-                <span className="requisition-date">
-                  {new Date(item.requisition_date).toLocaleDateString()}
-                </span>
-              </div>
+              <button
+                className="card-view-details-button"
+                onClick={e => {
+                  e.stopPropagation();
+                  setSelected(item);
+                }}
+              >
+                View Details
+              </button>
             </div>
           ))}
         </div>

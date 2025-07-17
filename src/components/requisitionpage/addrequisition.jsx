@@ -348,8 +348,9 @@ const RequisitionFormWeb = () => {
 
   if (isLoadingUser) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className="requestedleaves-loading-container">
+        <div className="requestedleaves-loading-spinner"></div>
+        <div className="requestedleaves-loading-text">Loading requisition form...</div>
       </div>
     );
   }

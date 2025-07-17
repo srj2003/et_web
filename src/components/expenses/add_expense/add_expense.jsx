@@ -696,9 +696,9 @@ const ExpenseFormWeb = () => {
 
   if (isLoadingUser) {
     return (
-      <div className="dash-loading-container">
-        <div className="dash-loading-spinner"></div>
-        <pre className='dash-loading-text'>  Loading Expense Form...</pre>
+      <div className="requestedleaves-loading-container">
+        <div className="requestedleaves-loading-spinner"></div>
+        <div className="requestedleaves-loading-text">Loading expense form...</div>
       </div>
     );
   }

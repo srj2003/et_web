@@ -720,3 +720,33 @@
   font-weight: 500;
   letter-spacing: 0.01em;
 }
+
+.view-details-button {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(90deg, #6366f1 60%, #818cf8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  outline: none;
+  margin-top: 0.5rem;
+}
+.view-details-button:hover, .view-details-button:focus {
+  background: linear-gradient(90deg, #4f46e5 60%, #6366f1 100%);
+  box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Ensure card has enough bottom padding for the button */
+.leave-card {
+  padding-bottom: 3.5rem !important;
+  position: relative;
+}

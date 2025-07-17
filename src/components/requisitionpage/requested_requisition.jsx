@@ -46,6 +46,7 @@ const RequisitionsWeb = () => {
     "Partially Approved": 0,
   });
   const ITEMS_PER_PAGE = 16;
+  const [viewMode, setViewMode] = useState("card"); // Added viewMode state
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -230,7 +231,7 @@ const RequisitionsWeb = () => {
     return (
       <div className="requestedleaves-loading-container">
         <div className="requestedleaves-loading-spinner"></div>
-        <div className="requestedleaves-loading-text">Loading Requisitions...</div>
+        <div className="requestedleaves-loading-text">Loading requisitions...</div>
       </div>
     );
   }
@@ -246,11 +247,11 @@ const RequisitionsWeb = () => {
     );
   }
   return (
-    <>
-      <div className="requestedleaves-container">
-        <h1 className="requestedleaves-page-title">Requested Requisitions</h1>
-        <div className="requestedleaves-stats-grid">
-          <div className="requestedleaves-stat-card">
+    <div className="leaves-container">
+      <h1 className="allleavespage-title">Requested Requisitions</h1>
+      {/* Stats Grid (keep as is) */}
+      <div className="allexpense-stats-grid">
+        <div className="requestedleaves-stat-card">
             <div className="stat-icon"><AlertCircle size={24} color="#6366f1" /></div>
             <div className="stat-info">
               <h3>Total</h3>
@@ -285,149 +286,137 @@ const RequisitionsWeb = () => {
               <p className="stat-value">{stats.Rejected}</p>
             </div>
           </div>
+      </div>
+      {/* Search and Filters */}
+      <div className="myleavesfilters-section">
+        <div className="myleavessearch-container">
+          <Search size={20} color="#64748b" />
+          <input
+            type="text"
+            placeholder="Search requisitions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="myleavessearch-input"
+          />
         </div>
-        <div className="requestedleaves-filters-section">
-          <div className="requestedleaves-search-container">
-            <Search size={20} color="#64748b" />
-            <input
-              type="text"
-              placeholder="Search by name or title..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="requestedleaves-search-input"
-            />
-          </div>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="requestedleaves-filter-button"
-          >
-            <option value="All">All Status</option>
-            <option value="Unattended">Unattended</option>
-            <option value="Approved">Approved</option>
-            <option value="Partially Approved">Partially Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-        </div>
-        <div className="requestedleaves-leaves-grid">
-          {paginatedRequisitions.map((requisition) => {
-            const statusColor = getStatusColor(requisition.requisition_status);
-            const cardGradient = getCardGradient(requisition.requisition_status);
-            const disappearClass =
-              disappearing[requisition.requisition_id] === "approve"
-                ? "requestedleaves-disappearing-approve"
-                : disappearing[requisition.requisition_id] === "reject"
-                ? "requestedleaves-disappearing-reject"
-                : "";
-            return (
-              <div
-                key={requisition.requisition_id}
-                className={`requestedleaves-leave-card ${disappearClass}`}
-                data-status={requisition.requisition_status}
-                style={{ background: cardGradient }}
-                onClick={() => {
-                  setSelectedRequisition(requisition);
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="myleavesfilter-button"
+        >
+          <option>All</option>
+          <option>Unattended</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+          <option>Partially Approved</option>
+        </select>
+      </div>
+      {/* Card/Table View Toggle */}
+      <div className="myexpenses-view-toggle">
+        <button
+          className={`myexpenses-view-btn${viewMode === "card" ? " active" : ""}`}
+          onClick={() => setViewMode("card")}
+        >
+          Card View
+        </button>
+        <button
+          className={`myexpenses-view-btn${viewMode === "table" ? " active" : ""}`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
+      </div>
+      {viewMode === "card" ? (
+        <div className="leaves-grid">
+          {paginatedRequisitions.map((item, idx) => (
+            <div
+              className="leave-card"
+              key={item.requisition_id || idx}
+              data-status={item.requisition_status}
+              style={{ background: getCardGradient(item.requisition_status), position: 'relative' }}
+              onClick={() => {
+                setSelectedRequisition(item);
+                setShowRequisitionDetails(true);
+              }}
+            >
+              <div className="leave-header">
+                <div className="leave-header-content">
+                  <span className="leave-type">{item.requisition_title}</span>
+                </div>
+                <span
+                  className={`status-badge status-${item.requisition_status?.toLowerCase?.()}`}
+                  title={item.requisition_status}
+                >
+                  {item.requisition_status}
+                </span>
+              </div>
+              <div className="requestedleaves-leave-details">
+                <div className="requestedleaves-leave-dates">
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Amount:</span>
+                    <span className="requestedleaves-date-value">₹{Number(item.requested_amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Date:</span>
+                    <span className="requestedleaves-date-value">{item.requisition_date}</span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Created By:</span>
+                    <span className="requestedleaves-date-value">{item.employee}</span>
+                  </div>
+                  <div className="requestedleaves-date-item">
+                    <span className="requestedleaves-date-label">Submitted To:</span>
+                    <span className="requestedleaves-date-value">{item.submitted_to}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                className="card-view-details-button"
+                onClick={e => {
+                  e.stopPropagation();
+                  setSelectedRequisition(item);
                   setShowRequisitionDetails(true);
                 }}
               >
-                <div className="requestedleaves-leave-header">
-                  <div className="requestedleaves-leave-header-content">
-                    <div className="requestedleaves-employee-name">{requisition.employee}</div>
-                    <span className="requestedleaves-leave-type">{requisition.requisition_type}</span>
-                  </div>
-                  <span
-                    className={`requestedleaves-status-badge requestedleaves-status-${requisition.requisition_status.replace(/\s/g, '').toLowerCase()}`}
-                    style={statusColor}
-                  >
-                    {requisition.requisition_status}
-                  </span>
-                </div>
-                <div className="requestedleaves-leave-details">
-                  <div className="requestedleaves-leave-title-section">
-                    <div className="requestedleaves-leave-title">{requisition.requisition_title}</div>
-                  </div>
-                  {requisition.requisition_comment && (
-                    <div className="requestedleaves-leave-comment">{requisition.requisition_comment}</div>
-                  )}
-                  <div className="requestedleaves-leave-dates">
-                    <div className="requestedleaves-date-item">
-                      <span className="requestedleaves-date-label">Requested</span>
-                      <span className="requestedleaves-date-value">₹{requisition.requested_amount?.toFixed(2)}</span>
-                    </div>
-                    <div className="requestedleaves-date-item">
-                      <span className="requestedleaves-date-label">Date</span>
-                      <span className="requestedleaves-date-value">{requisition.requisition_date}</span>
-                    </div>
-                    {requisition.requisition_status !== "Unattended" && (
-                      <div className="requestedleaves-date-item">
-                        <span className="requestedleaves-date-label">Approved</span>
-                        <span className="requestedleaves-date-value">₹{(requisition.approved_amount || 0).toFixed(2)}</span>
-                      </div>
-                    )}
-                  </div>
-                  {requisition.requisition_status === "Unattended" && (
-                    <div className="requestedleaves-leave-actions">
-                      <button
-                        className="requestedleaves-action-button requestedleaves-approve"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAction(
-                            requisition.requisition_id,
-                            "approve",
-                            requisition.requested_amount
-                          );
-                        }}
-                      >
-                        <Check size={16} /> Approve
-                      </button>
-                      <button
-                        className="requestedleaves-action-button requestedleaves-approve"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedRequisition(requisition);
-                          setShowRequisitionDetails(true);
-                        }}
-                      >
-                        <Check size={16} /> Partial
-                      </button>
-                      <button
-                        className="requestedleaves-action-button requestedleaves-reject"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAction(requisition.requisition_id, "reject");
-                        }}
-                      >
-                        <X size={16} /> Reject
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        {totalPages > 0 && (
-          <div className="requisition-pagination-container">
-            <button
-              className="requisition-pagination-button"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft size={20} /> Previous
-            </button>
-            <div className="requisition-pagination-number">
-              Page {currentPage} of {totalPages}
+                View Details
+              </button>
             </div>
-            <button
-              className="requisition-pagination-button"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Next <ChevronRight size={20} />
-            </button>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="myexpenses-table-container">
+          <table className="myexpenses-table">
+            <thead>
+              <tr>
+                <th>Requisition ID</th>
+                <th>Title</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Created By</th>
+                <th>Submitted To</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedRequisitions.map((item, idx) => (
+                <tr key={item.requisition_id || idx} onClick={() => {
+                  setSelectedRequisition(item);
+                  setShowRequisitionDetails(true);
+                }} style={{ cursor: 'pointer' }}>
+                  <td>{item.requisition_id}</td>
+                  <td>{item.requisition_title}</td>
+                  <td>₹{Number(item.requested_amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</td>
+                  <td>{item.requisition_status}</td>
+                  <td>{item.requisition_date}</td>
+                  <td>{item.employee}</td>
+                  <td>{item.submitted_to}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {/* Modal for requisition details */}
       {showRequisitionDetails && selectedRequisition && (
         <div className="requestedleaves-modal-overlay">
           <div className="requestedleaves-modal-content">
@@ -447,7 +436,7 @@ const RequisitionsWeb = () => {
             <div className="requestedleaves-details-grid">
               <div className="requestedleaves-detail-item">
                 <span className="requestedleaves-detail-label">Requested Amount</span>
-                <span className="requestedleaves-detail-value">₹{selectedRequisition.requested_amount?.toFixed(2)}</span>
+                <span className="requestedleaves-detail-value">₹{Number(selectedRequisition.requested_amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
               </div>
               <div className="requestedleaves-detail-item">
                 <span className="requestedleaves-detail-label">Type</span>
@@ -464,7 +453,7 @@ const RequisitionsWeb = () => {
               {selectedRequisition.requisition_status !== "Unattended" && (
                 <div className="requestedleaves-detail-item">
                   <span className="requestedleaves-detail-label">Approved Amount</span>
-                  <span className="requestedleaves-detail-value">₹{(selectedRequisition.approved_amount || 0).toFixed(2)}</span>
+                  <span className="requestedleaves-detail-value">₹{Number(selectedRequisition.approved_amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
                 </div>
               )}
             </div>
@@ -474,57 +463,32 @@ const RequisitionsWeb = () => {
                 <span className="requestedleaves-detail-value">{selectedRequisition.requisition_comment}</span>
               </div>
             )}
-            {selectedRequisition.requisition_status === "Unattended" && (
-              <div className="requestedleaves-modal-actions">
-                <input
-                  type="number"
-                  className="requestedleaves-search-input"
-                  value={approvedAmount}
-                  onChange={(e) => setApprovedAmount(e.target.value)}
-                  placeholder="Enter amount for partial approval"
-                  style={{ maxWidth: 180 }}
-                />
-                <button
-                  className="requestedleaves-action-button requestedleaves-approve"
-                  onClick={() =>
-                    handleAction(
-                      selectedRequisition.requisition_id,
-                      "approve",
-                      parseFloat(approvedAmount) || selectedRequisition.requested_amount
-                    )
-                  }
-                >
-                  Approve
-                </button>
-                <button
-                  className="requestedleaves-action-button requestedleaves-approve"
-                  onClick={() =>
-                    handleAction(
-                      selectedRequisition.requisition_id,
-                      "partial",
-                      parseFloat(approvedAmount)
-                    )
-                  }
-                >
-                  Partial Approval
-                </button>
-                <button
-                  className="requestedleaves-action-button requestedleaves-reject"
-                  onClick={() =>
-                    handleAction(
-                      selectedRequisition.requisition_id,
-                      "reject"
-                    )
-                  }
-                >
-                  Reject
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}
-    </>
+      {/* Pagination (keep as is) */}
+      {totalPages > 0 && (
+        <div className="requisition-pagination-container">
+          <button
+            className="requisition-pagination-button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft size={20} /> Previous
+          </button>
+          <div className="requisition-pagination-number">
+            Page {currentPage} of {totalPages}
+          </div>
+          <button
+            className="requisition-pagination-button"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

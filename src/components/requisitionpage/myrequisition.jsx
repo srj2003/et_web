@@ -191,11 +191,9 @@ export default function MyRequisitions() {
 
   if (loading) {
     return (
-      <div className="requestedrequisition-loading-container">
-        <div className="requestedrequisition-loading-spinner"></div>
-        <div className="requestedrequisition-loading-text">
-          Loading Requisition...
-        </div>
+      <div className="requestedleaves-loading-container">
+        <div className="requestedleaves-loading-spinner"></div>
+        <div className="requestedleaves-loading-text">Loading requisitions...</div>
       </div>
     );
   }
