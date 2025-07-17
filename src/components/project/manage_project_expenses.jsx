@@ -174,6 +174,7 @@ const ProjectManagementDashboard = () => {
       }
 
       const data = await response.json();
+      console.log("data");
       console.log(data);
       // Check for error response
       if (data.status === "error") {
@@ -257,6 +258,7 @@ const ProjectManagementDashboard = () => {
             budgetAllotted: "",
             budgetExpended: "",
             progress,
+            total_expense_amount: proj.total_expense_amount, // Add total_expense_amount
           };
         });
         setProjects(mappedProjects);
@@ -846,7 +848,7 @@ const ProjectManagementDashboard = () => {
                           marginLeft: "0.3rem",
                         }}
                       >
-                        ₹0.0
+                        ₹{(project.total_expense_amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                       </span>
                       <span style={{ color: "#a5b4fc", margin: "0 0.2rem" }} />
                     </p>
