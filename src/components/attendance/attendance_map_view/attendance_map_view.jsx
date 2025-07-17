@@ -136,7 +136,6 @@ const AttendanceMap = () => {
         try {
           const userId = localStorage.getItem('userid');
           const data = await apiCall('https://demo-expense.geomaticxevs.in/ET-api/attendance_under_user.php', { userId }, true);
-          console.log(data);
           if (data.status === 'success' && Array.isArray(data.data)) {
             setAttendanceUsers(data.data);
           } else {
@@ -153,83 +152,6 @@ const AttendanceMap = () => {
       setAttendanceUsers([]);
     }
   }, [selectedProjects, apiCall, updateLoading]);
-
-  // User options logic
-  const userOptions = selectedProjects.length > 0
-    ? users.map(user => ({ value: user.user_id, label: user.full_name }))
-    : attendanceUsers.length > 0
-      ? attendanceUsers.map(user => ({
-          value: user.u_id,
-          label: [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ')
-        }))
-      : [];
-
-  const optionsWithSelectAll = [selectAllOption, ...userOptions];
-
-  // Multi-select with Select All logic
-  const handleUserChange = useCallback((selected) => {
-    if (!selected) {
-      setSelectedUsers([]);
-      return;
-    }
-    
-    setSelectedUsers(
-      selected.some(option => option.value === '__all__')
-        ? userOptions
-        : selected
-    );
-  }, [userOptions]);
-
-  // Compute value for Select
-  const selectValue = selectedUsers.length === userOptions.length && userOptions.length > 0
-    ? [selectAllOption, ...userOptions]
-    : selectedUsers;
-
-  // Load Google Maps script
-  useEffect(() => {
-    const loadScript = () => {
-      if (document.getElementById('google-maps')) return;
-      
-      const script = document.createElement('script');
-      script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAgIVtPj9I-jXY3fOUkV8k9CArQRQ7dkhc&v=weekly';
-      script.id = 'google-maps';
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-    };
-
-    loadScript();
-    
-    const waitForGoogle = setInterval(() => {
-      if (window.google?.maps && mapRef.current) {
-        renderMap();
-        clearInterval(waitForGoogle);
-      }
-    }, 200);
-
-    return () => clearInterval(waitForGoogle);
-  }, []);
-
-  // Render map
-  const renderMap = useCallback(() => {
-    if (!window.google?.maps || !mapRef.current) return;
-    
-    if (mapRef.current) mapRef.current.innerHTML = '';
-    
-    const mapCenter = { lat: 22.9734, lng: 78.6569 };
-    mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-      zoom: 10,
-      center: mapCenter,
-      mapTypeId: 'terrain',
-      streetViewControl: true,
-      fullscreenControl: true,
-      mapTypeControl: true,
-      mapTypeControlOptions: {
-        position: window.google.maps.ControlPosition.BOTTOM_LEFT,
-        style: window.google.maps.MapTypeControlStyle.DEFAULT
-      }
-    });
-  }, []);
 
   // Clear markers and labels
   const clearMarkersAndLabels = useCallback(() => {
@@ -380,6 +302,126 @@ const AttendanceMap = () => {
       updateLoading('punch', false);
     }
   }, [dateRange, selectedUsers, apiCall, updateLoading, plotPunchMarkers]);
+
+  // --- AUTO-SELECT ALL USERS AND TODAY'S DATE ON FIRST LOAD ---
+  const hasAutoSelectedDefaults = useRef(false);
+  useEffect(() => {
+    if (
+      !hasAutoSelectedDefaults.current &&
+      selectedProjects.length === 0 &&
+      Array.isArray(attendanceUsers) && attendanceUsers.length > 0 &&
+      selectedUsers.length === 0
+    ) {
+      hasAutoSelectedDefaults.current = true;
+      // Set all users as selected
+      const allUserOptions = attendanceUsers.map(user => ({
+        value: user.u_id,
+        label: [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ')
+      }));
+      setSelectedUsers(allUserOptions);
+
+      // Set date range to today
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+      setDateRange({ from: todayStr, to: todayStr });
+    }
+  }, [attendanceUsers, selectedProjects, selectedUsers.length]);
+
+  // --- AUTO-TRIGGER SEARCH ONCE WHEN ALL DEFAULTS ARE SET ---
+  const hasAutoSearched = useRef(false);
+  useEffect(() => {
+    if (
+      !hasAutoSearched.current &&
+      selectedProjects.length === 0 &&
+      Array.isArray(attendanceUsers) && attendanceUsers.length > 0 &&
+      selectedUsers.length === attendanceUsers.length &&
+      dateRange.from && dateRange.to
+    ) {
+      hasAutoSearched.current = true;
+      handleSearch();
+      setFilterVisible(false); // Hide the filter section automatically
+    }
+  }, [selectedProjects, attendanceUsers, selectedUsers, dateRange, handleSearch]);
+
+  // User options logic
+  const userOptions = selectedProjects.length > 0
+    ? users.map(user => ({ value: user.user_id, label: user.full_name }))
+    : attendanceUsers.length > 0
+      ? attendanceUsers.map(user => ({
+          value: user.u_id,
+          label: [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ')
+        }))
+      : [];
+
+  const optionsWithSelectAll = [selectAllOption, ...userOptions];
+
+  // Multi-select with Select All logic
+  const handleUserChange = useCallback((selected) => {
+    if (!selected) {
+      setSelectedUsers([]);
+      return;
+    }
+    
+    setSelectedUsers(
+      selected.some(option => option.value === '__all__')
+        ? userOptions
+        : selected
+    );
+  }, [userOptions]);
+
+  // Compute value for Select
+  const selectValue = selectedUsers.length === userOptions.length && userOptions.length > 0
+    ? [selectAllOption, ...userOptions]
+    : selectedUsers;
+
+  // Load Google Maps script
+  useEffect(() => {
+    const loadScript = () => {
+      if (document.getElementById('google-maps')) return;
+      
+      const script = document.createElement('script');
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAgIVtPj9I-jXY3fOUkV8k9CArQRQ7dkhc&v=weekly';
+      script.id = 'google-maps';
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    };
+
+    loadScript();
+    
+    const waitForGoogle = setInterval(() => {
+      if (window.google?.maps && mapRef.current) {
+        renderMap();
+        clearInterval(waitForGoogle);
+      }
+    }, 200);
+
+    return () => clearInterval(waitForGoogle);
+  }, []);
+
+  // Render map
+  const renderMap = useCallback(() => {
+    if (!window.google?.maps || !mapRef.current) return;
+    
+    if (mapRef.current) mapRef.current.innerHTML = '';
+    
+    const mapCenter = { lat: 22.9734, lng: 78.6569 };
+    mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+      zoom: 10,
+      center: mapCenter,
+      mapTypeId: 'terrain',
+      streetViewControl: true,
+      fullscreenControl: true,
+      mapTypeControl: true,
+      mapTypeControlOptions: {
+        position: window.google.maps.ControlPosition.BOTTOM_LEFT,
+        style: window.google.maps.MapTypeControlStyle.DEFAULT
+      }
+    });
+  }, []);
 
   // Handle reset
   const handleReset = useCallback(() => {
