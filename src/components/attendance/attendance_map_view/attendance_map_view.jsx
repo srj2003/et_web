@@ -25,6 +25,7 @@ const AttendanceMap = () => {
     allUsers: false,
     punch: false
   });
+  const [attendanceUsers, setAttendanceUsers] = useState([]);
 
   // Generic API helper
   const apiCall = useCallback(async (url, body = null, useAuth = false) => {
@@ -126,13 +127,41 @@ const AttendanceMap = () => {
     fetchProjects();
   }, [apiCall, updateLoading]);
 
+  // Fetch users for attendance_under_user.php if no project is selected
+  useEffect(() => {
+    if (selectedProjects.length === 0) {
+      const fetchAttendanceUsers = async () => {
+        updateLoading('allUsers', true);
+        try {
+          const userId = localStorage.getItem('userid');
+          const data = await apiCall('https://demo-expense.geomaticxevs.in/ET-api/attendance_under_user.php', { userId }, true);
+          console.log(data);
+          if (data.status === 'success' && Array.isArray(data.data)) {
+            setAttendanceUsers(data.data);
+          } else {
+            setAttendanceUsers([]);
+          }
+        } catch {
+          setAttendanceUsers([]);
+        } finally {
+          updateLoading('allUsers', false);
+        }
+      };
+      fetchAttendanceUsers();
+    } else {
+      setAttendanceUsers([]);
+    }
+  }, [selectedProjects, apiCall, updateLoading]);
+
   // User options logic
   const userOptions = selectedProjects.length > 0
     ? users.map(user => ({ value: user.user_id, label: user.full_name }))
-    : allUsers.map(user => ({ 
-        value: user.u_id, 
-        label: [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ') 
-      }));
+    : attendanceUsers.length > 0
+      ? attendanceUsers.map(user => ({
+          value: user.u_id,
+          label: [user.u_fname, user.u_mname, user.u_lname].filter(Boolean).join(' ')
+        }))
+      : [];
 
   const optionsWithSelectAll = [selectAllOption, ...userOptions];
 
@@ -227,10 +256,7 @@ const AttendanceMap = () => {
       // Fetch user details from dashboard.php
       try {
         const dashboardRes = await apiCall('https://demo-expense.geomaticxevs.in/ET-api/user_details_map_view.php', { user_id: userInfo.user_id }, true);
-        console.log(userInfo.user_id);
-        console.log(dashboardRes.data.u_pro_img);
-        console.log(dashboardRes.data.u_email);
-        console.log(dashboardRes.data.u_mob);
+     
         if (dashboardRes.status === 'success' && dashboardRes.data) {
           setSelectedUserRecord({
             userName: [dashboardRes.data.u_fname, dashboardRes.data.u_mname, dashboardRes.data.u_lname].filter(Boolean).join(' '),
@@ -487,10 +513,34 @@ const AttendanceMap = () => {
               <div className="amap-user-details-email">{selectedUserRecord.userEmail || 'N/A'}</div>
               <div className="amap-user-details-phone">{selectedUserRecord.userPhone || 'N/A'}</div>
               <div className="amap-user-details-punch">
-                <span className="amap-user-details-punch-in">Punch In: {selectedUserRecord.punchIn || 'N/A'}</span>
-                <span className="amap-user-details-punch-out">Punch Out: {selectedUserRecord.punchOut || 'N/A'}</span>
+                {/* Format punch in date and time */}
+                {(() => {
+                  const formatDate = (dt) => {
+                    if (!dt) return { date: 'N/A', time: 'N/A' };
+                    const d = new Date(dt.replace(/-/g, '/'));
+                    if (isNaN(d)) return { date: 'N/A', time: 'N/A' };
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const year = d.getFullYear();
+                    const date = `${day}.${month}.${year}`;
+                    const time = d.toTimeString().slice(0, 5);
+                    return { date, time };
+                  };
+                  const punchIn = formatDate(selectedUserRecord.punchIn);
+                  const punchOut = formatDate(selectedUserRecord.punchOut);
+                  return (
+                    <>
+                      <span className="amap-user-details-punch-in">
+                        Punch In: {punchIn.date} <span style={{marginLeft: '8px', color: '#6366f1'}}></span> {punchIn.time}
+                      </span>
+                      <span className="amap-user-details-punch-out" style={{marginLeft: '18px'}}>
+                        Punch Out: {punchOut.date} <span style={{marginLeft: '8px', color: '#6366f1'}}></span> {punchOut.time}
+                      </span>
+                    </>
+                  );
+                })()}
               </div>
-              <button className="amap-user-details-view-btn">View More Details</button>
+              <button className="amap-user-details-view-btn" >View More Details</button>
             </div>
           </div>
         </div>
