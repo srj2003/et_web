@@ -1287,7 +1287,7 @@ const Users = () => {
             <div className="profile-documents-container">
               <div>
                 <strong>CV/Resume: </strong>
-                <input className="upload-document-input" type="file" id="cvFile" accept=".pdf" onChange={handleCVUpload} className="upload-document-button"/>
+                <input type="file" id="cvFile" accept=".pdf" onChange={handleCVUpload} className="upload-document-button"/>
                 {formData.cvName && <span className="document-text">{formData.cvName}</span>}
               </div>
             </div>
